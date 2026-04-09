@@ -13,7 +13,7 @@ const coopLobbies = {};
 const coopGames = {};   
 
 io.on('connection', (socket) => {
-    // === 1V1 (BO3) ===
+    // === 1v1 MATCHMAKING (BO3) ===
     socket.on('findMatch', (playerName) => {
         socket.playerName = playerName;
         if (waitingPlayer && waitingPlayer !== socket) {
@@ -48,7 +48,7 @@ io.on('connection', (socket) => {
     socket.on('applyStun', (data) => socket.to(data.roomId).emit('takeStun', data.duration));
     socket.on('healTeammate', (data) => socket.to(data.roomId).emit('receiveHeal', data.amount));
 
-    // === CO-OP MULTIPLAYER ===
+    // === CO-OP MULTIPLAYER (LÃNH ĐỊA MAX 4, THẾ GIỚI MAX 8) ===
     socket.on('joinCoopLobby', (data) => { 
         const roomType = data.type;
         const maxPlayers = roomType === 'world' ? 8 : 4;
@@ -56,7 +56,6 @@ io.on('connection', (socket) => {
 
         if (!coopLobbies[lobbyId]) coopLobbies[lobbyId] = { players: {}, max: maxPlayers, type: roomType };
         const lobby = coopLobbies[lobbyId];
-        
         if (Object.keys(lobby.players).length >= maxPlayers) return socket.emit('waiting_screen', 'PHÒNG ĐÃ ĐẦY!');
 
         socket.join(lobbyId); lobby.players[socket.id] = data;
@@ -73,7 +72,7 @@ io.on('connection', (socket) => {
         const gameId = 'game_' + lobbyId + '_' + Date.now();
         coopGames[gameId] = { players: lobby.players, bossHp: lobby.type === 'world' ? 150000 : 30000 };
 
-        let isHost = true; // Người vào đầu tiên làm Host
+        let isHost = true; // Người vào đầu tiên làm Host gánh AI
         for(let id in lobby.players) {
             const s = io.sockets.sockets.get(id);
             if(s) { 
@@ -94,7 +93,6 @@ io.on('connection', (socket) => {
 
     socket.on('coopShoot', (data) => { if(socket.coopGameId) socket.to(socket.coopGameId).emit('teammateShoot', data); });
     socket.on('coopStunBoss', (dur) => { if(socket.coopGameId) socket.to(socket.coopGameId).emit('bossStunned', dur); });
-    
     socket.on('bossAction', (data) => { if(socket.coopGameId) socket.to(socket.coopGameId).emit('updateBoss', data); });
     socket.on('bossShoot', (data) => { if(socket.coopGameId) socket.to(socket.coopGameId).emit('bossFires', data); });
 
@@ -114,8 +112,8 @@ io.on('connection', (socket) => {
         if(waitingPlayer === socket) waitingPlayer = null; 
         for(let l in coopLobbies) {
             if(coopLobbies[l].players[socket.id]) {
-                delete coopLobbies[l].players[socket.id];
-                socket.leave(l); io.to(l).emit('lobbyUpdate', { count: Object.keys(coopLobbies[l].players).length, max: coopLobbies[l].max });
+                delete coopLobbies[l].players[socket.id]; socket.leave(l);
+                io.to(l).emit('lobbyUpdate', { count: Object.keys(coopLobbies[l].players).length, max: coopLobbies[l].max });
             }
         }
     });
