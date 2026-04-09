@@ -2,247 +2,384 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Web Đối Kháng Mobile</title>
+    <title>Web Đối Kháng - Bản Tối Ưu Đặc Biệt</title>
     <style>
-        body { margin: 0; padding: 0; background-color: #1a1a2e; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; touch-action: none; /* Khóa cuộn trang trên mobile */ }
+        body { display: flex; flex-direction: column; align-items: center; background-color: #1a1a2e; color: white; font-family: sans-serif; margin: 0; padding-top: 30px; user-select: none; }
         
-        #ui-screen { text-align: center; margin-top: 50px; }
-        .btn-play { background: #e94560; color: white; border: none; padding: 15px 30px; font-size: 20px; cursor: pointer; border-radius: 8px; font-weight: bold; }
+        /* MENU & UI */
+        #menu-screen { text-align: center; background: rgba(0,0,0,0.8); padding: 40px; border-radius: 15px; border: 2px solid #e94560; }
+        .input-name { padding: 15px; font-size: 18px; border-radius: 8px; border: none; margin-bottom: 20px; width: 250px; text-align: center; font-weight: bold;}
+        .btn-play { background: #e94560; color: white; border: none; padding: 15px 30px; font-size: 18px; cursor: pointer; border-radius: 8px; font-weight: bold; margin: 5px; transition: 0.2s; }
+        .btn-play:hover { background: #f1c40f; color: #000; }
         
-        #game-container { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 800px; padding-top: 10px; }
+        #game-container { display: none; flex-direction: column; align-items: center; }
         
         /* THANH MÁU */
-        .health-board { display: flex; justify-content: space-between; width: 95%; margin-bottom: 10px; }
-        .health-bar-container { width: 45%; background-color: #333; height: 20px; border: 2px solid #fff; border-radius: 5px; overflow: hidden; }
-        .health-fill { height: 100%; background-color: #4cd137; width: 100%; transition: width 0.2s, background-color 0.3s; }
+        .health-board { display: flex; justify-content: space-between; width: 800px; margin-bottom: 10px; }
+        .health-bar-container { width: 45%; background-color: #333; height: 25px; border: 3px solid #fff; border-radius: 5px; overflow: hidden; position: relative; }
+        .health-fill { height: 100%; background-color: #4cd137; width: 100%; transition: width 0.1s; }
+        .player-name-tag { position: absolute; top: 2px; left: 10px; font-weight: bold; font-size: 14px; text-shadow: 1px 1px 2px black;}
         #hp2-container { display: flex; justify-content: flex-end; }
+        #hp2-container .player-name-tag { left: auto; right: 10px; }
 
-        /* SÀN ĐẤU */
-        #arena { width: 95%; height: 350px; background: linear-gradient(to bottom, #16213e 0%, #0f3460 80%, #4a4e69 100%); position: relative; border: 3px solid #fff; border-radius: 10px; overflow: hidden; }
-        .player { width: 70px; height: 90px; position: absolute; border-radius: 8px; }
-        #player1 { background-color: #00a8ff; }
+        /* SÀN ĐẤU & NHÂN VẬT */
+        #arena { width: 800px; height: 400px; background: linear-gradient(to bottom, #16213e 0%, #0f3460 80%, #4a4e69 100%); position: relative; border: 5px solid #fff; border-radius: 10px; overflow: hidden; }
+        .player { width: 80px; height: 100px; position: absolute; background-color: #00a8ff; border-radius: 10px; display: flex; justify-content: center; }
         #player2 { background-color: #e84118; }
         .attacking { filter: brightness(2) drop-shadow(0 0 15px white); }
-        .dead { transform: rotate(-90deg) translateY(30px); filter: grayscale(100%); transition: transform 0.5s; }
+        .dead { transform: rotate(-90deg) translateY(30px); filter: grayscale(100%); transition: transform 0.3s; }
 
-        /* NÚT BẤM CHO MOBILE */
-        #mobile-controls { display: flex; justify-content: space-between; width: 95%; margin-top: 15px; user-select: none; }
-        .d-pad, .action-pad { display: flex; gap: 10px; }
-        .m-btn { background: rgba(255, 255, 255, 0.2); border: 2px solid #fff; color: white; font-size: 20px; font-weight: bold; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; active: background: #fff; color: #000; }
-        .m-btn-wide { width: 70px; border-radius: 15px; font-size: 14px; }
-        
-        /* Ẩn nút trên máy tính */
-        @media (min-width: 800px) { #mobile-controls { display: none; } }
+        /* VŨ KHÍ (SÚNG) & ĐẠN */
+        .gun { width: 30px; height: 10px; background-color: #7f8fa6; position: absolute; top: 40px; display: none; border-radius: 2px; }
+        #player1 .gun { right: -20px; }
+        #player2 .gun { left: -20px; }
+        .is-thanh .gun { display: block !important; } /* Hiện súng nếu tên là Thành */
+        .bullet { position: absolute; width: 15px; height: 6px; background: #f1c40f; border-radius: 5px; box-shadow: 0 0 8px #f1c40f; z-index: 10; }
+
+        /* MÀN HÌNH GAME OVER */
+        #game-over-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+        #winner-text { font-size: 40px; color: #f1c40f; margin-bottom: 20px; text-transform: uppercase; text-shadow: 2px 2px 5px red; }
     </style>
 </head>
 <body>
 
-    <div id="ui-screen">
-        <h1>ĐẤU TRƯỜNG MOBILE</h1>
-        <button class="btn-play" onclick="findMatch()">TÌM TRẬN (ONLINE)</button>
-        <p id="status-text" style="color: #f1c40f; margin-top: 10px;"></p>
+    <div id="menu-screen">
+        <h1 style="color: #00a8ff;">ĐẤU TRƯỜNG HUYỀN THOẠI</h1>
+        <input type="text" id="playerNameInput" class="input-name" placeholder="Nhập tên của bạn (VD: Thành)">
+        <br>
+        <button class="btn-play" onclick="startBotMode()">🤖 CHƠI VỚI MÁY</button>
+        <button class="btn-play" onclick="startOnlineMode()">🌐 TÌM TRẬN ONLINE</button>
+        <p id="status-text" style="color: #f1c40f; margin-top: 15px;"></p>
     </div>
 
     <div id="game-container">
-        <h3 id="role-text" style="margin: 0 0 10px 0; font-size: 16px;">Đang kết nối...</h3>
-        
         <div class="health-board">
-            <div class="health-bar-container"><div id="hp1" class="health-fill"></div></div>
-            <div class="health-bar-container" id="hp2-container"><div id="hp2" class="health-fill"></div></div>
+            <div class="health-bar-container">
+                <div id="hp1" class="health-fill"></div>
+                <div class="player-name-tag" id="name1">Player 1</div>
+            </div>
+            <div class="health-bar-container" id="hp2-container">
+                <div id="hp2" class="health-fill"></div>
+                <div class="player-name-tag" id="name2">Player 2</div>
+            </div>
         </div>
 
         <div id="arena">
-            <div id="player1" class="player"></div>
-            <div id="player2" class="player"></div>
-        </div>
-
-        <div id="mobile-controls">
-            <div class="d-pad">
-                <div class="m-btn" id="btn-left">◀</div>
-                <div class="m-btn" id="btn-right">▶</div>
-            </div>
-            <div class="action-pad">
-                <div class="m-btn m-btn-wide" id="btn-dash">Lướt</div>
-                <div class="m-btn" id="btn-jump">▲</div>
-                <div class="m-btn m-btn-wide" id="btn-attack" style="background: #e94560;">ĐẤM</div>
+            <div id="player1" class="player"><div class="gun"></div></div>
+            <div id="player2" class="player"><div class="gun"></div></div>
+            
+            <div id="game-over-screen">
+                <div id="winner-text">BẠN ĐÃ THẮNG!</div>
+                <button class="btn-play" id="btn-rematch" onclick="requestRematch()">ĐẤU LẠI</button>
+                <button class="btn-play" style="background: #555;" onclick="location.reload()">THOÁT</button>
             </div>
         </div>
+        <p style="margin-top: 20px;"><b>W</b>: Nhảy | <b>A/D</b>: Di chuyển | <b>Shift</b>: Lướt | <b>Space</b>: Đánh/Bắn</p>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let myRole = null;
+        let isBotMode = false;
+        let myRole = 'p1';
         let currentRoom = null;
+        let myName = "";
+        let hasGun = false;
 
-        const gravity = 1.5;
-        const groundY = 250; 
+        // VẬT LÝ & THÔNG SỐ
+        const gravity = 1.2;
+        const groundY = 280; 
         const attackRange = 90;
-        const damagePerHit = 15;
+        const damage = 10;
+        let bullets = []; // Mảng chứa đạn
 
-        // Thêm biến máu (hp) và trạng thái chết (isDead)
-        let p1 = { x: 50, y: groundY, vy: 0, hp: 100, isAttacking: false, isDashing: false, isDead: false };
-        let p2 = { x: 250, y: groundY, vy: 0, hp: 100, isAttacking: false, isDashing: false, isDead: false };
+        let p1 = { x: 100, y: groundY, vy: 0, hp: 100, isDead: false, isAttacking: false, isDashing: false };
+        let p2 = { x: 600, y: groundY, vy: 0, hp: 100, isDead: false, isAttacking: false, isDashing: false };
         
+        let keys = { a: false, d: false };
+
         const myElement = () => document.getElementById(myRole === 'p1' ? 'player1' : 'player2');
         const oppElement = () => document.getElementById(myRole === 'p1' ? 'player2' : 'player1');
         const getMe = () => myRole === 'p1' ? p1 : p2;
         const getOpp = () => myRole === 'p1' ? p2 : p1;
 
-        let keys = { a: false, d: false };
-        let arenaWidth = 300; // Sẽ tự cập nhật theo chiều rộng màn hình
+        // --- KHỞI ĐỘNG GAME ---
+        function getPlayerName() {
+            let name = document.getElementById('playerNameInput').value.trim();
+            return name === "" ? "Khách" : name;
+        }
 
-        function findMatch() {
-            socket.emit('findMatch');
+        function setupThanhEasterEgg(name, elementId) {
+            if (name.toLowerCase() === 'thành' || name.toLowerCase() === 'thanh') {
+                document.getElementById(elementId).classList.add('is-thanh');
+                return true;
+            }
+            document.getElementById(elementId).classList.remove('is-thanh');
+            return false;
+        }
+
+        function startBotMode() {
+            isBotMode = true;
+            myName = getPlayerName();
+            hasGun = setupThanhEasterEgg(myName, 'player1');
+            
+            document.getElementById('name1').innerText = myName;
+            document.getElementById('name2').innerText = "BOT Cấp 1";
+            setupThanhEasterEgg("Bot", 'player2'); // Bot không có súng
+
+            document.getElementById('menu-screen').style.display = 'none';
+            document.getElementById('game-container').style.display = 'flex';
+            resetGameUI();
+            gameLoop();
+        }
+
+        function startOnlineMode() {
+            myName = getPlayerName();
+            socket.emit('findMatch', myName);
             document.getElementById('status-text').innerText = "Đang tìm đối thủ...";
         }
 
+        // --- SOCKET EVENT TỪ SERVER ---
         socket.on('matchFound', (data) => {
+            isBotMode = false;
             myRole = data.role;
             currentRoom = data.roomId;
-            document.getElementById('ui-screen').style.display = 'none';
-            document.getElementById('game-container').style.display = 'flex';
             
-            let color = myRole === 'p1' ? "XANH" : "ĐỎ";
-            document.getElementById('role-text').innerText = `Bạn là: ROBOT ${color}`;
-            
-            // Đặt vị trí xuất phát 2 bên màn hình
-            arenaWidth = document.getElementById('arena').clientWidth;
-            p1.x = 20;
-            p2.x = arenaWidth - 90;
+            hasGun = setupThanhEasterEgg(myName, myRole === 'p1' ? 'player1' : 'player2');
+            setupThanhEasterEgg(data.oppName, myRole === 'p1' ? 'player2' : 'player1');
 
+            document.getElementById('name1').innerText = myRole === 'p1' ? myName : data.oppName;
+            document.getElementById('name2').innerText = myRole === 'p1' ? data.oppName : myName;
+
+            document.getElementById('menu-screen').style.display = 'none';
+            document.getElementById('game-container').style.display = 'flex';
+            resetGameUI();
             gameLoop();
         });
 
-        // --- NHẬN DỮ LIỆU TỪ ĐỐI THỦ ---
         socket.on('updateOpponent', (oppData) => {
             let opp = getOpp();
-            opp.x = oppData.x;
-            opp.y = oppData.y;
-            
-            if(oppData.isAttacking) {
-                oppElement().classList.add('attacking');
-                setTimeout(() => oppElement().classList.remove('attacking'), 150);
-            }
+            opp.x = oppData.x; opp.y = oppData.y;
+            if(oppData.isAttacking) showAttackEffect(oppElement());
         });
 
-        // KHI BỊ ĐÁNH TRÚNG
-        socket.on('takeDamage', (damage) => {
-            let me = getMe();
-            if(me.isDead) return;
-
-            me.hp -= damage;
-            updateHealthUI(myRole, me.hp);
-
-            if(me.hp <= 0) {
-                me.isDead = true;
-                myElement().classList.add('dead');
-                alert("Bạn đã thua!");
-            }
+        socket.on('takeDamage', (dmg) => {
+            handleDamage(getMe(), dmg);
         });
 
-        // Cập nhật thanh máu trên màn hình
-        function updateHealthUI(role, hp) {
-            let hpFill = document.getElementById(role === 'p1' ? 'hp1' : 'hp2');
-            if(hp <= 30) hpFill.style.backgroundColor = '#e84118';
-            else if(hp <= 60) hpFill.style.backgroundColor = '#fbc531';
-            hpFill.style.width = Math.max(0, hp) + '%';
-        }
+        socket.on('opponentShoot', (data) => {
+            spawnBullet(data.x, data.y, data.speed, false);
+        });
 
-        // --- CÁC HÀM HÀNH ĐỘNG ---
-        function doJump() {
-            if(getMe().y >= groundY && !getMe().isDead) getMe().vy = -20;
-        }
+        // ĐẤU LẠI (REMATCH) ONLINE
+        socket.on('rematchOffer', () => {
+            document.getElementById('btn-rematch').innerText = "Đối thủ rủ đấu lại! Bấm để đồng ý";
+            document.getElementById('btn-rematch').style.background = "#4cd137";
+        });
 
-        function doDash() {
-            if(!getMe().isDashing && !getMe().isDead) {
-                getMe().isDashing = true;
-                setTimeout(() => getMe().isDashing = false, 200);
+        socket.on('rematchStart', () => {
+            resetGameUI();
+        });
+
+        function requestRematch() {
+            if (isBotMode) {
+                resetGameUI();
+            } else {
+                document.getElementById('btn-rematch').innerText = "Đang chờ đối thủ đồng ý...";
+                socket.emit('rematchRequest', currentRoom);
             }
+        }
+
+        // --- LOGIC HÀNH ĐỘNG ---
+        function showAttackEffect(el) {
+            el.classList.add('attacking');
+            setTimeout(() => el.classList.remove('attacking'), 150);
         }
 
         function doAttack() {
             let me = getMe();
             let opp = getOpp();
-            if(me.isAttacking || me.isDead) return;
+            if(me.isDead || me.isAttacking) return;
 
             me.isAttacking = true;
-            myElement().classList.add('attacking');
+            showAttackEffect(myElement());
 
-            // Tính khoảng cách để xem có trúng đối thủ không
-            let distance = Math.abs(me.x - opp.x);
-            // Yêu cầu: Đủ gần VÀ cả 2 phải đang đứng (hoặc cùng nhảy ngang nhau)
-            let heightDiff = Math.abs(me.y - opp.y); 
+            if (hasGun) {
+                // TÍNH NĂNG ĐẶC QUYỀN CỦA THÀNH: BẮN SÚNG
+                let bulletSpeed = myRole === 'p1' ? 12 : -12; 
+                spawnBullet(me.x + 40, me.y + 40, bulletSpeed, true);
+                if (!isBotMode) socket.emit('shoot', { roomId: currentRoom, x: me.x + 40, y: me.y + 40, speed: bulletSpeed });
+            } else {
+                // ĐÁNH GẦN BÌNH THƯỜNG
+                let dist = Math.abs(me.x - opp.x);
+                let heightDiff = Math.abs(me.y - opp.y); 
 
-            if(distance < attackRange && heightDiff < 50 && !opp.isDead) {
-                // Đánh trúng -> Gửi thông báo cho Server trừ máu đối thủ
-                socket.emit('playerHit', { roomId: currentRoom, damage: damagePerHit });
-                
-                // Trừ máu hiển thị luôn trên máy mình cho mượt
-                opp.hp -= damagePerHit;
-                updateHealthUI(myRole === 'p1' ? 'p2' : 'p1', opp.hp);
-                
-                if(opp.hp <= 0) {
-                    opp.isDead = true;
-                    oppElement().classList.add('dead');
-                    setTimeout(() => alert("K.O! BẠN ĐÃ THẮNG!"), 500);
+                if(dist < attackRange && heightDiff < 50 && !opp.isDead) {
+                    if (!isBotMode) socket.emit('playerHit', { roomId: currentRoom, damage: damage });
+                    handleDamage(opp, damage);
                 }
             }
 
-            setTimeout(() => { myElement().classList.remove('attacking'); me.isAttacking = false; }, 150);
+            setTimeout(() => { me.isAttacking = false; }, 200); // Tốc độ đánh
         }
 
-        // --- SỰ KIỆN BÀN PHÍM (CHO PC) ---
+        function handleDamage(target, dmg) {
+            if(target.isDead) return;
+            target.hp -= dmg;
+            
+            // Cập nhật giao diện thanh máu
+            let hpFill = target === p1 ? document.getElementById('hp1') : document.getElementById('hp2');
+            hpFill.style.width = Math.max(0, target.hp) + '%';
+            if(target.hp <= 30) hpFill.style.backgroundColor = '#e84118';
+            else if(target.hp <= 60) hpFill.style.backgroundColor = '#fbc531';
+            else hpFill.style.backgroundColor = '#4cd137';
+
+            if(target.hp <= 0) {
+                target.isDead = true;
+                let el = target === p1 ? document.getElementById('player1') : document.getElementById('player2');
+                el.classList.add('dead');
+                
+                // Hiển thị màn hình Game Over
+                setTimeout(() => {
+                    document.getElementById('game-over-screen').style.display = 'flex';
+                    let isIWon = (target === getOpp());
+                    document.getElementById('winner-text').innerText = isIWon ? "BẠN ĐÃ CHIẾN THẮNG!" : "BẠN ĐÃ THUA!";
+                    document.getElementById('winner-text').style.color = isIWon ? "#4cd137" : "#e84118";
+                    document.getElementById('btn-rematch').innerText = "ĐẤU LẠI";
+                    document.getElementById('btn-rematch').style.background = "#e94560";
+                }, 500);
+            }
+        }
+
+        // --- LOGIC ĐẠN BAY ---
+        function spawnBullet(x, y, speed, isMine) {
+            let el = document.createElement('div');
+            el.className = 'bullet';
+            document.getElementById('arena').appendChild(el);
+            bullets.push({ x: x, y: y, speed: speed, el: el, isMine: isMine });
+        }
+
+        function updateBullets() {
+            for(let i = bullets.length - 1; i >= 0; i--) {
+                let b = bullets[i];
+                b.x += b.speed;
+                b.el.style.left = b.x + 'px';
+                b.el.style.top = b.y + 'px';
+
+                let target = b.isMine ? getOpp() : getMe();
+                
+                // Kiểm tra chạm (Hitbox đạn với người)
+                if (b.x > target.x && b.x < target.x + 80 && b.y > target.y && b.y < target.y + 100 && !target.isDead) {
+                    if (b.isMine) { // Chỉ người bắn mới gửi lệnh trừ máu để tránh lag trừ 2 lần
+                        if (!isBotMode) socket.emit('playerHit', { roomId: currentRoom, damage: damage });
+                        handleDamage(target, damage);
+                    }
+                    b.el.remove();
+                    bullets.splice(i, 1);
+                    continue;
+                }
+
+                // Xóa đạn khi bay ra khỏi bản đồ
+                if (b.x < 0 || b.x > 800) {
+                    b.el.remove();
+                    bullets.splice(i, 1);
+                }
+            }
+        }
+
+        // --- BOT AI ---
+        function runBotAI() {
+            let bot = p2; let player = p1;
+            if(bot.isDead || player.isDead) return;
+
+            let dist = bot.x - player.x;
+            keys.ArrowLeft = false; keys.ArrowRight = false;
+
+            if (dist > 70) keys.ArrowLeft = true;
+            else if (dist < -70) keys.ArrowRight = true;
+            else {
+                // Đủ gần -> Đấm
+                if (Math.random() < 0.08) {
+                    bot.isAttacking = true;
+                    showAttackEffect(document.getElementById('player2'));
+                    handleDamage(player, damage);
+                    setTimeout(() => bot.isAttacking = false, 200);
+                }
+            }
+        }
+
+        // --- ĐIỀU KHIỂN BÀN PHÍM ---
         window.addEventListener('keydown', (e) => {
-            if(e.key === 'a') keys.a = true;
-            if(e.key === 'd') keys.d = true;
-            if(e.key === 'w') doJump();
-            if(e.key === 'Shift') doDash();
+            if(getMe().isDead) return;
+            if(e.key === 'a' || e.key === 'A') keys.a = true;
+            if(e.key === 'd' || e.key === 'D') keys.d = true;
+            if((e.key === 'w' || e.key === 'W') && getMe().y >= groundY) getMe().vy = -18;
+            if(e.key === 'Shift' && !getMe().isDashing) {
+                getMe().isDashing = true;
+                setTimeout(() => getMe().isDashing = false, 200);
+            }
             if(e.code === 'Space' && !e.repeat) doAttack();
         });
+
         window.addEventListener('keyup', (e) => {
-            if(e.key === 'a') keys.a = false;
-            if(e.key === 'd') keys.d = false;
+            if(e.key === 'a' || e.key === 'A') keys.a = false;
+            if(e.key === 'd' || e.key === 'D') keys.d = false;
         });
 
-        // --- SỰ KIỆN CẢM ỨNG (CHO MOBILE) ---
-        const bindTouch = (id, actionDown, actionUp) => {
-            const btn = document.getElementById(id);
-            btn.addEventListener('touchstart', (e) => { e.preventDefault(); actionDown(); });
-            btn.addEventListener('touchend', (e) => { e.preventDefault(); if(actionUp) actionUp(); });
-        };
+        // --- RESET GAME KHI ĐẤU LẠI ---
+        function resetGameUI() {
+            document.getElementById('game-over-screen').style.display = 'none';
+            p1 = { x: 100, y: groundY, vy: 0, hp: 100, isDead: false, isAttacking: false, isDashing: false };
+            p2 = { x: 600, y: groundY, vy: 0, hp: 100, isDead: false, isAttacking: false, isDashing: false };
+            bullets.forEach(b => b.el.remove());
+            bullets = [];
+            
+            document.getElementById('player1').classList.remove('dead');
+            document.getElementById('player2').classList.remove('dead');
+            
+            document.getElementById('hp1').style.width = '100%'; document.getElementById('hp1').style.backgroundColor = '#4cd137';
+            document.getElementById('hp2').style.width = '100%'; document.getElementById('hp2').style.backgroundColor = '#4cd137';
+        }
 
-        bindTouch('btn-left', () => keys.a = true, () => keys.a = false);
-        bindTouch('btn-right', () => keys.d = true, () => keys.d = false);
-        bindTouch('btn-jump', doJump);
-        bindTouch('btn-dash', doDash);
-        bindTouch('btn-attack', doAttack);
-
-        // --- VÒNG LẶP GAME ---
+        // --- VÒNG LẶP CHÍNH (60 FPS) ---
         function gameLoop() {
             let me = getMe();
-            if (!me.isDead) {
-                arenaWidth = document.getElementById('arena').clientWidth; // Cập nhật chiều rộng liên tục
-                let moveSpeed = me.isDashing ? 15 : 5;
 
+            if (!p1.isDead && !p2.isDead) {
+                if(isBotMode) runBotAI();
+
+                // Logic di chuyển mượt mà của bản thân
+                let moveSpeed = me.isDashing ? 15 : 6;
                 if(keys.a) me.x = Math.max(0, me.x - moveSpeed);
-                if(keys.d) me.x = Math.min(arenaWidth - 70, me.x + moveSpeed);
+                if(keys.d) me.x = Math.min(800 - 80, me.x + moveSpeed);
 
+                // Trọng lực nhảy
                 me.y += me.vy;
-                if (me.y < groundY) { me.vy += gravity; } 
+                if (me.y < groundY) me.vy += gravity; 
                 else { me.y = groundY; me.vy = 0; }
 
-                socket.emit('playerAction', {
-                    roomId: currentRoom,
-                    playerData: { x: me.x, y: me.y, isAttacking: me.isAttacking }
-                });
+                // Bot di chuyển (chỉ áp dụng nếu chơi offline)
+                if(isBotMode) {
+                    if(keys.ArrowLeft) p2.x = Math.max(0, p2.x - 5);
+                    if(keys.ArrowRight) p2.x = Math.min(800 - 80, p2.x + 5);
+                }
+
+                // Gửi dữ liệu cho Server nếu đang chơi Online
+                if(!isBotMode) {
+                    socket.emit('playerAction', {
+                        roomId: currentRoom,
+                        playerData: { x: me.x, y: me.y, isAttacking: me.isAttacking }
+                    });
+                }
             }
 
+            // Vẽ lại giao diện nhân vật
             document.getElementById('player1').style.left = p1.x + 'px';
             document.getElementById('player1').style.top = p1.y + 'px';
             document.getElementById('player2').style.left = p2.x + 'px';
             document.getElementById('player2').style.top = p2.y + 'px';
+
+            updateBullets(); // Cập nhật vị trí đạn bay
 
             requestAnimationFrame(gameLoop);
         }
