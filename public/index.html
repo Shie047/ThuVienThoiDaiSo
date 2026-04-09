@@ -83,8 +83,8 @@
 <body>
 
     <div id="menu-screen" class="panel">
-        <h1 style="color: #66fcf1; margin-top: 0;">SOULS FIGHTER</h1>
-        <div class="stats-bar"><span>💰 Vàng: <span id="coin-count">0</span></span> <span style="color: #e74c3c;">❤ Tim: <span id="heart-count">0</span></span></div>
+        <h1 style="color: #66fcf1; margin-top: 0;">Chiến Trường Số</h1>
+        <div class="stats-bar"><span>Vàng: <span id="coin-count">0</span></span> <span style="color: #e74c3c;">Tim: <span id="heart-count">0</span></span></div>
         <input type="text" id="playerNameInput" class="input-name" placeholder="Tên của bạn (VIP: Ngọc)">
         
         <div id="inventory-ui" style="text-align: left; margin: 10px 0; padding: 10px; background: #111; border-radius: 8px;">
@@ -92,36 +92,36 @@
             <div id="inventory-list"></div>
         </div>
         
-        <button class="btn" style="background:#2ecc71; color:#000;" onclick="startBotMode('normal')">🤖 Luyện Tập Cơ Bản</button>
-        <button class="btn" onclick="startOnlineMode()">🌐 Đấu Trường 1v1</button>
-        <button class="btn btn-boss" onclick="toggleBossMenu(true)">💀 Hầm Ngục (Khó Điên Rồ)</button>
-        <button class="btn btn-world" onclick="showWorldBossLobby()">🌍 Đánh Boss Thế Giới (Co-op)</button>
-        <button class="btn" style="background:#111; border-color:#fff" onclick="toggleShop(true)">🛒 Cửa Hàng Vũ Khí</button>
+        <button class="btn" style="background:#2ecc71; color:#000;" onclick="startBotMode('normal')">Luyện Tập Cơ Bản</button>
+        <button class="btn" onclick="startOnlineMode()">Đấu Trường 1v1</button>
+        <button class="btn btn-boss" onclick="toggleBossMenu(true)">Hầm Ngục (Khó Điên Rồ)</button>
+        <button class="btn btn-world" onclick="showWorldBossLobby()">Đánh Boss Thế Giới (Co-op)</button>
+        <button class="btn" style="background:#111; border-color:#fff" onclick="toggleShop(true)">Cửa Hàng Vũ Khí</button>
     </div>
 
     <div id="boss-screen" class="panel" style="display: none;">
-        <h2 style="color: #d9534f;">💀 LÃNH CHÚA VỰC THẲM 💀</h2>
-        <p style="font-size: 13px; color: #ccc;">Boss cực mạnh, hãy mang đúng vũ khí khắc chế.</p>
-        <button class="btn" onclick="startBotMode('titan')">🪨 TITAN (Vua Thép)</button>
-        <button class="btn" onclick="startBotMode('zephyr')">🌪️ ZEPHYR (Cuồng Phong)</button>
-        <button class="btn" onclick="startBotMode('ifrit')">🔥 IFRIT (Hỏa Thần)</button>
-        <button class="btn" onclick="startBotMode('shadow')">🌑 SHADOW (Bóng Đêm)</button>
-        <button class="btn" style="border-color:#f1c40f; color:#f1c40f;" onclick="startBotMode('omega')">👑 OMEGA (Kẻ Diệt Thế)</button>
-        <button class="btn" style="background: #111; margin-top:10px;" onclick="toggleBossMenu(false)">⬅ Trở Về</button>
+        <h2 style="color: #d9534f;">LÃNH CHÚA VỰC THẲM </h2>
+        <p style="font-size: 13px; color: #ccc;">Boss cực mạnh</p>
+        <button class="btn" onclick="startBotMode('titan')">TITAN (Vua Thép)</button>
+        <button class="btn" onclick="startBotMode('zephyr')">ZEPHYR (Cuồng Phong)</button>
+        <button class="btn" onclick="startBotMode('ifrit')">IFRIT (Hỏa Thần)</button>
+        <button class="btn" onclick="startBotMode('shadow')">SHADOW (Bí Ẩn Của Bóng Tối)</button>
+        <button class="btn" style="border-color:#f1c40f; color:#f1c40f;" onclick="startBotMode('omega')">OMEGA (Kẻ Diệt Thế)</button>
+        <button class="btn" style="background: #111; margin-top:10px;" onclick="toggleBossMenu(false)">Trở Về</button>
     </div>
 
     <div id="waiting-screen" class="panel" style="display: none;">
         <h2 class="wait-title" id="wait-msg">ĐANG TÌM ĐỐI THỦ...</h2>
         <div class="loader" style="border: 5px solid #111; border-top: 5px solid #66fcf1; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto;"></div>
-        <button class="btn btn-world" id="btn-start-early" style="display:none;" onclick="startWorldBossEarly()">🔥 VÀO ĐÁNH LUÔN</button>
+        <button class="btn btn-world" id="btn-start-early" style="display:none;" onclick="startWorldBossEarly()">VÀO ĐÁNH LUÔN</button>
         <button class="btn" style="background: #111; margin-top: 20px;" onclick="cancelMatchmaking()">HỦY & TRỞ VỀ</button>
     </div>
 
     <div id="shop-screen" class="panel" style="display: none;">
         <h2 style="color: #66fcf1; margin-top: 0;">TIỆM RÈN KHÍ TÀI</h2>
-        <div class="stats-bar">💰 Vàng: <span id="shop-coin-count">0</span></div>
+        <div class="stats-bar">Vàng: <span id="shop-coin-count">0</span></div>
         <div id="shop-list"></div>
-        <button class="btn" style="background: #111; margin-top: 15px;" onclick="toggleShop(false)">⬅ Quay lại</button>
+        <button class="btn" style="background: #111; margin-top: 15px;" onclick="toggleShop(false)">Quay lại</button>
     </div>
 
     <div id="game-container">
@@ -139,13 +139,13 @@
             <div id="game-over-screen-inner" style="position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:none; flex-direction:column; justify-content:center; align-items:center; z-index:100;">
                 <div id="winner-text" style="font-size: 45px; color: #d9534f; margin-bottom: 10px; font-weight: bold;">BẠN ĐÃ CHẾT</div>
                 <p id="reward-text" style="color: #f1c40f; font-size: 20px; font-weight: bold; display: none;">+ Chiến Lợi Phẩm!</p>
-                <button class="btn" id="btn-rematch-boss" style="background:#e67e22; display:none;" onclick="startBotMode(currentBoss)">🔥 ĐÁNH LẠI BOSS</button>
+                <button class="btn" id="btn-rematch-boss" style="background:#e67e22; display:none;" onclick="startBotMode(currentBoss)">ĐÁNH LẠI BOSS</button>
                 <button class="btn" id="btn-rematch-pvp" style="background:#2ecc71; display:none;" onclick="requestRematchPvP()">ĐẤU LẠI 1VS1</button>
                 <button class="btn" style="background:#1f2833;" onclick="location.reload()">HỒI SINH (VỀ MENU)</button>
             </div>
         </div>
         <div style="background: rgba(0,0,0,0.8); padding: 5px; border-radius: 8px; margin-top: 10px; font-size: 13px; text-align: center; border: 1px solid #45a29e;">
-            <b style="color:#f1c40f">HP: 200</b> | <span style="color:#66fcf1">A/D: Đi</span> | <span style="color:#f1c40f">W: Nhảy đúp</span> | <span style="color:#4cd137">Shift: Đỡ (Giảm 90% DMG)</span> | <span style="color:#d9534f">Space: Đánh/Kỹ Năng</span>
+            <b style="color:#f1c40f">HP: 200</b> | <span style="color:#66fcf1">A/D: Đi</span> | <span style="color:#f1c40f">W: Nhảy đúp</span> | <span style="color:#4cd137">Shift: Đỡ </span> | <span style="color:#d9534f">Space: Đánh/Kỹ Năng</span>
         </div>
     </div>
 
