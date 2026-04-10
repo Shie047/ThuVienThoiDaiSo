@@ -150,9 +150,8 @@
             </div>
             
             <button class="btn" style="background:#00b894; color:#fff; border-color:#00b894;" onclick="startBotMode('normal')">LUYỆN TẬP TÂN THỦ</button>
-            <button class="btn btn-boss" style="border-color:#e17055; color:#e17055;" onclick="openSoloBoss()">KHIÊU CHIẾN BOSS (SOLO)</button>
             <button class="btn" onclick="startOnlineMode()">ĐẤU TRƯỜNG 1V1 (BO3)</button>
-            <button class="btn btn-boss" onclick="openCoopBoss()">LÃNH ĐỊA CO-OP (MAX 4)</button>
+            <button class="btn btn-boss" style="border-color:#e17055; color:#e17055;" onclick="openCoopBoss()">KHIÊU CHIẾN BOSS CO-OP (MAX 4)</button>
             <button class="btn btn-world" onclick="showCoopLobby('world')">BOSS THẾ GIỚI (MAX 8)</button>
             <button class="btn" style="background:#2d3436; border-color:#636e72; color: #fff;" onclick="switchScreen('screen-shop')">TIỆM RÈN KHÍ TÀI</button>
         </div>
@@ -284,33 +283,33 @@
         ];
         let currentMapBuff = '';
 
-        // CÂN BẰNG VŨ KHÍ CƠ BẢN VÀ THÊM 5 MÓN MỚI (CHIA ĐỀU HỆ)
         const weapons = {
             shield: { name: 'Khiên Thường', price: 100, type: 'defense', stm: 5, ammo: 0, firerate: 30 },
             gun: { name: 'Súng Lục', price: 150, type: 'ballistic', stm: 5, ammo: 1, firerate: 12 }, 
             katana: { name: 'Kiếm Katana', price: 200, type: 'melee', stm: 8, ammo: 0, firerate: 15 },
             bomb: { name: 'Mìn Hẹn Giờ', price: 250, type: 'explosive', stm: 15, ammo: 0, firerate: 30 }, 
             shuriken: { name: 'Phi Tiêu', price: 300, type: 'ballistic', stm: 4, ammo: 0, firerate: 8 },
-            spear: { name: 'Thương Xuyên Phá', price: 350, type: 'piercing', stm: 12, ammo: 0, firerate: 25 }, // MỚI
+            spear: { name: 'Thương Xuyên Phá', price: 350, type: 'piercing', stm: 12, ammo: 0, firerate: 25 }, 
             vine_spell: { name: 'Phép Dây Leo', price: 400, type: 'magic', stm: 40, ammo: 0, firerate: 50 },
             shotgun: { name: 'Hoa Cải', price: 450, type: 'ballistic', stm: 12, ammo: 2, firerate: 30 }, 
             grenade: { name: 'Phóng Lựu', price: 500, type: 'explosive', stm: 15, ammo: 1, firerate: 35 },
-            smg: { name: 'Tiểu Liên SMG', price: 600, type: 'ballistic', stm: 3, ammo: 1, firerate: 8 }, // MỚI
-            holy_light: { name: 'Ánh Sáng Thần', price: 700, type: 'magic', stm: 20, ammo: 0, firerate: 40 }, // MỚI
+            smg: { name: 'Tiểu Liên SMG', price: 600, type: 'ballistic', stm: 3, ammo: 1, firerate: 8 }, 
+            holy_light: { name: 'Ánh Sáng Thần', price: 700, type: 'magic', stm: 20, ammo: 0, firerate: 40 }, 
             sniper: { name: 'Súng Ngắm', price: 750, type: 'piercing', stm: 20, ammo: 1, firerate: 45 }, 
             heal_single: { name: 'Trượng Sinh Mệnh', price: 800, type: 'magic', stm: 35, ammo: 0, firerate: 80 },
-            plasma: { name: 'Súng Plasma', price: 850, type: 'energy', stm: 15, ammo: 1, firerate: 30 }, // MỚI
+            plasma: { name: 'Súng Plasma', price: 850, type: 'energy', stm: 15, ammo: 1, firerate: 30 }, 
             heal_aoe: { name: 'Trượng Hồi Phục', price: 850, type: 'magic', stm: 25, ammo: 0, firerate: 50 },
             fireball: { name: 'Cầu Lửa', price: 950, type: 'energy', stm: 15, ammo: 0, firerate: 35 },
-            cluster: { name: 'Lựu Đạn Chùm', price: 1000, type: 'explosive', stm: 25, ammo: 2, firerate: 50 }, // MỚI
+            cluster: { name: 'Lựu Đạn Chùm', price: 1000, type: 'explosive', stm: 25, ammo: 2, firerate: 50 }, 
             rocket: { name: 'Bazooka', price: 1100, type: 'explosive', stm: 25, ammo: 1, firerate: 50 }, 
             horse: { name: 'Ngựa Chiến', price: 1200, type: 'melee', stm: 35, ammo: 0, firerate: 70 },
             laser: { name: 'Súng Laser', price: 1500, type: 'energy', stm: 20, ammo: 2, firerate: 40 },
             giant_shield: { name: 'Khiên Khổng Lồ', price: 1500, type: 'defense_aoe', stm: 50, ammo: 0, firerate: 50 }
         };
-        // BUFF VIP ULTIMATES
+
+        // ĐÃ NERF VÀ CHỐNG SPAM KIẾM RỒNG (FIRERATE CAO HƠN, STM NHIỀU HƠN)
         const ultimates = {
-            dragon_blade: { name: '[VIP] Kiếm Rồng', drop: 'ifrit', type: 'energy', stm: 5, ammo: 0, firerate: 12 },
+            dragon_blade: { name: '[VIP] Kiếm Rồng', drop: 'ifrit', type: 'energy', stm: 20, ammo: 0, firerate: 45 }, // Chống spam
             gravity_hammer: { name: '[VIP] Búa Trọng Lực', drop: 'titan', type: 'explosive', stm: 10, ammo: 0, firerate: 25 },
             storm_bow: { name: '[VIP] Cung Bão Tố', drop: 'zephyr', type: 'ballistic', stm: 5, ammo: 0, firerate: 10 },
             void_scythe: { name: '[VIP] Lưỡi Hái Hư Không', drop: 'shadow', type: 'piercing', stm: 10, ammo: 0, firerate: 20 },
@@ -376,24 +375,16 @@
             }
         }
 
-        // TÁCH MENU SOLO BOSS VÀ COOP BOSS
-        let isSoloBoss = false;
-        function openSoloBoss() {
-            isSoloBoss = true;
-            document.getElementById('boss-title').innerText = "KHIÊU CHIẾN BOSS (SOLO)";
-            switchScreen('screen-boss');
-        }
         function openCoopBoss() {
-            isSoloBoss = false;
-            document.getElementById('boss-title').innerText = "LÃNH ĐỊA CO-OP";
+            document.getElementById('boss-title').innerText = "KHIÊU CHIẾN BOSS CO-OP";
             switchScreen('screen-boss');
         }
+        
+        // LUÔN MỞ LOBBY CO-OP KHI CHỌN BOSS
         function selectBoss(type) {
-            if(isSoloBoss) startBotMode(type);
-            else showCoopLobby(type);
+            showCoopLobby(type);
         }
 
-        // --- CORE GAME ---
         const groundY = 290; let entities = []; 
         const getP1StartX = () => 50; const getP2StartX = () => 650;
         const getP1StartDir = () => 1; const getP2StartDir = () => -1;
@@ -641,17 +632,16 @@
             else if (currentEquip === 'vine_spell') spawnAndSend('vine', px, py, dir*18, 0);
             else if (currentEquip === 'horse') spawnAndSend('horse_charge', px, me.y+30, dir*25, 0);
             else if (currentEquip === 'giant_shield') { spawnAndSend('giant_shield_aura', me.x, me.y, 0, 0); } 
-            // CÁC VŨ KHÍ CẬN CHIẾN (KỂ CẢ THƯƠNG MỚI)
             else if (currentEquip === 'none' || currentEquip === 'katana' || currentEquip === 'dragon_blade' || currentEquip === 'gravity_hammer' || currentEquip === 'spear') {
                 let slash = document.createElement('div'); slash.className = 'slash-arc'; 
                 let arcW = currentEquip === 'spear' ? 160 : 120;
                 slash.style.width = arcW + 'px';
                 slash.style.left = (dir === 1 ? me.x + 20 : me.x - (arcW/2)) + 'px'; slash.style.top = me.y + 'px'; slash.style.transform = `scaleX(${dir})`; document.getElementById('arena').appendChild(slash); setTimeout(() => { slash.style.opacity = 1; slash.style.transform = `scaleX(${dir}) scale(1.5)`; }, 10); setTimeout(() => slash.remove(), 150);
                 
-                if(currentEquip === 'dragon_blade') spawnAndSend('fire_wave', px, me.y, dir*12, 0);
                 if(currentEquip === 'gravity_hammer') spawnAndSend('shockwave', 0, groundY+70, 0, 0);
 
-                let dmg = currentEquip === 'dragon_blade' ? 40 : (currentEquip === 'gravity_hammer' ? 85 : (currentEquip === 'katana' ? 35 : (currentEquip === 'spear' ? 30 : 15))); 
+                // BUFF KIẾM RỒNG DMG (TỪ 40 LÊN 100)
+                let dmg = currentEquip === 'dragon_blade' ? 100 : (currentEquip === 'gravity_hammer' ? 85 : (currentEquip === 'katana' ? 35 : (currentEquip === 'spear' ? 30 : 15))); 
                 let range = currentEquip === 'spear' ? 180 : (currentEquip === 'katana' ? 120 : 70);
                 
                 let opp = getOpp(); let isFacing = (dir === 1 && opp.x > me.x) || (dir === -1 && opp.x < me.x);
@@ -662,11 +652,11 @@
                 }
             } 
             else if (currentEquip === 'gun') spawnAndSend('bullet', px, py, dir*18, 0);
-            else if (currentEquip === 'smg') spawnAndSend('bullet', px, py, dir*22, 0); // Bắn đạn siêu nhanh
+            else if (currentEquip === 'smg') spawnAndSend('bullet', px, py, dir*22, 0); 
             else if (currentEquip === 'shuriken' || currentEquip === 'storm_bow') { spawnAndSend('shuriken', px, py, dir*25, 0); if(currentEquip === 'storm_bow'){ spawnAndSend('shuriken', px, py, dir*25, -2); spawnAndSend('shuriken', px, py, dir*25, 2); } }
             else if (currentEquip === 'sniper') spawnAndSend('sniper_bullet', px, py, dir*40, 0); 
             else if (currentEquip === 'laser' || currentEquip === 'omega_beam') { spawnAndSend(currentEquip === 'omega_beam'?'omega_beam':'laser', dir===1 ? px : px-800, py-10, 0, 0); }
-            else if (currentEquip === 'plasma') spawnAndSend('plasma_bullet', px, py, dir*30, 0); // Của súng plasma
+            else if (currentEquip === 'plasma') spawnAndSend('plasma_bullet', px, py, dir*30, 0); 
             else if (currentEquip === 'holy_light') spawnAndSend('holy_light', px, py, dir*12, 0); 
             else if (currentEquip === 'fireball') spawnAndSend('fireball', px, py-10, dir*10, 0); 
             else if (currentEquip === 'rocket') spawnAndSend('rocket', px, py, dir*15, 0);
@@ -889,6 +879,7 @@
         }
 
         let botWait = 0; 
+        // BUFF AI BOSS CHO CẢ SOLO VÀ CO-OP (Ra chiêu liên tục)
         function runBotAI() {
             let bot = p2; let targetPlayer = getMe(); if(bot.isDead || bot.stunTimer > 0) return;
 
@@ -924,6 +915,7 @@
             if(botWait === 15) { document.getElementById('player2').classList.add('boss-telegraph'); if(isCoop && isGameHost) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir, telegraph: true }); }
             if(botWait === 5) { document.getElementById('player2').classList.remove('boss-telegraph'); if(isCoop && isGameHost) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir, telegraph: false }); }
 
+            // Ám Sát của Shadow (Cooldown giảm đi nhiều)
             if (currentBoss === 'shadow' && botWait <= 0 && Math.random() < (isPhase2?0.15:0.08)) { 
                 document.getElementById('darkness-overlay').style.opacity = 0.8; setTimeout(()=>document.getElementById('darkness-overlay').style.opacity = 0, 500);
                 bot.x = targetPlayer.x + (targetPlayer.facingDir * -60); bot.y = targetPlayer.y; bot.facingDir = targetPlayer.facingDir; 
@@ -931,10 +923,11 @@
                 document.getElementById('player2').classList.add('attacking'); setTimeout(() => document.getElementById('player2').classList.remove('attacking'), 150);
                 bossSpawnAndSend('boss_melee', bot.x + (bot.facingDir*40), bot.y, bot.facingDir, 0); 
                 
-                if(isCoop) {
+                // X2 X3 SPAM
+                if(isCoop || isPhase2) {
                     bossSpawnAndSend('void_scythe', bot.x, bot.y-20, bot.facingDir*15, -2);
                     bossSpawnAndSend('void_scythe', bot.x, bot.y+20, bot.facingDir*15, 2);
-                } else if(isPhase2) { 
+                } else { 
                     bossSpawnAndSend('void_scythe', bot.x, bot.y, bot.facingDir*15, 0); 
                 }
                 if(isCoop && isGameHost) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir, isAttacking: true });
@@ -946,19 +939,21 @@
             if (botWait > 0) { if (isCoop && isGameHost && bot.y < groundY) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir }); return; }
 
             let spd = currentBoss === 'zephyr' ? (isPhase2?14:10) : (currentBoss === 'titan' ? (isPhase2?4:2) : (isPhase2?7:5));
+            if (isCoop) spd = Math.floor(spd * 1.5); // Boss chay nhanh hon khi đánh coop
 
             if (dist > 100) { bot.x -= spd; bot.facingDir = -1; } else if (dist < -100) { bot.x += spd; bot.facingDir = 1; }
             else {
                 bot.facingDir = dist > 0 ? -1 : 1; 
                 
-                let atkRate = currentBoss === 'omega' ? (isPhase2?0.6:0.4) : (isPhase2?0.4:0.25);
+                let atkRate = currentBoss === 'omega' ? (isPhase2?0.6:0.4) : (isPhase2?0.5:0.35); // Boss Solo cung đánh nhiều hơn
 
                 if (Math.random() < atkRate) { 
                     document.getElementById('player2').classList.add('attacking'); setTimeout(() => document.getElementById('player2').classList.remove('attacking'), 150);
                     let rand = Math.random();
                     
                     if(currentBoss === 'titan') { 
-                        if(isCoop) {
+                        // Spam X2 X3
+                        if(isCoop || isPhase2) {
                             bossSpawnAndSend('shockwave', 0, groundY+70, 0, 0);
                             bossSpawnAndSend('boulder', bot.x, bot.y-50, -8, -6);
                             bossSpawnAndSend('boulder', bot.x, bot.y-50, 8, -6);
@@ -972,7 +967,8 @@
                     }
                     else if(currentBoss === 'ifrit') { 
                         bossSpawnAndSend('fire_wave', bot.x+(bot.facingDir*40), bot.y, bot.facingDir*10, 0); 
-                        if(isCoop) {
+                        // Spam X2 X3
+                        if(isCoop || isPhase2) {
                             bossSpawnAndSend('meteor', targetPlayer.x-80, -50, 0, 8);
                             bossSpawnAndSend('meteor', targetPlayer.x, -100, 0, 8);
                             bossSpawnAndSend('meteor', targetPlayer.x+80, -50, 0, 8);
@@ -983,7 +979,8 @@
                         }
                     }
                     else if(currentBoss === 'omega') { 
-                        if(isCoop) {
+                        // Spam X2 X3
+                        if(isCoop || isPhase2) {
                             bossSpawnAndSend('omega_beam', bot.facingDir===1?bot.x:bot.x-800, bot.y-20, 0, 0);
                             bossSpawnAndSend('laser', bot.x, bot.y-40, bot.facingDir*25, 4); 
                             bossSpawnAndSend('laser', bot.x, bot.y+40, bot.facingDir*25, -4);
@@ -995,7 +992,8 @@
                         }
                     }
                     else if(currentBoss === 'zephyr') { 
-                        if(isCoop) {
+                        // Spam X2 X3
+                        if(isCoop || isPhase2) {
                             bossSpawnAndSend('tornado', bot.x - 80, groundY-60, -4, 0);
                             bossSpawnAndSend('tornado', bot.x + 80, groundY-60, 4, 0);
                             bossSpawnAndSend('shuriken', bot.x, bot.y, bot.facingDir*25, 0);
