@@ -13,6 +13,8 @@
         
         .title-glow { color: var(--neon-cyan); margin-top: 0; letter-spacing: 4px; text-transform: uppercase; text-shadow: 0 0 15px var(--neon-cyan); }
         .input-name { padding: 12px; font-size: 16px; border-radius: 6px; border: 1px solid var(--neon-cyan); background: #1f2833; color: var(--neon-cyan); margin-bottom: 15px; width: 80%; text-align: center; font-weight: bold; text-transform: uppercase; outline: none; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);}
+        /* Fix lỗi không cho bôi đen text trong input */
+        input { user-select: text; }
         
         .btn { background: #1f2833; color: var(--neon-cyan); border: 2px solid var(--neon-cyan); padding: 12px; font-size: 14px; cursor: pointer; border-radius: 6px; font-weight: bold; margin: 6px 0; width: 85%; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;}
         .btn:hover:not(:disabled) { background: var(--neon-cyan); color: var(--bg-dark); box-shadow: 0 0 15px var(--neon-cyan); transform: scale(1.02);}
@@ -140,6 +142,13 @@
         .dragon_wave { position: absolute; width: 150px; height: 200px; background: linear-gradient(to right, transparent, var(--neon-red), #f1c40f); border-radius: 50%; box-shadow: 0 0 40px var(--neon-red); mix-blend-mode: screen; filter: saturate(2) contrast(1.5);}
         .black_hole { position: absolute; width: 120px; height: 120px; background: radial-gradient(circle, #000, #8e44ad); border-radius: 50%; box-shadow: 0 0 50px #8e44ad; animation: spin 2s linear infinite; }
         .void_slash { position: absolute; width: 250px; height: 250px; background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(142, 68, 173, 0.5) 10px, rgba(142, 68, 173, 0.5) 20px); border-radius: 50%; filter: contrast(2); z-index: 25; }
+
+        /* FIX 3: Thêm Hoạt ảnh Ultimate Bị Thiếu */
+        .ult_slash { position: absolute; width: 150px; height: 150px; border: 8px solid rgba(255,255,255,0.9); border-radius: 50%; opacity: 0; z-index: 25; filter: drop-shadow(0 0 15px #00cec9); animation: slashAnim 0.4s ease-out forwards; clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%); }
+        @keyframes slashAnim { 0% { transform: scale(0.5) rotate(0deg); opacity: 1; } 100% { transform: scale(2.5) rotate(180deg); opacity: 0; } }
+
+        .ult_nuke { position: absolute; width: 400px; height: 400px; background: radial-gradient(circle, #fff, #f1c40f 30%, #ff4757 60%, transparent); border-radius: 50%; mix-blend-mode: screen; opacity: 0; z-index: 20; animation: nukeAnim 0.5s ease-out forwards; }
+        @keyframes nukeAnim { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
 
         #game-over-screen-inner { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(11, 12, 16, 0.95); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; border-radius: 8px;}
         .wait-title { font-size: 28px; color: var(--neon-gold); margin-bottom: 15px; font-weight: bold; text-transform: uppercase; text-shadow: 0 0 10px rgba(241,196,15,0.5); letter-spacing: 2px;}
@@ -288,7 +297,6 @@
         const maps = [ { name: "Hỏa Diện", bg: "linear-gradient(to bottom, #4a0e0e 0%, #1a0505 100%)", buff: "energy" }, { name: "Lõi Tương Lai", bg: "linear-gradient(to bottom, #001f3f 0%, #000 100%)", buff: "piercing" }, { name: "Cấm Địa", bg: "linear-gradient(to bottom, #2b3a2a 0%, #1a1a1a 100%)", buff: "ballistic" }, { name: "Phế Tích Thép", bg: "linear-gradient(to bottom, #3b3b3b 0%, #111 100%)", buff: "melee" }, { name: "Không Gian Ảo", bg: "linear-gradient(to bottom, #190033 0%, #000 100%)", buff: "explosive" } ];
         let currentMapBuff = '';
 
-        // === CÂN BẰNG VŨ KHÍ ===
         const weapons = {
             energy_shield: { name: 'Khiên Năng Lượng', price: 100, type: 'defense', stm: 5, ammo: 0, firerate: 30 },
             heavy_pistol: { name: 'Súng Phá Giáp', price: 150, type: 'piercing', stm: 5, ammo: 1, firerate: 15 },
@@ -364,7 +372,6 @@
             document.getElementById('daily-boss-reward').innerText = unique_weapons[currentDailyBoss.weapon].name;
             document.getElementById('daily-boss-hint').innerText = "Gợi ý: " + currentDailyBoss.hint;
 
-            // VIP CHEAT QUẢN LÝ NÚT KHỞI TẠO LẠI BOSS
             let pName = document.getElementById('playerNameInput').value.trim().toLowerCase();
             if (pName === 'thành' || pName === 'thanh') { document.getElementById('btn-vip-reset').style.display = 'inline-block'; } 
             else { document.getElementById('btn-vip-reset').style.display = 'none'; }
@@ -428,12 +435,18 @@
             if(ammoUi1) ammoUi1.style.display = hasAmmo ? 'block' : 'none'; if(ammoUi2) ammoUi2.style.display = hasAmmo ? 'block' : 'none';
             document.querySelectorAll('button').forEach(b => b.blur());
         }
+        
+        // Cập nhật tên vào localStorage
+        document.getElementById('playerNameInput').addEventListener('input', function() { 
+            localStorage.setItem('playerName', this.value.trim()); 
+        });
+        
         renderShopAndInventory(); 
 
         const groundY = 290; let entities = []; 
         const getP1StartX = () => 50; const getP2StartX = () => 650; const getP1StartDir = () => 1; const getP2StartDir = () => -1;
         
-        // BIẾN TOÀN CỤC CHỨA DỮ LIỆU NHÂN VẬT BAO GỒM STATUS EFFECTS
+        // FIX LỖI CRASH GAME (Thêm statusEffects chuẩn vào cả 2 người chơi)
         let p1 = { x: 50, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: 1, stunTimer: 0, isParrying: false, parryTimer: 0, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
         let p2 = { x: 650, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: -1, stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1, isBurrowed: false, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
         let keys = { a: false, d: false, space: false, w: false };
@@ -451,13 +464,10 @@
             resetGameUI(); gameLoop();
         }
 
-        // =========================================================================
-        // HÀM RESET GAME CHÍNH (ĐÃ FIX TẬN GỐC LỖI THIẾU BIẾN statusEffects)
-        // =========================================================================
         function resetGameUI() {
             document.getElementById('game-over-screen-inner').style.display = 'none'; document.getElementById('btn-spectate').style.display = 'none';
             
-            // KHỞI TẠO LẠI ĐẦY ĐỦ CÁC THUỘC TÍNH
+            // FIX: ĐẢM BẢO KHỞI TẠO ĐẦY ĐỦ THUỘC TÍNH (Kể cả statusEffects)
             p1 = { x: getP1StartX(), y: groundY, vy: 0, hp: p1.maxHp || 200, maxHp: p1.maxHp || 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP1StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
             p2 = { x: getP2StartX(), y: groundY, vy: 0, hp: p2.maxHp || 200, maxHp: p2.maxHp || 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP2StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1, isBurrowed: false, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
             
@@ -467,7 +477,6 @@
             if(ult1) { ult1.style.background = "#8e44ad"; ult1.innerText = "Ult: SẴN SÀNG"; ult1.style.boxShadow = "0 0 10px #8e44ad"; } 
             if(ult2) { ult2.style.background = "#8e44ad"; ult2.innerText = "Ult: SẴN SÀNG"; ult2.style.boxShadow = "0 0 10px #8e44ad"; }
             
-            // DỌN DẸP SẠCH CSS HIỆU ỨNG THỪA TỪ VÁN CŨ
             let p1El = document.getElementById('player1'); let p2El = document.getElementById('player2');
             p1El.className = 'player'; p1El.classList.remove('parrying', 'dead', 'status-burn', 'status-slow', 'status-bleed'); p1El.style.display = 'block'; 
             p2El.className = 'player ' + ((gameMode !== 'online' && gameMode !== 'coop' && currentBoss !== 'normal' && gameMode !== 'daily_boss') ? 'boss-'+currentBoss : '');
@@ -492,7 +501,7 @@
         function readyNextRound() { let btn = document.getElementById('btn-ready-round'); if(btn) { btn.innerText = "ĐANG CHỜ ĐỐI THỦ..."; btn.style.background = "#555"; btn.disabled = true; } socket.emit('nextRoundReady', currentRoom); }
         socket.on('startNextRound', () => { switchScreen(); document.getElementById('game-container').style.display = 'flex'; if(animationId) cancelAnimationFrame(animationId); resetGameUI(); gameLoop(); });
 
-        socket.on('matchEnd', (data) => { setTimeout(() => { bo3Score = data.score; document.getElementById('bo3-score-ui').innerText = `P1: ${bo3Score.p1} - ${bo3Score.p2} :P2`; let isMeWinner = data.winner === myRole; document.getElementById('game-over-screen-inner').style.display = 'flex'; let winTxt = document.getElementById('winner-text'); winTxt.innerText = isMeWinner ? "BẠN ĐÃ THẮNG BO3!" : "BẠN ĐÃ THUA BO3!"; winTxt.style.color = isMeWinner ? "var(--neon-gold)" : "var(--neon-red)"; document.getElementById('btn-rematch-pvp').style.display = 'inline-block'; document.getElementById('btn-rematch-boss').style.display = 'none'; document.getElementById('btn-spectate').style.display = 'none'; let btnRem = document.getElementById('btn-rematch-pvp'); if(btnRem) { btnRem.innerText = "ĐẤU LẠI 1VS1"; btnRem.style.background = "#00b894"; btnRem.disabled = false;} applyCheatAndShowReward(""); if(animationId) cancelAnimationFrame(animationId); }, 1000); });
+        socket.on('matchEnd', (data) => { setTimeout(() => { bo3Score = data.score; document.getElementById('bo3-score-ui').innerText = `P1: ${bo3Score.p1} - ${bo3Score.p2} :P2`; let isMeWinner = data.winner === myRole; document.getElementById('game-over-screen-inner').style.display = 'flex'; let winTxt = document.getElementById('winner-text'); winTxt.innerText = isMeWinner ? "BẠN ĐÃ THẮNG BO3!" : "BẠN ĐÃ THUA BO3!"; winTxt.style.color = isMeWinner ? "var(--neon-gold)" : "var(--neon-red)"; document.getElementById('btn-rematch-pvp').style.display = 'inline-block'; document.getElementById('btn-rematch-boss').style.display = 'none'; document.getElementById('btn-spectate').style.display = 'none'; let btnRem = document.getElementById('btn-rematch-pvp'); if(btnRem) { btnRem.innerText = "ĐẤU LẠI 1VS1"; btnRem.style.background = "#00b894"; btnRem.disabled = false;} if(animationId) cancelAnimationFrame(animationId); }, 1000); });
 
         function showCoopLobby(type) { myRole = 'p1'; currentCoopType = type; gameMode = 'coop'; let myN = document.getElementById('playerNameInput').value || "Dũng Sĩ"; socket.emit('joinCoopLobby', { type: type, x: 50, y: groundY, facingDir: 1, name: myN }); }
         socket.on('lobbyJoined', (data) => { isLobbyHost = data.isHost; showWaitingScreen(`ĐANG CHỜ ĐỒNG ĐỘI...`, true); });
@@ -507,9 +516,9 @@
 
         socket.on('coopGameInit', (data) => { currentBoss = data.type === 'world' ? 'omega' : data.type; currentRoom = data.roomId; setMap(4); currentMapBuff = ''; isGameHost = data.isHost; let title = data.type === 'world' ? "BOSS THẾ GIỚI" : "LÃNH ĐỊA " + data.type.toUpperCase(); document.getElementById('map-name-display').innerText = `SỰ KIỆN: ${title}`; initGame('coop', document.getElementById('playerNameInput').value || "Dũng Sĩ", title); document.getElementById('hp2-container').classList.add('boss-hp'); p2.maxHp = data.bossHp; p2.hp = data.bossHp; p2.x = 400; p2.lockedTargetId = null; p2.phase = 1; document.getElementById('player2').className = 'player boss-' + currentBoss; teammates = data.teammates; updateTeammatesUI(); updateBossHpUI(); });
         socket.on('updateTeammate', (data) => { teammates[data.id] = data.data; updateTeammatesUI(); checkCoopGameOver(); }); socket.on('teammateShoot', (d) => spawnEntity(d.type, d.x, d.y, d.vx, d.vy, false, true)); socket.on('coopBossHpUpdate', (hp) => { p2.hp = hp; updateBossHpUI(); }); socket.on('bossStunned', (dur) => handleStun(getOpp(), dur));
-        socket.on('coopBossDefeated', () => { p2.isDead = true; document.getElementById('player2').classList.add('dead'); hearts += 1; localStorage.setItem('hearts', hearts); let gotShard = false; if (Math.random() < 0.3) { shards++; localStorage.setItem('shards', shards); gotShard = true; } renderShopAndInventory(); document.getElementById('game-over-screen-inner').style.display = 'flex'; document.getElementById('winner-text').innerText = "CHIẾN THẮNG!"; document.getElementById('winner-text').style.color = "var(--neon-gold)"; let btnBoss = document.getElementById('btn-rematch-boss'); btnBoss.style.display = 'inline-block'; btnBoss.innerText = "TẠO LẠI PHÒNG"; btnBoss.disabled = false; document.getElementById('btn-spectate').style.display = 'none'; applyCheatAndShowReward("+ TRÁI TIM QUẢ CẢM!" + (gotShard ? " & 1 MẢNH CỔ ĐẠI!" : "")); if(animationId) cancelAnimationFrame(animationId); });
+        socket.on('coopBossDefeated', () => { p2.isDead = true; document.getElementById('player2').classList.add('dead'); hearts += 1; localStorage.setItem('hearts', hearts); let gotShard = false; if (Math.random() < 0.3) { shards++; localStorage.setItem('shards', shards); gotShard = true; } renderShopAndInventory(); document.getElementById('game-over-screen-inner').style.display = 'flex'; document.getElementById('winner-text').innerText = "CHIẾN THẮNG!"; document.getElementById('winner-text').style.color = "var(--neon-gold)"; let btnBoss = document.getElementById('btn-rematch-boss'); btnBoss.style.display = 'inline-block'; btnBoss.innerText = "TẠO LẠI PHÒNG"; btnBoss.disabled = false; document.getElementById('btn-spectate').style.display = 'none'; document.getElementById('reward-text').innerText = "+ TRÁI TIM QUẢ CẢM!" + (gotShard ? " & 1 MẢNH CỔ ĐẠI!" : ""); document.getElementById('reward-text').style.display = 'block'; if(animationId) cancelAnimationFrame(animationId); });
         function updateTeammatesUI() { let container = document.getElementById('teammates-container'); container.innerHTML = ''; for(let id in teammates) { if(id === socket.id) continue; let t = teammates[id]; let el = document.createElement('div'); el.className = 'player teammate'; el.style.left = t.x + 'px'; el.style.top = t.y + 'px'; el.style.transform = `scaleX(${t.facingDir})`; if(t.isBlocking) el.classList.add('blocking'); if(t.isDead) el.classList.add('dead'); container.appendChild(el); } }
-        function checkCoopGameOver() { if (gameMode !== 'coop') return; if (!getMe().isDead) return; let allDead = true; for (let id in teammates) { if (id !== socket.id && !teammates[id].isDead) { allDead = false; break; } } if (allDead) { document.getElementById('game-over-screen-inner').style.display = 'flex'; let winTxt = document.getElementById('winner-text'); winTxt.innerText = "TOÀN ĐỘI BỊ TIÊU DIỆT"; winTxt.style.color = "var(--neon-red)"; document.getElementById('btn-spectate').style.display = 'none'; let rematchBtn = document.getElementById('btn-rematch-boss'); rematchBtn.style.display = 'inline-block'; rematchBtn.innerText = "TẠO LẠI PHÒNG"; rematchBtn.disabled = false; applyCheatAndShowReward(""); if(animationId) cancelAnimationFrame(animationId); } }
+        function checkCoopGameOver() { if (gameMode !== 'coop') return; if (!getMe().isDead) return; let allDead = true; for (let id in teammates) { if (id !== socket.id && !teammates[id].isDead) { allDead = false; break; } } if (allDead) { document.getElementById('game-over-screen-inner').style.display = 'flex'; let winTxt = document.getElementById('winner-text'); winTxt.innerText = "TOÀN ĐỘI BỊ TIÊU DIỆT"; winTxt.style.color = "var(--neon-red)"; document.getElementById('btn-spectate').style.display = 'none'; let rematchBtn = document.getElementById('btn-rematch-boss'); rematchBtn.style.display = 'inline-block'; rematchBtn.innerText = "TẠO LẠI PHÒNG"; rematchBtn.disabled = false; if(animationId) cancelAnimationFrame(animationId); } }
         socket.on('updateBoss', (data) => { if (gameMode === 'coop' && !isGameHost) { p2.x = data.x; p2.y = data.y; p2.facingDir = data.facingDir; if(data.isAttacking) { document.getElementById('player2').classList.add('attacking'); setTimeout(() => document.getElementById('player2').classList.remove('attacking'), 150); } if(data.telegraph) document.getElementById('player2').classList.add('boss-telegraph'); else document.getElementById('player2').classList.remove('boss-telegraph'); if(data.phase2 && p2.phase === 1) { p2.phase = 2; document.getElementById('player2').classList.add('phase2-aura'); } } });
         socket.on('bossFires', (d) => spawnEntity(d.type, d.x, d.y, d.vx, d.vy, false, false));
         function startSpectating() { document.getElementById('game-over-screen-inner').style.display = 'none'; myElement().style.display = 'none'; }
@@ -534,7 +543,7 @@
             let pTxt = document.createElement('div'); pTxt.className = `effect-text ${cssClass}`; pTxt.innerText = text; pTxt.style.left = x+'px'; pTxt.style.top = (y-20)+'px'; document.getElementById('arena').appendChild(pTxt); setTimeout(()=>pTxt.remove(), 1000);
         }
 
-        // TUNG ULTIMATE KÈM THEO GÁN MẶC ĐỊNH HIỆU ỨNG PHỤ
+        // FIX: TUNG ULTIMATE KÈM THEO HOẠT ẢNH BỊ THIẾU
         function doUltimate() {
             let me = getMe(); if(me.isDead || !ultimateReady) return;
             if(gameMode === 'online') { if(matchUltimateUsed) return; matchUltimateUsed = true; }
@@ -565,14 +574,25 @@
             else if (currentEquip === 'omega_beam') spawnAndSend('omega_beam', dir===1 ? px : px-800, py-20, 0, 0);
             else {
                 let d1 = 120, d2 = 150; if(gameMode === 'online') { d1 = Math.max(1, Math.floor(d1/2)); d2 = Math.max(1, Math.floor(d2/2)); }
-                if (ultType === 'melee' || ultType === 'piercing') { spawnAndSend('ult_slash', 0, 0, 0, 0); if(gameMode === 'online') socket.emit('playerHit', { roomId: currentRoom, damage: d1, type: 'piercing', effect: 'bleed' }); else if(gameMode === 'coop') socket.emit('hitCoopBoss', 120); handleDamage(getOpp(), d1, 'piercing', true, 'bleed'); } 
-                else if (ultType === 'explosive' || ultType === 'ballistic') { spawnAndSend('ult_nuke', px-400, py-200, 0, 0); if(gameMode === 'online') socket.emit('playerHit', { roomId: currentRoom, damage: d2, type: 'explosive', effect: 'burn' }); else if(gameMode === 'coop') socket.emit('hitCoopBoss', 150); handleDamage(getOpp(), d2, 'explosive', true, 'burn'); } 
-                else if (ultType === 'magic' || ultType === 'defense' || ultType === 'defense_aoe') { spawnAndSend('ult_divine', 0, 0, 0, 0); me.hp = me.maxHp; let hpId = myRole === 'p1' ? 'hp1' : 'hp2'; document.getElementById(hpId).style.width = '100%'; if(gameMode === 'online' || gameMode === 'coop') socket.emit('healTeammate', { roomId: currentRoom, amount: 200 }); } 
+                
+                // Tọa độ đã được fix chuẩn để bám sát người chơi / thả vào đầu địch
+                if (ultType === 'melee' || ultType === 'piercing') { 
+                    spawnAndSend('ult_slash', px - 60, py - 60, 0, 0); 
+                    if(gameMode === 'online') socket.emit('playerHit', { roomId: currentRoom, damage: d1, type: 'piercing', effect: 'bleed' }); else if(gameMode === 'coop') socket.emit('hitCoopBoss', 120); handleDamage(getOpp(), d1, 'piercing', true, 'bleed'); 
+                } 
+                else if (ultType === 'explosive' || ultType === 'ballistic') { 
+                    spawnAndSend('ult_nuke', getOpp().x - 200, groundY - 150, 0, 0); 
+                    if(gameMode === 'online') socket.emit('playerHit', { roomId: currentRoom, damage: d2, type: 'explosive', effect: 'burn' }); else if(gameMode === 'coop') socket.emit('hitCoopBoss', 150); handleDamage(getOpp(), d2, 'explosive', true, 'burn'); 
+                } 
+                else if (ultType === 'magic' || ultType === 'defense' || ultType === 'defense_aoe') { 
+                    spawnAndSend('ult_divine', 0, 0, 0, 0); 
+                    me.hp = me.maxHp; let hpId = myRole === 'p1' ? 'hp1' : 'hp2'; document.getElementById(hpId).style.width = '100%'; 
+                    if(gameMode === 'online' || gameMode === 'coop') socket.emit('healTeammate', { roomId: currentRoom, amount: 200 }); 
+                } 
                 else { spawnAndSend('omega_beam', dir===1 ? px : px-800, py-20, 0, 0); }
             }
         }
 
-        // TẤN CÔNG CƠ BẢN KÈM GÁN HIỆU ỨNG (GƯƠM GIÁO -> BLEED)
         function doAttack() {
             if (attackCooldown > 0) return; let me = getMe(); if(me.isDead || me.stunTimer > 0) return;
             let wData = weapons[currentEquip] || ultimates[currentEquip] || unique_weapons[currentEquip] || { stm: 10, ammo: 0, firerate: 20, type: 'melee' }; 
@@ -638,7 +658,6 @@
             else if (currentEquip === 'lightning_spear') spawnAndSend('sniper_bullet', px, py, dir*45, 0);
         }
 
-        // TÍNH TOÁN HIỆU ỨNG TRƯỚC KHI BẮN CHUYỀN VÀO OBJECT ĐẠN
         function spawnAndSend(type, x, y, vx, vy) { 
             let effect = null;
             if (['fireball', 'rocket', 'grenade', 'bomb', 'laser', 'omega_beam', 'dragon_wave', 'fire_wave'].includes(type)) effect = 'burn';
@@ -673,15 +692,9 @@
             if (isProtectedByGiantShield && !isBoss) { actualDmg = Math.floor(actualDmg * 0.05); } 
             else if (target.isBlocking && !isBoss) { if(type && (type.includes('explosive') || type.includes('piercing'))) actualDmg = Math.floor(actualDmg * 0.5); else actualDmg = Math.floor(actualDmg * 0.1); }
 
-            // ÁP DỤNG HEADSHOT
-            if (isHeadshot) {
-                actualDmg *= 2;
-                showFloatingText(target.x, target.y, "HEADSHOT!", 'headshot-text');
-            }
-
+            if (isHeadshot) { actualDmg *= 2; showFloatingText(target.x, target.y, "HEADSHOT!", 'headshot-text'); }
             target.hp -= actualDmg;
 
-            // XỬ LÝ GẮN HIỆU ỨNG CHO TARGET ĐỂ RÚT MÁU BỀN VỮNG
             let tEl = target === p1 ? document.getElementById('player1') : document.getElementById('player2');
             if (effect === 'burn') { target.statusEffects.burn = 180; showFloatingText(target.x, target.y, "Cháy!", 'status-text'); tEl.classList.add('status-burn'); }
             if (effect === 'slow') { target.statusEffects.slow = 120; showFloatingText(target.x, target.y, "Chậm!", 'status-text'); tEl.classList.add('status-slow'); }
@@ -700,7 +713,8 @@
                     setTimeout(() => {
                         document.getElementById('game-over-screen-inner').style.display = 'flex'; document.getElementById('winner-text').innerText = "BẠN ĐÃ CHẾT"; document.getElementById('winner-text').style.color = "var(--neon-red)"; 
                         let btnBoss = document.getElementById('btn-rematch-boss'); btnBoss.style.display = 'inline-block'; btnBoss.disabled = false; document.getElementById('btn-rematch-pvp').style.display = 'none'; document.getElementById('btn-spectate').style.display = 'none';
-                        applyCheatAndShowReward(""); if(animationId) cancelAnimationFrame(animationId);
+                        document.getElementById('reward-text').style.display = 'none';
+                        if(animationId) cancelAnimationFrame(animationId);
                     }, 800);
                 }
             } else if (target.hp <= 0 && target === p2 && (gameMode === 'bot' || gameMode === 'daily_boss')) {
@@ -723,7 +737,10 @@
 
                     localStorage.setItem('coins', coins); localStorage.setItem('unlocked', JSON.stringify(unlocked)); renderShopAndInventory(); 
                     document.getElementById('btn-rematch-pvp').style.display = 'none'; document.getElementById('btn-spectate').style.display = 'none';
-                    applyCheatAndShowReward(rTxt); if(animationId) cancelAnimationFrame(animationId);
+                    
+                    let rewTxt = document.getElementById('reward-text');
+                    rewTxt.innerText = rTxt; rewTxt.style.display = 'block';
+                    if(animationId) cancelAnimationFrame(animationId);
                 }, 800);
             }
         }
@@ -801,6 +818,9 @@
                             if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: oDmg, type: 'energy', effect: 'burn'}); 
                             if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', oDmg); 
                             if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, oDmg, 'energy', e.isMine, 'burn'); 
+                        }
+                        if(e.type === 'ult_slash' && target.x > e.x - 100 && target.x < e.x + 100 && target.y > e.y - 100 && target.y < e.y + 100) {
+                            // Hit handled directly in doUltimate() initially, keeping graphic here
                         }
                     } continue;
                 }
@@ -965,7 +985,9 @@
             if (isCoop && isGameHost && botWait > 0) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir });
         }
 
+        // FIX LỖI KHÔNG ĐỔI TÊN ĐƯỢC (Chặn xử lý keydown nếu đang ở thẻ INPUT)
         window.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT') return; 
             let me = getMe(); if(me.isDead || me.stunTimer > 0) return;
             if(e.key === 'a' || e.key === 'A') keys.a = true; if(e.key === 'd' || e.key === 'D') keys.d = true;
             if(e.key === 'w' || e.key === 'W') { keys.w = true; if(me.y >= groundY) { me.vy = -14; me.jumpCount = 1; } else if (me.jumpCount === 1) { me.vy = -12; me.jumpCount = 2; } }
@@ -974,10 +996,18 @@
         });
 
         window.addEventListener('keyup', (e) => {
+            if (e.target.tagName === 'INPUT') return;
             let me = getMe();
             if(e.key === 'a' || e.key === 'A') keys.a = false; if(e.key === 'd' || e.key === 'D') keys.d = false; if(e.key === 'w' || e.key === 'W') keys.w = false;
             if(e.key === 'Shift') { me.isBlocking = false; myElement().classList.remove('blocking'); } if(e.code === 'Space') keys.space = false;
         });
+
+        // FIX LỖI NÚT ĐÁNH LẠI (Thêm trường hợp gán start cho Boss Ngày)
+        function rematchBoss() { 
+            if(gameMode === 'coop') showCoopLobby(currentCoopType); 
+            else if(gameMode === 'daily_boss') startDailyBoss(); // Đã thêm nhánh này
+            else startBotMode(currentBoss); 
+        }
 
         function gameLoop() {
             let me = getMe();
@@ -993,7 +1023,10 @@
                     document.getElementById('game-over-screen-inner').style.display = 'flex'; 
                     document.getElementById('winner-text').innerText = "THẤT BẠI"; 
                     document.getElementById('winner-text').style.color = "var(--neon-red)";
-                    applyCheatAndShowReward("CÁ KHỔNG LỒ ĐÃ BƠI ĐI MẤT!");
+                    document.getElementById('reward-text').innerText = "CÁ KHỔNG LỒ ĐÃ BƠI ĐI MẤT!";
+                    document.getElementById('reward-text').style.display = 'block';
+                    document.getElementById('btn-rematch-boss').style.display = 'inline-block';
+                    document.getElementById('btn-rematch-boss').disabled = false;
                     if(animationId) cancelAnimationFrame(animationId); return;
                 }
             }
