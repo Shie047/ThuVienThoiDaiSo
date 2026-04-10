@@ -21,7 +21,8 @@ io.on('connection', (socket) => {
             const mapIndex = Math.floor(Math.random() * 5); 
 
             socket.join(roomId); waitingPlayer.join(roomId);
-            pvpRooms[roomId] = { p1: waitingPlayer, p2: socket, score: {p1: 0, p2: 0}, mapId: mapIndex };
+            // Thêm biến roundOver để chống bug spam
+            pvpRooms[roomId] = { p1: waitingPlayer, p2: socket, score: {p1: 0, p2: 0}, mapId: mapIndex, readyVotes: 0, rematchVotes: 0, roundOver: false };
             
             waitingPlayer.emit('matchFound', { role: 'p1', roomId: roomId, oppName: socket.playerName, mapId: mapIndex });
             socket.emit('matchFound', { role: 'p2', roomId: roomId, oppName: waitingPlayer.playerName, mapId: mapIndex });
@@ -31,17 +32,50 @@ io.on('connection', (socket) => {
         }
     });
 
+    // CHỈ XỬ LÝ KHI CÓ NGƯỜI CHẾT (BÁO TỪ CLIENT CỦA NGƯỜI THUA)
     socket.on('playerDied', (data) => {
         const room = pvpRooms[data.roomId];
-        if (room) {
+        if (room && !room.roundOver) {
+            room.roundOver = true; // Khóa lại để không nhận 2 lần
             const winnerRole = data.loserRole === 'p1' ? 'p2' : 'p1';
             room.score[winnerRole]++;
-            if (room.score.p1 >= 2 || room.score.p2 >= 2) io.to(data.roomId).emit('matchEnd', { winner: winnerRole, score: room.score });
-            else io.to(data.roomId).emit('roundEnd', { winner: winnerRole, score: room.score });
+            
+            if (room.score.p1 >= 2 || room.score.p2 >= 2) {
+                io.to(data.roomId).emit('matchEnd', { winner: winnerRole, score: room.score });
+            } else {
+                io.to(data.roomId).emit('roundEnd', { winner: winnerRole, score: room.score });
+            }
         }
     });
 
-    socket.on('nextRoundReady', (roomId) => io.to(roomId).emit('startNextRound'));
+    // 2 NGƯỜI CÙNG SẴN SÀNG MỚI QUA HIỆP
+    socket.on('nextRoundReady', (roomId) => {
+        const room = pvpRooms[roomId];
+        if(room) {
+            room.readyVotes++;
+            if(room.readyVotes >= 2) {
+                room.readyVotes = 0;
+                room.roundOver = false; // Mở khóa cho hiệp sau
+                io.to(roomId).emit('startNextRound');
+            }
+        }
+    });
+
+    // 2 NGƯỜI CÙNG ĐỒNG Ý ĐÁNH LẠI
+    socket.on('rematchRequest', (roomId) => {
+        const room = pvpRooms[roomId];
+        if(room) {
+            room.rematchVotes++;
+            socket.to(roomId).emit('rematchOffer');
+            if(room.rematchVotes >= 2) {
+                room.rematchVotes = 0;
+                room.score = {p1: 0, p2: 0}; // Reset điểm BO3
+                room.roundOver = false;
+                io.to(roomId).emit('rematchStart');
+            }
+        }
+    });
+
     socket.on('playerAction', (data) => socket.to(data.roomId).emit('updateOpponent', data.playerData));
     socket.on('playerHit', (data) => socket.to(data.roomId).emit('takeDamage', data.damage));
     socket.on('shoot', (data) => socket.to(data.roomId).emit('opponentShoot', data));
@@ -60,12 +94,9 @@ io.on('connection', (socket) => {
         if (Object.keys(lobby.players).length >= maxPlayers && lobby.timer) return socket.emit('waiting_screen', 'PHÒNG ĐÃ ĐẦY VÀ ĐANG VÀO TRẬN!');
 
         socket.join(lobbyId); lobby.players[socket.id] = data;
-        
-        // Cấp quyền Host cho người tạo phòng đầu tiên
         socket.emit('lobbyJoined', { isHost: lobby.hostId === socket.id });
         io.to(lobbyId).emit('lobbyUpdate', { count: Object.keys(lobby.players).length, max: maxPlayers });
         
-        // Kích hoạt tự động đếm ngược 15s nếu phòng đầy người
         if (Object.keys(lobby.players).length >= maxPlayers && !lobby.timer) {
             let timeLeft = 15;
             io.to(lobbyId).emit('lobbyCountdown', timeLeft);
@@ -76,17 +107,13 @@ io.on('connection', (socket) => {
             }, 1000);
         }
     });
-
-    // Tính năng Thành viên dục Host
+    
     socket.on('urgeHost', (roomType) => {
         const lobbyId = 'lobby_' + roomType;
         const lobby = coopLobbies[lobbyId];
-        if (lobby && lobby.hostId) {
-            // Gửi sự kiện chỉ đích danh tới Host
-            io.to(lobby.hostId).emit('hostUrged');
-        }
+        if (lobby && lobby.hostId) io.to(lobby.hostId).emit('hostUrged');
     });
-    
+
     socket.on('startCoopEarly', (roomType) => {
         const lobbyId = 'lobby_' + roomType;
         if(coopLobbies[lobbyId] && coopLobbies[lobbyId].hostId === socket.id) {
@@ -131,11 +158,7 @@ io.on('connection', (socket) => {
         let game = coopGames[socket.coopGameId];
         game.bossHp -= damage;
         io.to(socket.coopGameId).emit('coopBossHpUpdate', game.bossHp);
-
-        if (game.bossHp <= 0) {
-            io.to(socket.coopGameId).emit('coopBossDefeated');
-            delete coopGames[socket.coopGameId]; 
-        }
+        if (game.bossHp <= 0) { io.to(socket.coopGameId).emit('coopBossDefeated'); delete coopGames[socket.coopGameId]; }
     });
 
     function handleLobbyLeave(socketId) {
@@ -145,16 +168,10 @@ io.on('connection', (socket) => {
                 delete lobby.players[socketId]; 
                 let ioSocket = io.sockets.sockets.get(socketId);
                 if(ioSocket) ioSocket.leave(l);
-                
-                // Cấp quyền Host cho người kế tiếp nếu Host thoát
                 if (lobby.hostId === socketId) {
                     let keys = Object.keys(lobby.players);
-                    if (keys.length > 0) { 
-                        lobby.hostId = keys[0]; 
-                        io.to(lobby.hostId).emit('lobbyJoined', { isHost: true }); 
-                    }
+                    if (keys.length > 0) { lobby.hostId = keys[0]; io.to(lobby.hostId).emit('lobbyJoined', { isHost: true }); }
                 }
-                
                 if (lobby.timer && Object.keys(lobby.players).length < lobby.max) {
                     clearInterval(lobby.timer); lobby.timer = null;
                 }
