@@ -1248,7 +1248,7 @@
                         bossSpawnAndSend('bubble', bot.x, bot.y-40, bot.facingDir*10, -8);
                     }
                     else if (dId === 'worm') {
-                        // SỬA ĐỔI: Giun giờ sẽ mọc chông đất theo đợt
+                        // SỬA ĐỔI: Giun giờ sẽ mọc chông đất xịn xò
                         bossSpawnAndSend('earth_spike', targetPlayer.x, groundY+10, 0, 0);
                         setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x + 80, groundY+10, 0, 0), 150);
                         setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x - 80, groundY+10, 0, 0), 300);
@@ -1322,7 +1322,9 @@
         document.addEventListener('keydown', (e) => {
             if (document.getElementById('playerNameInput') === document.activeElement) return;
             if (['w', 'a', 's', 'd', ' ', 'shift', 'e'].includes(e.key.toLowerCase())) e.preventDefault();
-            let k = e.key.toLowerCase(); if (keys.hasOwnProperty(k)) keys[k] = true;
+            let k = e.key.toLowerCase(); 
+            if (k === ' ') k = 'space'; // SỬA Ở ĐÂY: Ánh xạ chuẩn phím Space
+            if (keys.hasOwnProperty(k)) keys[k] = true;
             
             if (k === 'e') doParry();
             if (k === 's') doUltimate();
@@ -1337,7 +1339,9 @@
         
         document.addEventListener('keyup', (e) => {
             if (document.getElementById('playerNameInput') === document.activeElement) return;
-            let k = e.key.toLowerCase(); if (keys.hasOwnProperty(k)) keys[k] = false;
+            let k = e.key.toLowerCase(); 
+            if (k === ' ') k = 'space'; // SỬA Ở ĐÂY: Ánh xạ chuẩn phím Space
+            if (keys.hasOwnProperty(k)) keys[k] = false;
             if (k === 'shift') { getMe().isBlocking = false; myElement().classList.remove('blocking'); }
             
             if (k === 'w') {
@@ -1353,7 +1357,7 @@
                 let me = getMe(); let opp = getOpp();
                 
                 // KIỂM TRA ĐÈ SPACE ĐỂ SPAM SKILL LIÊN TỤC
-                if (keys[' ']) {
+                if (keys.space) { // SỬA Ở ĐÂY: Gọi chính xác qua key.space
                     doAttack();
                 }
                 
@@ -1363,6 +1367,7 @@
                     } else {
                         if (keys.a && !me.isBlocking && me.x > 0) { me.x -= 6; me.facingDir = -1; }
                         if (keys.d && !me.isBlocking && me.x < 740) { me.x += 6; me.facingDir = 1; }
+                        // Nút W đã được chuyển sang sự kiện Keydown riêng để phục vụ nhảy đúp
                     }
 
                     if (me.y < groundY) { 
