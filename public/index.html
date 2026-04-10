@@ -96,11 +96,12 @@
         .shockwave { width: 800px; height: 50px; background: linear-gradient(to top, rgba(217, 83, 79, 0.9), transparent); position: absolute; bottom: 0; left: 0; opacity: 0.8; z-index: 15;}
         .heal-aura { width: 220px; height: 220px; background: radial-gradient(circle, rgba(46, 204, 113, 0.6), transparent); border-radius: 50%; position: absolute; transform: translate(-110px, -110px); z-index: 2; mix-blend-mode: screen;}
         .heal-beam { position: absolute; width: 50px; height: 12px; background: #2ecc71; border-radius: 6px; box-shadow: 0 0 20px #2ecc71, 0 0 10px #fff; }
-        .boss_melee { position: absolute; width: 70px; height: 100px; background: transparent; z-index: 20;}
-
-        /* HIỆU ỨNG VŨ KHÍ MỚI */
-        .plasma_bullet { position: absolute; width: 30px; height: 8px; background: #00cec9; border-radius: 4px; box-shadow: 0 0 15px #00cec9; }
-        .holy_light { position: absolute; width: 35px; height: 35px; background: radial-gradient(circle, #ffeaa7, #fdcb6e); border-radius: 50%; box-shadow: 0 0 20px #ffeaa7; mix-blend-mode: screen; }
+        
+        /* Hiệu ứng đã FIX cho Kiếm Rồng & Các vũ khí khác */
+        .fire_wave { position: absolute; width: 50px; height: 120px; background: linear-gradient(to right, transparent, var(--neon-red), #fff); border-radius: 50%; box-shadow: 0 0 25px var(--neon-red), inset 0 0 10px #fff; z-index: 15; filter: contrast(1.5) saturate(2); }
+        .plasma_bullet { position: absolute; width: 35px; height: 8px; background: #00cec9; border-radius: 4px; box-shadow: 0 0 15px #00cec9; }
+        .holy_light { position: absolute; width: 45px; height: 45px; background: radial-gradient(circle, #ffeaa7, #fdcb6e); border-radius: 50%; box-shadow: 0 0 25px #ffeaa7; mix-blend-mode: screen; }
+        .storm_arrow { position: absolute; width: 4px; height: 35px; background: #fff; box-shadow: 0 0 10px #00cec9; border-radius: 2px;}
 
         .bullet { position: absolute; width: 20px; height: 6px; background: var(--neon-gold); border-radius: 3px; box-shadow: 0 0 8px var(--neon-gold);}
         .rock { position: absolute; width: 25px; height: 25px; background: #7f8fa6; border-radius: 5px; box-shadow: 0 0 10px #2d3436; }
@@ -124,7 +125,8 @@
         .horse_charge { position: absolute; width: 90px; height: 70px; background: rgba(139, 69, 19, 0.85); border-radius: 12px; box-shadow: 0 0 25px #8B4513; border-right: 6px solid #fff; }
         .meteor { position: absolute; width: 50px; height: 50px; background: radial-gradient(circle, #fff, var(--neon-red)); border-radius: 50%; box-shadow: 0 0 40px var(--neon-red); z-index: 15;}
 
-        .ult_slash { position: absolute; width: 800px; height: 400px; background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.2) 20px, rgba(255,255,255,0.2) 40px); z-index: 20; opacity: 0.9; top: 0; left: 0;}
+        /* EFFECT ULTIMATE CHUYÊN NGHIỆP */
+        .ult_slash { position: absolute; width: 800px; height: 400px; background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,0,0,0.4) 20px, rgba(255,0,0,0.4) 40px); z-index: 20; opacity: 0.9; top: 0; left: 0; filter: contrast(1.5);}
         .ult_nuke { position: absolute; width: 800px; height: 400px; background: radial-gradient(circle, #fff, var(--neon-gold), var(--neon-red), transparent); opacity: 0.85; z-index: 20; mix-blend-mode: screen; top: 0; left: 0;}
         .ult_divine { position: absolute; width: 800px; height: 400px; background: rgba(46, 204, 113, 0.5); box-shadow: inset 0 0 80px #2ecc71; z-index: 20; top: 0; left: 0;}
         .omega_beam { position: absolute; width: 800px; height: 60px; background: rgba(255,255,255,0.95); box-shadow: 0 0 30px var(--neon-gold), 0 0 60px var(--neon-red); z-index: 1; }
@@ -260,9 +262,7 @@
         function switchScreen(screenId) {
             document.querySelectorAll('.fullscreen-overlay').forEach(p => p.style.display = 'none');
             document.getElementById('game-container').style.display = 'none';
-            if(screenId) {
-                document.getElementById(screenId).style.display = 'flex';
-            }
+            if(screenId) document.getElementById(screenId).style.display = 'flex';
             window.focus();
             document.querySelectorAll('button').forEach(b => b.blur());
             document.getElementById('playerNameInput').blur();
@@ -283,6 +283,7 @@
         ];
         let currentMapBuff = '';
 
+        // CÂN BẰNG VŨ KHÍ CƠ BẢN VÀ THÊM 5 MÓN MỚI (CHIA ĐỀU HỆ)
         const weapons = {
             shield: { name: 'Khiên Thường', price: 100, type: 'defense', stm: 5, ammo: 0, firerate: 30 },
             gun: { name: 'Súng Lục', price: 150, type: 'ballistic', stm: 5, ammo: 1, firerate: 12 }, 
@@ -307,8 +308,9 @@
             giant_shield: { name: 'Khiên Khổng Lồ', price: 1500, type: 'defense_aoe', stm: 50, ammo: 0, firerate: 50 }
         };
 
+        // ĐÃ NERF VÀ CHỐNG SPAM KIẾM RỒNG (FIRERATE CAO HƠN, STM NHIỀU HƠN)
         const ultimates = {
-            dragon_blade: { name: '[VIP] Kiếm Rồng', drop: 'ifrit', type: 'energy', stm: 20, ammo: 0, firerate: 45 },
+            dragon_blade: { name: '[VIP] Kiếm Rồng', drop: 'ifrit', type: 'energy', stm: 20, ammo: 0, firerate: 45 }, 
             gravity_hammer: { name: '[VIP] Búa Trọng Lực', drop: 'titan', type: 'explosive', stm: 10, ammo: 0, firerate: 25 },
             storm_bow: { name: '[VIP] Cung Bão Tố', drop: 'zephyr', type: 'ballistic', stm: 5, ammo: 0, firerate: 10 },
             void_scythe: { name: '[VIP] Lưỡi Hái Hư Không', drop: 'shadow', type: 'piercing', stm: 10, ammo: 0, firerate: 20 },
@@ -584,26 +586,51 @@
             let dir = me.facingDir; let px = me.x + 30; let py = me.y + 40;
             let wType = 'melee'; if(weapons[currentEquip]) wType = weapons[currentEquip].type; if(ultimates[currentEquip]) wType = ultimates[currentEquip].type;
             
-            let d1 = 120, d2 = 150; if(gameMode === 'online') { d1 = Math.max(1, Math.floor(d1/2)); d2 = Math.max(1, Math.floor(d2/2)); }
-
-            if (wType === 'melee' || wType === 'piercing') {
+            // KỸ NĂNG ULTIMATE ĐƯỢC THIẾT KẾ RIÊNG BIỆT (CHUYÊN NGHIỆP HƠN)
+            if (currentEquip === 'dragon_blade') {
                 spawnAndSend('ult_slash', 0, 0, 0, 0); 
-                if(gameMode === 'online') socket.emit('playerHit', { roomId: currentRoom, damage: d1, type: 'piercing' }); 
-                else if(gameMode === 'coop') socket.emit('hitCoopBoss', 120); 
-                handleDamage(getOpp(), d1, 'piercing', true);
-            } else if (wType === 'explosive' || wType === 'ballistic') {
+                let d1 = 150; if(gameMode === 'online') { d1 = Math.max(1, Math.floor(d1/2)); socket.emit('playerHit', { roomId: currentRoom, damage: d1, type: 'energy' }); } else if(gameMode === 'coop') socket.emit('hitCoopBoss', 150); 
+                handleDamage(getOpp(), d1, 'energy', true);
+            } 
+            else if (currentEquip === 'gravity_hammer') {
                 spawnAndSend('ult_nuke', px-400, py-200, 0, 0); 
-                if(gameMode === 'online') socket.emit('playerHit', { roomId: currentRoom, damage: d2, type: 'explosive' }); 
-                else if(gameMode === 'coop') socket.emit('hitCoopBoss', 150); 
+                let d2 = 200; if(gameMode === 'online') { d2 = Math.max(1, Math.floor(d2/2)); socket.emit('playerHit', { roomId: currentRoom, damage: d2, type: 'explosive' }); } else if(gameMode === 'coop') socket.emit('hitCoopBoss', 200); 
                 handleDamage(getOpp(), d2, 'explosive', true);
-            } else if (wType === 'magic' || wType === 'defense' || wType === 'defense_aoe') {
-                spawnAndSend('ult_divine', 0, 0, 0, 0); 
-                me.hp = me.maxHp; 
-                let hpId = myRole === 'p1' ? 'hp1' : 'hp2';
-                document.getElementById(hpId).style.width = '100%';
-                if(gameMode === 'online' || gameMode === 'coop') socket.emit('healTeammate', { roomId: currentRoom, amount: 200 });
-            } else { 
+                // Hiệu ứng hút kẻ địch về phía mình
+                let opp = getOpp(); if(!opp.isDead) opp.x = me.x + (dir * 80);
+            } 
+            else if (currentEquip === 'storm_bow') {
+                // Mưa tên diện rộng
+                for(let i = 0; i < 8; i++) spawnAndSend('storm_arrow', me.x + (dir * 100) + (Math.random() * 300 * dir), -100, 0, 10 + Math.random()*5);
+            }
+            else if (currentEquip === 'void_scythe') {
+                // Dịch chuyển ám sát
+                let opp = getOpp(); if(!opp.isDead) {
+                    me.x = opp.x + (opp.facingDir * -60);
+                    me.y = opp.y;
+                    me.facingDir = opp.facingDir;
+                    spawnAndSend('void_scythe', me.x, me.y, me.facingDir*15, 0);
+                }
+            }
+            else if (currentEquip === 'omega_beam') {
                 spawnAndSend('omega_beam', dir===1 ? px : px-800, py-20, 0, 0);
+            }
+            else {
+                // Default Ultimates
+                let d1 = 120, d2 = 150; if(gameMode === 'online') { d1 = Math.max(1, Math.floor(d1/2)); d2 = Math.max(1, Math.floor(d2/2)); }
+                if (wType === 'melee' || wType === 'piercing') {
+                    spawnAndSend('ult_slash', 0, 0, 0, 0); 
+                    if(gameMode === 'online') socket.emit('playerHit', { roomId: currentRoom, damage: d1, type: 'piercing' }); else if(gameMode === 'coop') socket.emit('hitCoopBoss', 120); handleDamage(getOpp(), d1, 'piercing', true);
+                } else if (wType === 'explosive' || wType === 'ballistic') {
+                    spawnAndSend('ult_nuke', px-400, py-200, 0, 0); 
+                    if(gameMode === 'online') socket.emit('playerHit', { roomId: currentRoom, damage: d2, type: 'explosive' }); else if(gameMode === 'coop') socket.emit('hitCoopBoss', 150); handleDamage(getOpp(), d2, 'explosive', true);
+                } else if (wType === 'magic' || wType === 'defense' || wType === 'defense_aoe') {
+                    spawnAndSend('ult_divine', 0, 0, 0, 0); 
+                    me.hp = me.maxHp; let hpId = myRole === 'p1' ? 'hp1' : 'hp2'; document.getElementById(hpId).style.width = '100%';
+                    if(gameMode === 'online' || gameMode === 'coop') socket.emit('healTeammate', { roomId: currentRoom, amount: 200 });
+                } else { 
+                    spawnAndSend('omega_beam', dir===1 ? px : px-800, py-20, 0, 0);
+                }
             }
         }
 
@@ -627,15 +654,16 @@
             else if (currentEquip === 'giant_shield') { spawnAndSend('giant_shield_aura', me.x, me.y, 0, 0); } 
             else if (currentEquip === 'none' || currentEquip === 'katana' || currentEquip === 'dragon_blade' || currentEquip === 'gravity_hammer' || currentEquip === 'spear') {
                 let slash = document.createElement('div'); slash.className = 'slash-arc'; 
-                let arcW = currentEquip === 'spear' ? 160 : 120;
+                let arcW = (currentEquip === 'spear' || currentEquip === 'dragon_blade') ? 180 : 120;
                 slash.style.width = arcW + 'px';
                 slash.style.left = (dir === 1 ? me.x + 20 : me.x - (arcW/2)) + 'px'; slash.style.top = me.y + 'px'; slash.style.transform = `scaleX(${dir})`; document.getElementById('arena').appendChild(slash); setTimeout(() => { slash.style.opacity = 1; slash.style.transform = `scaleX(${dir}) scale(1.5)`; }, 10); setTimeout(() => slash.remove(), 150);
                 
+                if(currentEquip === 'dragon_blade') spawnAndSend('fire_wave', px, me.y, dir*12, 0);
                 if(currentEquip === 'gravity_hammer') spawnAndSend('shockwave', 0, groundY+70, 0, 0);
 
-                // KIẾM RỒNG ĐÃ ĐƯỢC BUFF SÁT THƯƠNG
+                // KIẾM RỒNG ĐÃ ĐƯỢC BUFF SÁT THƯƠNG CHÉM GẦN LÊN 100
                 let dmg = currentEquip === 'dragon_blade' ? 100 : (currentEquip === 'gravity_hammer' ? 85 : (currentEquip === 'katana' ? 35 : (currentEquip === 'spear' ? 30 : 15))); 
-                let range = currentEquip === 'spear' ? 180 : (currentEquip === 'katana' ? 120 : 70);
+                let range = (currentEquip === 'spear' || currentEquip === 'dragon_blade') ? 180 : (currentEquip === 'katana' ? 120 : 70);
                 
                 let opp = getOpp(); let isFacing = (dir === 1 && opp.x > me.x) || (dir === -1 && opp.x < me.x);
                 if(Math.abs(me.x - opp.x) < range && Math.abs(me.y - opp.y) < 60 && !opp.isDead && isFacing) {
@@ -771,6 +799,7 @@
                 else if (e.type === 'void_scythe') { e.x += e.vx; e.vx *= 0.9; if(e.age > 25) e.vx -= (e.vx > 0 ? 1 : -1); } 
                 else if (e.type === 'meteor') { e.y += e.vy; }
                 else if (e.type === 'boulder') { e.x += e.vx; e.y += e.vy; e.vy += 0.5; }
+                else if (e.type === 'storm_arrow') { e.y += e.vy; }
                 else if (!e.type.includes('ult_') && e.type !== 'shockwave' && e.type !== 'omega_beam') { e.x += e.vx; e.y += e.vy; } 
 
                 e.el.style.left = e.x + 'px'; e.el.style.top = e.y + 'px';
@@ -778,6 +807,7 @@
                 
                 let target = (e.isMine || e.isAlly) ? getOpp() : getMe();
 
+                // ULTIMATES DAMAGE
                 if (e.type.includes('ult_') || e.type === 'shockwave' || e.type === 'omega_beam') {
                     if(e.age > 20) { e.el.remove(); entities.splice(i, 1); continue; }
                     if(e.age === 5 && !target.isDead && !e.hasHit) {
@@ -823,6 +853,7 @@
                     case 'vine': dmg = 5; w=40; dmgType='magic'; break; 
                     case 'horse_charge': dmg = 40; w=80; h=60; dmgType='melee'; break;
                     case 'shuriken': dmg = 12; break; 
+                    case 'storm_arrow': dmg = 20; w = 4; h = 35; break;
                     case 'shotgun_bullet': dmg = 18; w = 10; break; 
                     case 'sniper_bullet': dmg = 60; w = 40; dmgType='piercing'; break;
                     case 'fireball': dmg = 45; w = 35; h = 35; dmgType='energy'; break; 
@@ -844,7 +875,7 @@
                 }
 
                 if (e.x > target.x - w && e.x < target.x + 60 && e.y > target.y - h && e.y < target.y + 90 && !target.isDead && !e.hasHit) {
-                    if(!e.type.includes('wave') && !e.type.includes('scythe') && e.type !== 'sniper_bullet' && e.type !== 'tornado') { e.hasHit = true; }
+                    if(!e.type.includes('wave') && !e.type.includes('scythe') && e.type !== 'sniper_bullet' && e.type !== 'tornado' && e.type !== 'storm_arrow') { e.hasHit = true; }
 
                     if(e.type === 'vine' && e.isMine) { if(gameMode==='online') socket.emit('applyStun', {roomId: currentRoom, duration: 90}); else if(gameMode==='coop') socket.emit('coopStunBoss', 90); handleStun(target, 90); }
                     if(e.type === 'heal-beam') { if(e.isMine && (gameMode==='online'||gameMode==='coop')) socket.emit('healTeammate', {roomId: currentRoom, amount: 50}); let me = getMe(); me.hp = Math.min(me.maxHp, me.hp + 50); let hpId = myRole === 'p1' ? 'hp1' : 'hp2'; document.getElementById(hpId).style.width = (me.hp/me.maxHp)*100+'%'; e.el.remove(); entities.splice(i, 1); continue; }
@@ -855,14 +886,14 @@
                         if(e.isMine && gameMode==='coop') socket.emit('hitCoopBoss', dmg); 
                         if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, dmg, dmgType, e.isMine); 
                         setTimeout(() => { if(e.el) e.el.remove(); }, 300);
-                    } else if (e.vx !== 0 || e.type === 'meteor') {
+                    } else if (e.vx !== 0 || e.type === 'meteor' || e.type === 'storm_arrow') {
                         if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: dmg, type: dmgType}); 
                         if(e.isMine && gameMode==='coop') socket.emit('hitCoopBoss', dmg); 
                         if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, dmg, dmgType, e.isMine); 
                         if(e.hasHit && e.type !== 'horse_charge' && e.type !== 'boss_melee') { e.el.remove(); entities.splice(i, 1); continue; } 
                     }
                 }
-                if ((e.type === 'grenade' && e.y > groundY + 70) || (e.type === 'meteor' && e.y > groundY + 60) || (e.type === 'boulder' && e.y > groundY+50) || (e.type === 'rock' && e.y > groundY+50) || e.x < -200 || e.x > 1000) { e.el.remove(); entities.splice(i, 1); }
+                if ((e.type === 'grenade' && e.y > groundY + 70) || (e.type === 'meteor' && e.y > groundY + 60) || (e.type === 'storm_arrow' && e.y > groundY + 60) || (e.type === 'boulder' && e.y > groundY+50) || (e.type === 'rock' && e.y > groundY+50) || e.x < -200 || e.x > 1000) { e.el.remove(); entities.splice(i, 1); }
             }
         }
 
@@ -873,7 +904,7 @@
 
         let botWait = 0; 
         
-        // TĂNG TẦN SUẤT RA CHIÊU CHO CẢ SOLO VÀ COOP BOSS
+        // TĂNG TẦN SUẤT RA CHIÊU VÀ KHÔNG ÁP SÁT LÀM MẤT CHIÊU
         function runBotAI() {
             let bot = p2; let targetPlayer = getMe(); if(bot.isDead || bot.stunTimer > 0) return;
 
@@ -906,102 +937,82 @@
 
             let dist = bot.x - targetPlayer.x; botWait--;
             
-            if(botWait === 15) { document.getElementById('player2').classList.add('boss-telegraph'); if(isCoop && isGameHost) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir, telegraph: true }); }
-            if(botWait === 5) { document.getElementById('player2').classList.remove('boss-telegraph'); if(isCoop && isGameHost) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir, telegraph: false }); }
-
-            if (currentBoss === 'shadow' && botWait <= 0 && Math.random() < (isPhase2?0.2:0.1)) { 
-                document.getElementById('darkness-overlay').style.opacity = 0.8; setTimeout(()=>document.getElementById('darkness-overlay').style.opacity = 0, 500);
-                bot.x = targetPlayer.x + (targetPlayer.facingDir * -60); bot.y = targetPlayer.y; bot.facingDir = targetPlayer.facingDir; 
-                botWait = isCoop ? 25 : 35; 
-                document.getElementById('player2').classList.add('attacking'); setTimeout(() => document.getElementById('player2').classList.remove('attacking'), 150);
-                bossSpawnAndSend('boss_melee', bot.x + (bot.facingDir*40), bot.y, bot.facingDir, 0); 
-                
-                if(isCoop || isPhase2) {
-                    bossSpawnAndSend('void_scythe', bot.x, bot.y-20, bot.facingDir*15, -2);
-                    bossSpawnAndSend('void_scythe', bot.x, bot.y+20, bot.facingDir*15, 2);
-                } else { 
-                    bossSpawnAndSend('void_scythe', bot.x, bot.y, bot.facingDir*15, 0); 
-                }
-                if(isCoop && isGameHost) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir, isAttacking: true });
-                return; 
-            }
-            
-            if (currentBoss === 'zephyr' && bot.y >= groundY && Math.random() < 0.1) bot.vy = -16;
-
-            if (botWait > 0) { if (isCoop && isGameHost && bot.y < groundY) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir }); return; }
-
+            // Xả Skill Không Cần Chờ Tới Gần
             let spd = currentBoss === 'zephyr' ? (isPhase2?14:10) : (currentBoss === 'titan' ? (isPhase2?4:2) : (isPhase2?7:5));
             if (isCoop) spd = Math.floor(spd * 1.5); 
 
-            if (dist > 100) { bot.x -= spd; bot.facingDir = -1; } else if (dist < -100) { bot.x += spd; bot.facingDir = 1; }
-            else {
-                bot.facingDir = dist > 0 ? -1 : 1; 
-                
-                // BUFF: Tăng tỷ lệ xả chiêu cho Boss Solo để khó hơn
-                let atkRate = currentBoss === 'omega' ? (isPhase2?0.6:0.4) : (isPhase2?0.5:0.35);
+            // Giữ khoảng cách thay vì lao vào bằng được (Khoảng cách an toàn 150)
+            if (dist > 150) { bot.x -= spd; bot.facingDir = -1; } else if (dist < -150) { bot.x += spd; bot.facingDir = 1; }
+            else { bot.facingDir = dist > 0 ? -1 : 1; }
 
-                if (Math.random() < atkRate) { 
-                    document.getElementById('player2').classList.add('attacking'); setTimeout(() => document.getElementById('player2').classList.remove('attacking'), 150);
-                    let rand = Math.random();
-                    
-                    if(currentBoss === 'titan') { 
-                        if(isCoop || isPhase2) {
-                            bossSpawnAndSend('shockwave', 0, groundY+70, 0, 0);
-                            bossSpawnAndSend('boulder', bot.x, bot.y-50, -8, -6);
-                            bossSpawnAndSend('boulder', bot.x, bot.y-50, 8, -6);
-                            botWait = isCoop ? 40 : 50;
-                        } else {
-                            if(rand < 0.5) bossSpawnAndSend('shockwave', 0, groundY+70, 0, 0);
-                            else bossSpawnAndSend('boulder', bot.x, bot.y-20, bot.facingDir*10, -6);
-                            botWait = 55;
-                        }
-                        document.getElementById('arena').classList.add('screen-shake'); setTimeout(()=>document.getElementById('arena').classList.remove('screen-shake'), 300);
+            if(botWait === 15) { document.getElementById('player2').classList.add('boss-telegraph'); if(isGameHost) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir, telegraph: true }); }
+            if(botWait === 5) { 
+                document.getElementById('player2').classList.remove('boss-telegraph'); 
+                document.getElementById('player2').classList.add('attacking'); setTimeout(() => document.getElementById('player2').classList.remove('attacking'), 150);
+                if(isGameHost) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir, telegraph: false, isAttacking: true });
+                
+                let rand = Math.random();
+                
+                if(currentBoss === 'titan') { 
+                    bossSpawnAndSend('shockwave', 0, groundY+70, 0, 0);
+                    document.getElementById('arena').classList.add('screen-shake'); setTimeout(()=>document.getElementById('arena').classList.remove('screen-shake'), 300);
+                    if(isCoop || isPhase2) {
+                        bossSpawnAndSend('boulder', bot.x, bot.y-50, -8, -6);
+                        bossSpawnAndSend('boulder', bot.x, bot.y-50, 8, -6);
+                        if(isCoop) { bossSpawnAndSend('boulder', bot.x, bot.y-80, -12, -8); bossSpawnAndSend('boulder', bot.x, bot.y-80, 12, -8); }
+                    } else {
+                        bossSpawnAndSend('boulder', bot.x, bot.y-20, bot.facingDir*10, -6);
                     }
-                    else if(currentBoss === 'ifrit') { 
-                        bossSpawnAndSend('fire_wave', bot.x+(bot.facingDir*40), bot.y, bot.facingDir*10, 0); 
-                        if(isCoop || isPhase2) {
-                            bossSpawnAndSend('meteor', targetPlayer.x-80, -50, 0, 8);
-                            bossSpawnAndSend('meteor', targetPlayer.x, -100, 0, 8);
-                            bossSpawnAndSend('meteor', targetPlayer.x+80, -50, 0, 8);
-                            botWait = isCoop ? 35 : 45;
-                        } else {
-                            bossSpawnAndSend('meteor', targetPlayer.x, -50, 0, 8);
-                            botWait = 50;
-                        }
+                }
+                else if(currentBoss === 'ifrit') { 
+                    bossSpawnAndSend('fire_wave', bot.x+(bot.facingDir*40), bot.y, bot.facingDir*10, 0); 
+                    if(isCoop || isPhase2) {
+                        bossSpawnAndSend('meteor', targetPlayer.x-80, -50, 0, 8);
+                        bossSpawnAndSend('meteor', targetPlayer.x+80, -50, 0, 8);
+                        if (isCoop) bossSpawnAndSend('meteor', targetPlayer.x, -100, 0, 8);
+                    } else {
+                        bossSpawnAndSend('meteor', targetPlayer.x, -50, 0, 8);
                     }
-                    else if(currentBoss === 'omega') { 
-                        if(isCoop || isPhase2) {
-                            bossSpawnAndSend('omega_beam', bot.facingDir===1?bot.x:bot.x-800, bot.y-20, 0, 0);
-                            bossSpawnAndSend('laser', bot.x, bot.y-40, bot.facingDir*25, 4); 
-                            bossSpawnAndSend('laser', bot.x, bot.y+40, bot.facingDir*25, -4);
-                            botWait = isCoop ? 35 : 45;
-                        } else {
-                            if(rand < 0.5) bossSpawnAndSend('omega_beam', bot.facingDir===1?bot.x:bot.x-800, bot.y-20, 0, 0);
-                            else bossSpawnAndSend('laser', bot.x, bot.y, bot.facingDir*25, 0);
-                            botWait = 50;
-                        }
+                }
+                else if(currentBoss === 'omega') { 
+                    if(isCoop || isPhase2) {
+                        bossSpawnAndSend('omega_beam', bot.facingDir===1?bot.x:bot.x-800, bot.y-20, 0, 0);
+                        bossSpawnAndSend('laser', bot.x, bot.y-40, bot.facingDir*25, 4); 
+                        bossSpawnAndSend('laser', bot.x, bot.y+40, bot.facingDir*25, -4);
+                    } else {
+                        if(rand < 0.5) bossSpawnAndSend('omega_beam', bot.facingDir===1?bot.x:bot.x-800, bot.y-20, 0, 0);
+                        else { bossSpawnAndSend('laser', bot.x, bot.y, bot.facingDir*25, 0); bossSpawnAndSend('laser', bot.x, bot.y-30, bot.facingDir*25, 0); }
                     }
-                    else if(currentBoss === 'zephyr') { 
-                        if(isCoop || isPhase2) {
-                            bossSpawnAndSend('tornado', bot.x - 80, groundY-60, -4, 0);
-                            bossSpawnAndSend('tornado', bot.x + 80, groundY-60, 4, 0);
-                            bossSpawnAndSend('shuriken', bot.x, bot.y, bot.facingDir*25, 0);
-                            botWait = isCoop ? 30 : 40;
-                        } else {
-                            if(rand < 0.5) bossSpawnAndSend('tornado', bot.x, groundY-60, bot.facingDir*6, 0);
-                            else {
-                                bossSpawnAndSend('shuriken', bot.x, bot.y, bot.facingDir*25, -2);
-                                bossSpawnAndSend('shuriken', bot.x, bot.y, bot.facingDir*25, 2);
-                            }
-                            botWait = 45;
-                        }
+                }
+                else if(currentBoss === 'zephyr') { 
+                    if(isCoop || isPhase2) {
+                        bossSpawnAndSend('tornado', bot.x - 100, groundY-60, -5, 0);
+                        bossSpawnAndSend('tornado', bot.x + 100, groundY-60, 5, 0);
+                        if (isCoop) { bossSpawnAndSend('shuriken', bot.x, bot.y, bot.facingDir*20, -3); bossSpawnAndSend('shuriken', bot.x, bot.y, bot.facingDir*20, 3); }
+                    } else {
+                        bossSpawnAndSend('shuriken', bot.x, bot.y, bot.facingDir*25, -2);
+                        bossSpawnAndSend('shuriken', bot.x, bot.y, bot.facingDir*25, 0);
+                        bossSpawnAndSend('shuriken', bot.x, bot.y, bot.facingDir*25, 2);
                     }
-                    else { bossSpawnAndSend('boss_melee', bot.x + (bot.facingDir*40), bot.y, bot.facingDir, 0); botWait = 30; }
-                    
-                    if(isCoop && isGameHost) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir, isAttacking: true });
+                }
+                else if (currentBoss === 'shadow') {
+                    document.getElementById('darkness-overlay').style.opacity = 0.8; setTimeout(()=>document.getElementById('darkness-overlay').style.opacity = 0, 500);
+                    bot.x = targetPlayer.x + (targetPlayer.facingDir * -60); bot.y = targetPlayer.y; bot.facingDir = targetPlayer.facingDir; 
+                    if(isCoop || isPhase2) {
+                        bossSpawnAndSend('void_scythe', bot.x, bot.y-20, bot.facingDir*15, -2);
+                        bossSpawnAndSend('void_scythe', bot.x, bot.y+20, bot.facingDir*15, 2);
+                    } else { 
+                        bossSpawnAndSend('void_scythe', bot.x, bot.y, bot.facingDir*15, 0); 
+                    }
                 }
             }
-            if (isCoop && isGameHost) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir });
+            
+            if (botWait <= 0) {
+                // Tần suất xả skill cực gắt cho Solo và Coop
+                botWait = isCoop ? (isPhase2 ? 35 : 45) : (isPhase2 ? 40 : 55); 
+            }
+            
+            if (isCoop && isGameHost && botWait > 0) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir });
         }
 
         window.addEventListener('keydown', (e) => {
