@@ -48,22 +48,46 @@ io.on('connection', (socket) => {
     socket.on('applyStun', (data) => socket.to(data.roomId).emit('takeStun', data.duration));
     socket.on('healTeammate', (data) => socket.to(data.roomId).emit('receiveHeal', data.amount));
 
-    // === CO-OP MULTIPLAYER (LÃNH ĐỊA MAX 4, THẾ GIỚI MAX 8) ===
+    // === CO-OP MULTIPLAYER (LÃNH ĐỊA & THẾ GIỚI) ===
     socket.on('joinCoopLobby', (data) => { 
         const roomType = data.type;
         const maxPlayers = roomType === 'world' ? 8 : 4;
         const lobbyId = 'lobby_' + roomType;
 
-        if (!coopLobbies[lobbyId]) coopLobbies[lobbyId] = { players: {}, max: maxPlayers, type: roomType };
+        if (!coopLobbies[lobbyId]) coopLobbies[lobbyId] = { players: {}, max: maxPlayers, type: roomType, hostId: socket.id, timer: null };
         const lobby = coopLobbies[lobbyId];
-        if (Object.keys(lobby.players).length >= maxPlayers) return socket.emit('waiting_screen', 'PHÒNG ĐÃ ĐẦY!');
+        
+        if (Object.keys(lobby.players).length >= maxPlayers && lobby.timer) return socket.emit('waiting_screen', 'PHÒNG ĐÃ ĐẦY VÀ ĐANG VÀO TRẬN!');
 
         socket.join(lobbyId); lobby.players[socket.id] = data;
+        
+        // Gửi quyền Host cho client
+        socket.emit('lobbyJoined', { isHost: lobby.hostId === socket.id });
         io.to(lobbyId).emit('lobbyUpdate', { count: Object.keys(lobby.players).length, max: maxPlayers });
-        if (Object.keys(lobby.players).length >= maxPlayers) startCoopGame(lobbyId);
+        
+        // Kích hoạt đếm ngược 15s nếu đủ người
+        if (Object.keys(lobby.players).length >= maxPlayers && !lobby.timer) {
+            let timeLeft = 15;
+            io.to(lobbyId).emit('lobbyCountdown', timeLeft);
+            lobby.timer = setInterval(() => {
+                timeLeft--;
+                if(timeLeft <= 0) {
+                    clearInterval(lobby.timer);
+                    startCoopGame(lobbyId);
+                } else {
+                    io.to(lobbyId).emit('lobbyCountdown', timeLeft);
+                }
+            }, 1000);
+        }
     });
     
-    socket.on('startCoopEarly', (roomType) => startCoopGame('lobby_' + roomType));
+    socket.on('startCoopEarly', (roomType) => {
+        const lobbyId = 'lobby_' + roomType;
+        if(coopLobbies[lobbyId] && coopLobbies[lobbyId].hostId === socket.id) {
+            if(coopLobbies[lobbyId].timer) clearInterval(coopLobbies[lobbyId].timer);
+            startCoopGame(lobbyId);
+        }
+    });
 
     function startCoopGame(lobbyId) {
         const lobby = coopLobbies[lobbyId];
@@ -72,7 +96,7 @@ io.on('connection', (socket) => {
         const gameId = 'game_' + lobbyId + '_' + Date.now();
         coopGames[gameId] = { players: lobby.players, bossHp: lobby.type === 'world' ? 150000 : 30000 };
 
-        let isHost = true; // Người vào đầu tiên làm Host gánh AI
+        let isHost = true; // Chuyển quyền Host AI cho người đầu tiên
         for(let id in lobby.players) {
             const s = io.sockets.sockets.get(id);
             if(s) { 
@@ -108,18 +132,40 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('cancelMatch', () => { 
-        if(waitingPlayer === socket) waitingPlayer = null; 
+    function handleLobbyLeave(socketId) {
         for(let l in coopLobbies) {
-            if(coopLobbies[l].players[socket.id]) {
-                delete coopLobbies[l].players[socket.id]; socket.leave(l);
-                io.to(l).emit('lobbyUpdate', { count: Object.keys(coopLobbies[l].players).length, max: coopLobbies[l].max });
+            let lobby = coopLobbies[l];
+            if(lobby.players[socketId]) {
+                delete lobby.players[socketId]; 
+                let ioSocket = io.sockets.sockets.get(socketId);
+                if(ioSocket) ioSocket.leave(l);
+
+                // Nếu Host thoát, chuyển quyền Host cho người khác
+                if (lobby.hostId === socketId) {
+                    let keys = Object.keys(lobby.players);
+                    if (keys.length > 0) {
+                        lobby.hostId = keys[0];
+                        io.to(lobby.hostId).emit('lobbyJoined', { isHost: true });
+                    }
+                }
+                
+                // Hủy đếm ngược nếu phòng rớt xuống dưới max
+                if (lobby.timer && Object.keys(lobby.players).length < lobby.max) {
+                    clearInterval(lobby.timer); lobby.timer = null;
+                }
+                io.to(l).emit('lobbyUpdate', { count: Object.keys(lobby.players).length, max: lobby.max });
             }
         }
+    }
+
+    socket.on('cancelMatch', () => { 
+        if(waitingPlayer === socket) waitingPlayer = null; 
+        handleLobbyLeave(socket.id);
     });
 
     socket.on('disconnect', () => { 
         if (waitingPlayer === socket) waitingPlayer = null; 
+        handleLobbyLeave(socket.id);
         if (socket.coopGameId && coopGames[socket.coopGameId]) io.to(socket.coopGameId).emit('teammateLeft', socket.id);
     });
 });
