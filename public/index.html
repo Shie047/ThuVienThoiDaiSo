@@ -2,22 +2,23 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Souls Fighter - Kỷ Nguyên Vực Thẳm</title>
     <style>
-        :root { --neon-cyan: #66fcf1; --neon-red: #ff4757; --neon-gold: #f1c40f; --bg-dark: #0b0c10; }
+        :root { --neon-cyan: #66fcf1; --neon-red: #ff4757; --neon-gold: #f1c40f; --bg-dark: #0b0c10; --arena-width: 800px; }
         
         body { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background-color: var(--bg-dark); color: #c5c6c7; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; user-select: none; overflow: hidden; }
         
         /* CÁC LỚP PHỦ TOÀN MÀN HÌNH */
         .fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(11, 12, 16, 0.95); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(8px); }
-        .panel { background: rgba(15, 20, 25, 0.95); padding: 25px; border-radius: 12px; border: 2px solid var(--neon-cyan); text-align: center; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 0 30px rgba(102, 252, 241, 0.2); display: flex; flex-direction: column; align-items: center;}
+        .panel { background: rgba(15, 20, 25, 0.95); padding: 20px; border-radius: 12px; border: 2px solid var(--neon-cyan); text-align: center; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 0 30px rgba(102, 252, 241, 0.2); display: flex; flex-direction: column; align-items: center;}
         ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 10px; }
         
         .title-glow { color: var(--neon-cyan); margin-top: 0; letter-spacing: 4px; text-transform: uppercase; text-shadow: 0 0 15px var(--neon-cyan); }
-        .input-name { padding: 12px; font-size: 16px; border-radius: 6px; border: 1px solid var(--neon-cyan); background: #1f2833; color: var(--neon-cyan); margin-bottom: 15px; width: 80%; text-align: center; font-weight: bold; text-transform: uppercase; outline: none; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);}
+        .input-name { padding: 10px; font-size: 16px; border-radius: 6px; border: 1px solid var(--neon-cyan); background: #1f2833; color: var(--neon-cyan); margin-bottom: 10px; width: 80%; text-align: center; font-weight: bold; text-transform: uppercase; outline: none; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);}
         .input-name:focus { box-shadow: 0 0 15px rgba(102, 252, 241, 0.4); }
         
-        .btn { background: #1f2833; color: var(--neon-cyan); border: 2px solid var(--neon-cyan); padding: 12px; font-size: 14px; cursor: pointer; border-radius: 6px; font-weight: bold; margin: 6px 0; width: 85%; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;}
+        .btn { background: #1f2833; color: var(--neon-cyan); border: 2px solid var(--neon-cyan); padding: 10px; font-size: 14px; cursor: pointer; border-radius: 6px; font-weight: bold; margin: 5px 0; width: 85%; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;}
         .btn:hover:not(:disabled) { background: var(--neon-cyan); color: var(--bg-dark); box-shadow: 0 0 15px var(--neon-cyan); transform: scale(1.02);}
         .btn:active:not(:disabled) { transform: scale(0.98); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; border-color: #555; color: #888; }
@@ -26,39 +27,42 @@
         .btn-world { border-color: var(--neon-gold); color: var(--neon-gold); } .btn-world:hover:not(:disabled) { background: var(--neon-gold); color: #000; box-shadow: 0 0 15px var(--neon-gold);}
         
         .inventory-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%;}
-        .btn-equip { width: auto; padding: 8px 10px; font-size: 12px; border: 1px solid #45a29e; background: #111; border-radius: 4px; flex-grow: 1; max-width: 48%; margin: 0;} 
+        .btn-equip { width: auto; padding: 6px 10px; font-size: 12px; border: 1px solid #45a29e; background: #111; border-radius: 4px; flex-grow: 1; max-width: 48%; margin: 0;} 
         .btn-equip.active { background: var(--neon-cyan); color: var(--bg-dark); box-shadow: 0 0 15px var(--neon-cyan); border-color: var(--neon-cyan);}
         
-        .stats-bar { display: flex; justify-content: space-around; width: 100%; font-size: 18px; color: var(--neon-gold); font-weight: bold; margin-bottom: 15px; background: rgba(0,0,0,0.6); padding: 10px 0; border-radius: 8px; border: 1px solid #333;}
-        .shop-item { display: flex; justify-content: space-between; background: rgba(31, 40, 51, 0.8); padding: 10px 15px; margin: 5px 0; border-radius: 8px; align-items: center; font-size: 14px; border: 1px solid #333; width: 90%;}
+        .stats-bar { display: flex; justify-content: space-around; width: 90%; font-size: 16px; color: var(--neon-gold); font-weight: bold; margin-bottom: 10px; background: rgba(0,0,0,0.6); padding: 8px 0; border-radius: 8px; border: 1px solid #333;}
+        .shop-item { display: flex; justify-content: space-between; background: rgba(31, 40, 51, 0.8); padding: 8px 12px; margin: 4px 0; border-radius: 8px; align-items: center; font-size: 13px; border: 1px solid #333; width: 90%;}
 
-        /* GIAO DIỆN GAME CHÍNH */
+        /* GIAO DIỆN GAME CHÍNH (ĐÃ FIX LỖI TRÀN VIỀN) */
         #game-container { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100vw; height: 100vh; position: relative; z-index: 10;}
         
-        .game-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 10px; z-index: 20; position: relative;}
+        .game-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: var(--arena-width); padding: 0 10px; box-sizing: border-box; }
+
+        .game-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 10px; z-index: 20; width: 100%; position: relative;}
         #bo3-score-ui { font-size: 24px; color: var(--neon-gold); font-weight: bold; text-shadow: 0 0 10px var(--neon-gold); letter-spacing: 3px; display: none; margin-bottom: 5px;}
-        .map-info { font-size: 16px; color: var(--neon-cyan); font-weight: bold; text-shadow: 0 0 8px var(--neon-cyan); text-transform: uppercase; letter-spacing: 2px; background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 20px; border: 1px solid var(--neon-cyan);}
+        .map-info { font-size: 14px; color: var(--neon-cyan); font-weight: bold; text-shadow: 0 0 8px var(--neon-cyan); text-transform: uppercase; letter-spacing: 2px; background: rgba(0,0,0,0.8); padding: 4px 15px; border-radius: 20px; border: 1px solid var(--neon-cyan);}
         
-        .health-board { display: flex; justify-content: space-between; width: 800px; margin-bottom: 10px; z-index: 10;}
-        .bar-group { width: 45%; display: flex; flex-direction: column; gap: 5px; position: relative;}
+        .health-board { display: flex; justify-content: space-between; width: 100%; margin-bottom: 8px; z-index: 10; gap: 10px;}
+        .bar-group { flex: 1; display: flex; flex-direction: column; gap: 4px; position: relative; min-width: 0; }
         
-        .health-bar-container { background-color: rgba(0, 0, 0, 0.8); height: 24px; border: 2px solid var(--neon-cyan); border-radius: 4px; position: relative; box-shadow: 0 0 10px rgba(102,252,241,0.2); overflow: hidden;}
+        .health-bar-container { background-color: rgba(0, 0, 0, 0.8); height: 20px; border: 2px solid var(--neon-cyan); border-radius: 4px; position: relative; box-shadow: 0 0 10px rgba(102,252,241,0.2); overflow: hidden; width: 100%;}
         .health-fill { height: 100%; background: linear-gradient(90deg, #00b894, var(--neon-cyan)); width: 100%; transition: width 0.15s ease-out; }
-        .player-name-tag { position: absolute; top: 0; left: 8px; font-weight: bold; font-size: 13px; text-shadow: 1px 1px 2px black; color: white; text-transform: uppercase; line-height: 24px;}
+        .player-name-tag { position: absolute; top: 0; left: 8px; font-weight: bold; font-size: 12px; text-shadow: 1px 1px 2px black; color: white; text-transform: uppercase; line-height: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90%;}
         #hp2-container .player-name-tag { left: auto; right: 8px; }
         .boss-hp { background: linear-gradient(90deg, #c23616, var(--neon-red)) !important; border-color: var(--neon-red); box-shadow: 0 0 10px rgba(255,71,87,0.3);}
 
-        .stamina-bar-container { background-color: #111; height: 6px; border: 1px solid var(--neon-gold); border-radius: 3px; overflow: hidden;}
+        .stamina-bar-container { background-color: #111; height: 6px; border: 1px solid var(--neon-gold); border-radius: 3px; overflow: hidden; width: 100%;}
         .stamina-fill { height: 100%; background: var(--neon-gold); width: 100%; transition: width 0.1s linear; }
         
-        .hud-badges { position: absolute; top: 38px; display: flex; gap: 10px; }
-        .ammo-display, .ult-display { font-size: 12px; color: #fff; font-weight: bold; padding: 4px 8px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); text-transform: uppercase;}
+        .hud-badges { position: absolute; top: 34px; display: flex; gap: 8px; left: 0;}
+        .ammo-display, .ult-display { font-size: 11px; color: #fff; font-weight: bold; padding: 3px 6px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); text-transform: uppercase;}
         .ammo-display { background: #2f3640; border: 1px solid #7f8fa6; }
         .ult-display { background: #8e44ad; border: 1px solid #fff; box-shadow: 0 0 10px #8e44ad; }
 
         /* SÀN ĐẤU */
-        #arena-wrapper { display: flex; justify-content: center; align-items: center; overflow: visible; position: relative;}
-        #arena { width: 800px; height: 400px; background-color: #1e272e; position: relative; border: 4px solid var(--neon-cyan); border-radius: 12px; box-shadow: 0 15px 40px rgba(0,0,0,0.8), inset 0 0 60px rgba(0,0,0,0.6); overflow: hidden;}
+        #arena-wrapper { width: 100%; display: flex; justify-content: center; align-items: center; overflow: visible; position: relative;}
+        /* Thu nhỏ scale thông qua CSS transform tự động của JS nhưng đảm bảo container không bị overflow */
+        #arena { width: var(--arena-width); height: 400px; background-color: #1e272e; position: relative; border: 4px solid var(--neon-cyan); border-radius: 12px; box-shadow: 0 15px 40px rgba(0,0,0,0.8), inset 0 0 60px rgba(0,0,0,0.6); overflow: hidden; flex-shrink: 0;}
         
         .player { width: 60px; height: 90px; position: absolute; background: linear-gradient(to bottom, #81ecec, var(--neon-cyan)); border-radius: 8px; z-index: 5; transition: filter 0.1s; box-shadow: 0 0 15px rgba(102,252,241,0.4);}
         #player2 { background: linear-gradient(to bottom, #ff7675, var(--neon-red)); box-shadow: 0 0 15px rgba(255,71,87,0.4);}
@@ -83,7 +87,7 @@
 
         @keyframes shake { 0% {transform: translate(3px, 2px) rotate(0deg);} 10% {transform: translate(-2px, -3px) rotate(-1deg);} 20% {transform: translate(-4px, 0px) rotate(1deg);} 30% {transform: translate(0px, 3px) rotate(0deg);} 40% {transform: translate(2px, -2px) rotate(1deg);} 50% {transform: translate(-2px, 3px) rotate(-1deg);} 60% {transform: translate(-4px, 2px) rotate(0deg);} 70% {transform: translate(3px, 2px) rotate(-1deg);} 80% {transform: translate(-2px, -2px) rotate(1deg);} 90% {transform: translate(3px, 3px) rotate(0deg);} 100% {transform: translate(2px, -3px) rotate(-1deg);} }
         .screen-shake { animation: shake 0.4s; animation-iteration-count: 1; }
-        #darkness-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: #000; opacity: 0; pointer-events:none; z-index: 40; transition: opacity 0.3s; }
+        #darkness-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: #050505; opacity: 0; pointer-events:none; z-index: 40; transition: opacity 0.3s; }
 
         /* VẬT LÝ & VFX */
         .parry-text { position: absolute; color: #f1c40f; font-weight: bold; font-size: 20px; text-shadow: 0 0 10px #f1c40f, 2px 2px 2px #000; animation: floatUp 1s forwards; z-index: 50; pointer-events: none; }
@@ -91,7 +95,7 @@
 
         .slash-arc { position: absolute; width: 120px; height: 120px; border-right: 12px solid rgba(255,255,255,0.9); border-radius: 50%; opacity: 0; transform: translateY(-20px); z-index: 10; filter: drop-shadow(0 0 8px #fff);}
         .bomb-explode { width: 180px; height: 180px; background: radial-gradient(circle, #fbc531, #e84118 60%, transparent); border-radius: 50%; position: absolute; transform: translate(-90px, -90px); opacity: 0.95; z-index: 15; mix-blend-mode: screen;}
-        .shockwave { width: 800px; height: 50px; background: linear-gradient(to top, rgba(217, 83, 79, 0.9), transparent); position: absolute; bottom: 0; left: 0; opacity: 0.8; z-index: 15;}
+        .shockwave { width: var(--arena-width); height: 50px; background: linear-gradient(to top, rgba(217, 83, 79, 0.9), transparent); position: absolute; bottom: 0; left: 0; opacity: 0.8; z-index: 15;}
         .heal-aura { width: 220px; height: 220px; background: radial-gradient(circle, rgba(46, 204, 113, 0.6), transparent); border-radius: 50%; position: absolute; transform: translate(-110px, -110px); z-index: 2; mix-blend-mode: screen;}
         .heal-beam { position: absolute; width: 50px; height: 12px; background: #2ecc71; border-radius: 6px; box-shadow: 0 0 20px #2ecc71, 0 0 10px #fff; }
         .boss_melee { position: absolute; width: 70px; height: 100px; background: transparent; z-index: 20;}
@@ -112,33 +116,34 @@
         .laser { position: absolute; width: 180px; height: 10px; background: var(--neon-cyan); box-shadow: 0 0 20px var(--neon-cyan), inset 0 0 5px #fff; border-radius: 5px;}
         .shield_aura { position: absolute; width: 110px; height: 110px; border: 4px solid #3498db; border-radius: 50%; transform: translate(-25px, -10px); opacity: 0.7; box-shadow: 0 0 15px #3498db; }
         
-        /* KHIÊN KHỔNG LỒ */
         .giant_shield_aura { position: absolute; width: 400px; height: 400px; background: radial-gradient(circle, rgba(52, 152, 219, 0.2), rgba(52, 152, 219, 0.4)); border: 6px solid #3498db; border-radius: 50%; transform: translate(-170px, -150px); opacity: 0.9; box-shadow: 0 0 50px #3498db, inset 0 0 30px #3498db; z-index: 30; }
 
         .vine { position: absolute; width: 45px; height: 12px; background: #27ae60; border-radius: 6px; box-shadow: 0 0 8px #2ecc71; border: 1px dashed #145a32; }
         .horse_charge { position: absolute; width: 90px; height: 70px; background: rgba(139, 69, 19, 0.85); border-radius: 12px; box-shadow: 0 0 25px #8B4513; border-right: 6px solid #fff; }
         .meteor { position: absolute; width: 50px; height: 50px; background: radial-gradient(circle, #fff, var(--neon-red)); border-radius: 50%; box-shadow: 0 0 40px var(--neon-red); z-index: 15;}
 
-        .ult_slash { position: absolute; width: 800px; height: 400px; background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.2) 20px, rgba(255,255,255,0.2) 40px); z-index: 20; opacity: 0.9; }
-        .ult_nuke { position: absolute; width: 800px; height: 400px; background: radial-gradient(circle, #fff, var(--neon-gold), var(--neon-red), transparent); opacity: 0.85; z-index: 20; mix-blend-mode: screen;}
-        .ult_divine { position: absolute; width: 800px; height: 400px; background: rgba(46, 204, 113, 0.5); box-shadow: inset 0 0 80px #2ecc71; z-index: 20; }
-        .omega_beam { position: absolute; width: 800px; height: 60px; background: rgba(255,255,255,0.95); box-shadow: 0 0 30px var(--neon-gold), 0 0 60px var(--neon-red); z-index: 1; }
+        .ult_slash { position: absolute; width: var(--arena-width); height: 400px; background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.2) 20px, rgba(255,255,255,0.2) 40px); z-index: 20; opacity: 0.9; }
+        .ult_nuke { position: absolute; width: var(--arena-width); height: 400px; background: radial-gradient(circle, #fff, var(--neon-gold), var(--neon-red), transparent); opacity: 0.85; z-index: 20; mix-blend-mode: screen;}
+        .ult_divine { position: absolute; width: var(--arena-width); height: 400px; background: rgba(46, 204, 113, 0.5); box-shadow: inset 0 0 80px #2ecc71; z-index: 20; }
+        .omega_beam { position: absolute; width: var(--arena-width); height: 60px; background: rgba(255,255,255,0.95); box-shadow: 0 0 30px var(--neon-gold), 0 0 60px var(--neon-red); z-index: 1; }
 
-        .wait-title { font-size: 32px; color: var(--neon-gold); margin-bottom: 15px; font-weight: bold; text-transform: uppercase; text-shadow: 0 0 10px rgba(241,196,15,0.5); letter-spacing: 2px;}
-        .winner-text { font-size: 45px; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; text-align: center; text-shadow: 0 0 20px rgba(0,0,0,0.8);}
-        .loader { border: 6px solid #111; border-top: 6px solid var(--neon-cyan); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; box-shadow: 0 0 15px var(--neon-cyan); }
+        .wait-title { font-size: 28px; color: var(--neon-gold); margin-bottom: 10px; font-weight: bold; text-transform: uppercase; text-shadow: 0 0 10px rgba(241,196,15,0.5); letter-spacing: 2px;}
+        .winner-text { font-size: 38px; margin-bottom: 5px; font-weight: bold; text-transform: uppercase; text-align: center; text-shadow: 0 0 20px rgba(0,0,0,0.8);}
+        .loader { border: 6px solid #111; border-top: 6px solid var(--neon-cyan); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 15px auto; box-shadow: 0 0 15px var(--neon-cyan); }
+        
+        .hints-box { background: rgba(0,0,0,0.6); padding: 8px 15px; border-radius: 8px; margin-top: 10px; font-size: 13px; text-align: center; border: 1px solid #333; color: #ccc; width: 90%; max-width: 800px; box-sizing: border-box;}
     </style>
 </head>
 <body>
 
     <div id="screen-menu" class="fullscreen-overlay" style="display: flex;">
         <div class="panel">
-            <h1 class="title-glow">Chiến Trường Thời Đại Số</h1>
-            <div class="stats-bar"><span>VÀNG: <span id="coin-count">0</span></span> <span style="color: var(--neon-red);">TIM: <span id="heart-count">0</span></span></div>
+            <h1 class="title-glow">SOULS FIGHTER</h1>
+            <div class="stats-bar"><span>💰 VÀNG: <span id="coin-count">0</span></span> <span style="color: var(--neon-red);">❤ TIM: <span id="heart-count">0</span></span></div>
             <input type="text" id="playerNameInput" class="input-name" placeholder="NHẬP TÊN CỦA BẠN (VIP: THÀNH)">
             
             <div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid #333; margin-bottom: 15px; width: 90%;">
-                <h4 style="margin: 0 0 10px 0; color: var(--neon-cyan);">TRANG BỊ SẴN SÀNG</h4>
+                <h4 style="margin: 0 0 10px 0; color: var(--neon-cyan);">TRANG BỊ ĐANG MANG</h4>
                 <div id="inventory-list" class="inventory-grid"></div>
             </div>
             
@@ -153,12 +158,12 @@
     <div id="screen-boss" class="fullscreen-overlay">
         <div class="panel panel-red">
             <h2 style="color: var(--neon-red); text-shadow: 0 0 10px var(--neon-red); margin-top:0;">CHỌN LÃNH ĐỊA</h2>
-            <button class="btn" onclick="showCoopLobby('titan')">TITAN (VUA THÉP)</button>
-            <button class="btn" onclick="showCoopLobby('zephyr')">ZEPHYR (CUỒNG PHONG)</button>
-            <button class="btn" onclick="showCoopLobby('ifrit')">IFRIT (HỎA THẦN)</button>
-            <button class="btn" onclick="showCoopLobby('shadow')">SHADOW (BÓNG ĐÊM)</button>
-            <button class="btn" style="border-color:var(--neon-gold); color:var(--neon-gold);" onclick="showCoopLobby('omega')">OMEGA (KẺ DIỆT THẾ)</button>
-            <button class="btn" style="background: #2d3436; border-color:#636e72; margin-top:15px; color:#fff;" onclick="switchScreen('screen-menu')">TRỞ VỀ</button>
+            <button class="btn" onclick="showCoopLobby('titan')">🪨 TITAN (VUA THÉP)</button>
+            <button class="btn" onclick="showCoopLobby('zephyr')">🌪️ ZEPHYR (CUỒNG PHONG)</button>
+            <button class="btn" onclick="showCoopLobby('ifrit')">🔥 IFRIT (HỎA THẦN)</button>
+            <button class="btn" onclick="showCoopLobby('shadow')">🌑 SHADOW (BÓNG ĐÊM)</button>
+            <button class="btn" style="border-color:var(--neon-gold); color:var(--neon-gold);" onclick="showCoopLobby('omega')">👑 OMEGA (KẺ DIỆT THẾ)</button>
+            <button class="btn" style="background: #2d3436; border-color:#636e72; margin-top:15px; color:#fff;" onclick="switchScreen('screen-menu')">⬅ TRỞ VỀ</button>
         </div>
     </div>
 
@@ -166,80 +171,101 @@
         <div class="panel">
             <h2 class="wait-title" id="wait-msg">ĐANG TÌM ĐỐI THỦ...</h2>
             <div class="loader"></div>
-            <button class="btn btn-world" id="btn-start-early" style="display:none;" onclick="socket.emit('startCoopEarly', currentCoopType);">VÀO ĐÁNH LUÔN</button>
-            <button class="btn" style="background: #2d3436; border-color:#636e72; margin-top: 20px; color:#fff;" onclick="cancelMatchmaking()">HỦY & TRỞ VỀ</button>
+            <button class="btn btn-world" id="btn-start-early" style="display:none;" onclick="socket.emit('startCoopEarly', currentCoopType);">🔥 VÀO ĐÁNH LUÔN</button>
+            <button class="btn btn-boss" id="btn-urge-host" style="display:none;" onclick="urgeHost()">🔔 BẮT ĐẦU ĐI!</button>
+            <button class="btn" style="background: #2d3436; border-color:#636e72; margin-top: 15px; color:#fff;" onclick="cancelMatchmaking()">HỦY & TRỞ VỀ</button>
         </div>
     </div>
 
     <div id="screen-round" class="fullscreen-overlay">
         <div class="panel">
             <h2 class="wait-title" id="round-msg">HẾT HIỆP 1</h2>
-            <p style="color: #ccc; margin-bottom: 15px;">Thay đổi chiến thuật cho hiệp tiếp theo:</p>
-            <div id="round-inventory-list" class="inventory-grid" style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; border: 1px solid #333; margin-bottom: 20px;"></div>
-            <button class="btn" id="btn-ready-round" style="background:var(--neon-cyan); color:var(--bg-dark); font-size: 18px;" onclick="readyNextRound()">SẴN SÀNG</button>
+            <p style="color: #ccc; margin-bottom: 10px;">Thay đổi vũ khí cho hiệp tiếp theo:</p>
+            <div id="round-inventory-list" class="inventory-grid" style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; border: 1px solid #333; margin-bottom: 15px;"></div>
+            <button class="btn" id="btn-ready-round" style="background:var(--neon-cyan); color:var(--bg-dark); font-size: 16px;" onclick="readyNextRound()">SẴN SÀNG</button>
         </div>
     </div>
 
     <div id="screen-shop" class="fullscreen-overlay">
-        <div class="panel" style="max-width: 650px;">
+        <div class="panel">
             <h2 style="color: var(--neon-cyan); margin-top: 0; text-shadow: 0 0 10px var(--neon-cyan);">CHỢ ĐEN VŨ KHÍ</h2>
             <div class="stats-bar">VÀNG: <span id="shop-coin-count">0</span></div>
             <div id="shop-list" style="display: flex; flex-direction: column; align-items: center; width: 100%;"></div>
-            <button class="btn" style="background: #2d3436; border-color:#636e72; margin-top: 15px; color:#fff;" onclick="switchScreen('screen-menu')">QUAY LẠI</button>
+            <button class="btn" style="background: #2d3436; border-color:#636e72; margin-top: 15px; color:#fff;" onclick="switchScreen('screen-menu')">⬅ QUAY LẠI</button>
+        </div>
+    </div>
+
+    <div id="screen-game-over" class="fullscreen-overlay" style="z-index: 100;">
+        <div class="panel">
+            <div id="winner-text" class="winner-text">BẠN ĐÃ CHẾT</div>
+            <p id="reward-text" style="color: var(--neon-gold); font-size: 18px; font-weight: bold; display: none; margin-bottom: 15px;">+ CHIẾN LỢI PHẨM!</p>
+            
+            <button class="btn" id="btn-spectate" style="background:#0984e3; border-color:#0984e3; display:none; color:#fff;" onclick="startSpectating()">👀 XEM ĐỒNG ĐỘI ĐÁNH</button>
+            <button class="btn btn-boss" id="btn-rematch-boss" style="display:none;" onclick="rematchBoss()">🔥 ĐÁNH LẠI BOSS</button>
+            <button class="btn" id="btn-rematch-pvp" style="background:#00b894; border-color:#00b894; display:none; color:#fff;" onclick="requestRematchPvP()">SẴN SÀNG ĐẤU LẠI 1VS1</button>
+            <button class="btn" style="background:#2d3436; border-color:#636e72; color:#fff;" onclick="location.reload()">TRỞ VỀ MENU CHÍNH</button>
         </div>
     </div>
 
     <div id="game-container">
-        <div class="game-header">
-            <div id="bo3-score-ui">P1: 0 - 0 :P2</div>
-            <div class="map-info" id="map-name-display">MAP: ĐẤU TRƯỜNG CỔ ĐẠI</div>
-        </div>
-        
-        <div class="health-board">
-            <div class="bar-group">
-                <div class="health-bar-container"><div id="hp1" class="health-fill"></div><div class="player-name-tag" id="name1">Player 1</div></div>
-                <div class="stamina-bar-container"><div id="stm1" class="stamina-fill"></div></div>
-                <div class="hud-badges" style="left:0;">
-                    <div id="ult-ui" class="ult-display">Ult: SẴN SÀNG</div>
-                    <div id="ammo-ui" class="ammo-display" style="display:none; position:relative; right:auto; top:auto;">Đạn: <span id="ammo-text">0</span></div>
-                </div>
+        <div class="game-wrapper">
+            <div class="game-header">
+                <div id="bo3-score-ui">P1: 0 - 0 :P2</div>
+                <div class="map-info" id="map-name-display">MAP: ĐẤU TRƯỜNG CỔ ĐẠI</div>
             </div>
             
-            <div class="bar-group">
-                <div class="health-bar-container" id="hp2-container"><div id="hp2" class="health-fill"></div><div class="player-name-tag" id="name2">Địch</div></div>
-            </div>
-        </div>
-
-        <div id="arena-wrapper">
-            <div id="arena">
-                <div id="darkness-overlay"></div>
-                <div id="player1" class="player"></div>
-                <div id="player2" class="player"></div>
-                <div id="teammates-container"></div>
-                
-                <div id="game-over-screen-inner" class="fullscreen-overlay" style="position: absolute; border-radius: 8px;">
-                    <div id="winner-text" class="winner-text">BẠN ĐÃ CHẾT</div>
-                    <p id="reward-text" style="color: var(--neon-gold); font-size: 22px; font-weight: bold; display: none; text-shadow: 0 0 10px rgba(241,196,15,0.5);">+ CHIẾN LỢI PHẨM!</p>
-                    <button class="btn" id="btn-spectate" style="background:#0984e3; border-color:#0984e3; display:none; margin-top:20px;" onclick="startSpectating()">👀 XEM ĐỒNG ĐỘI</button>
-                    <button class="btn btn-world" id="btn-rematch-boss" style="display:none; margin-top:20px;" onclick="rematchBoss()">ĐÁNH LẠI BOSS</button>
-                    <button class="btn" id="btn-rematch-pvp" style="background:#00b894; border-color:#00b894; display:none; margin-top:20px; color:#fff;" onclick="requestRematchPvP()">ĐẤU LẠI 1VS1</button>
-                    <button class="btn" style="background:#2d3436; border-color:#636e72; color:#fff;" onclick="location.reload()">VỀ MENU</button>
+            <div class="health-board">
+                <div class="bar-group">
+                    <div class="health-bar-container"><div id="hp1" class="health-fill"></div><div class="player-name-tag" id="name1">Player 1</div></div>
+                    <div class="stamina-bar-container"><div id="stm1" class="stamina-fill"></div></div>
+                    <div class="hud-badges" style="left:0;">
+                        <div id="ult-ui" class="ult-display">Ult: SẴN SÀNG</div>
+                        <div id="ammo-ui" class="ammo-display" style="display:none; position:relative; right:auto; top:auto;">Đạn: <span id="ammo-text">0</span></div>
+                    </div>
+                </div>
+                <div class="bar-group">
+                    <div class="health-bar-container" id="hp2-container"><div id="hp2" class="health-fill"></div><div class="player-name-tag" id="name2">Địch</div></div>
                 </div>
             </div>
-        </div>
 
-        <div style="background: rgba(0,0,0,0.6); padding: 8px 15px; border-radius: 8px; margin-top: 5px; font-size: 14px; text-align: center; border: 1px solid #333; color: #ccc;">
-            <span style="color:var(--neon-cyan)">[A/D] Đi</span> | <span style="color:var(--neon-gold)">[Giữ W] Nhảy Cao</span> | <span style="color:#00b894">[Shift] Đỡ</span> | <span style="color:#f39c12">[E] PARRY</span> | <span style="color:var(--neon-red)">[Giữ Space] Đánh</span> | <span style="color:#8e44ad">[S] Tối Thượng</span>
+            <div id="arena-wrapper" style="transform: scale(var(--scale)); transform-origin: top center;">
+                <div id="arena">
+                    <div id="darkness-overlay"></div>
+                    <div id="player1" class="player"></div>
+                    <div id="player2" class="player"></div>
+                    <div id="teammates-container"></div>
+                </div>
+            </div>
+
+            <div class="hints-box">
+                <span style="color:var(--neon-cyan)">[A/D] Đi</span> | <span style="color:var(--neon-gold)">[Giữ W] Nhảy Cao</span> | <span style="color:#00b894">[Shift] Đỡ</span> | <span style="color:#f39c12">[E] PARRY</span> | <span style="color:var(--neon-red)">[Giữ Space] Đánh</span> | <span style="color:#8e44ad">[S] Tối Thượng (1 Lần)</span>
+            </div>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // QUẢN LÝ GIAO DIỆN
+        // CĂN CHỈNH SCALE GIAO DIỆN
+        function updateScale() {
+            let w = window.innerWidth;
+            if(w < 820) {
+                let scale = (w - 20) / 800; 
+                document.documentElement.style.setProperty('--scale', scale);
+            } else {
+                document.documentElement.style.setProperty('--scale', 1);
+            }
+        }
+        window.addEventListener('resize', updateScale); updateScale();
+
+        // CHUYỂN ĐỔI MÀN HÌNH CHUẨN
         function switchScreen(screenId) {
             document.querySelectorAll('.fullscreen-overlay').forEach(p => p.style.display = 'none');
             document.getElementById('game-container').style.display = 'none';
-            if(screenId) document.getElementById(screenId).style.display = 'flex';
+            if(screenId) {
+                document.getElementById(screenId).style.display = 'flex';
+                // Xóa focus khỏi tất cả button để tránh kẹt phím
+                document.querySelectorAll('button').forEach(b => b.blur());
+            }
         }
 
         const socket = io();
@@ -257,14 +283,13 @@
         ];
         let currentMapBuff = '';
 
-        // VŨ KHÍ & KỸ NĂNG (Đã nerf Phép dây leo và Thêm Khiên Khổng Lồ)
         const weapons = {
             shield: { name: 'Khiên Thường', price: 100, type: 'defense', stm: 5, ammo: 0, firerate: 30 },
             gun: { name: 'Súng Lục', price: 150, type: 'ballistic', stm: 5, ammo: 1, firerate: 15 }, 
             katana: { name: 'Kiếm Katana', price: 200, type: 'melee', stm: 10, ammo: 0, firerate: 20 },
             bomb: { name: 'Mìn Hẹn Giờ', price: 250, type: 'explosive', stm: 15, ammo: 1, firerate: 60 }, 
             shuriken: { name: 'Phi Tiêu', price: 300, type: 'ballistic', stm: 5, ammo: 0, firerate: 10 },
-            vine_spell: { name: 'Phép Dây Leo (Trói)', price: 400, type: 'magic', stm: 60, ammo: 0, firerate: 60 }, // Nerf: Stamina 60
+            vine_spell: { name: 'Phép Dây Leo', price: 400, type: 'magic', stm: 60, ammo: 0, firerate: 60 },
             shotgun: { name: 'Hoa Cải', price: 450, type: 'ballistic', stm: 15, ammo: 3, firerate: 35 }, 
             grenade: { name: 'Phóng Lựu', price: 500, type: 'explosive', stm: 15, ammo: 1, firerate: 40 },
             sniper: { name: 'Súng Ngắm', price: 750, type: 'piercing', stm: 20, ammo: 1, firerate: 50 }, 
@@ -274,7 +299,7 @@
             heal_single: { name: 'Trượng Sinh Mệnh', price: 800, type: 'magic', stm: 40, ammo: 0, firerate: 90 },
             heal_aoe: { name: 'Trượng Hồi Phục', price: 850, type: 'magic', stm: 30, ammo: 0, firerate: 60 },
             horse: { name: 'Ngựa Chiến', price: 1200, type: 'melee', stm: 40, ammo: 0, firerate: 80 },
-            giant_shield: { name: 'Khiên Khổng Lồ (-95% DMG, 1s)', price: 1500, type: 'defense_aoe', stm: 60, ammo: 0, firerate: 60 } // Hàng mới
+            giant_shield: { name: 'Khiên Khổng Lồ', price: 1500, type: 'defense_aoe', stm: 60, ammo: 0, firerate: 60 }
         };
         const ultimates = {
             dragon_blade: { name: '[VIP] Kiếm Rồng', drop: 'ifrit', type: 'energy', stm: 10, ammo: 0, firerate: 15 },
@@ -305,6 +330,9 @@
             equipItem(currentEquip); checkEasterEgg();
         }
 
+        function toggleShop(show) { switchScreen(show ? 'screen-shop' : 'screen-menu'); }
+        function toggleBossMenu(show) { switchScreen(show ? 'screen-boss' : 'screen-menu'); }
+
         function buyItem(item, price) { if (unlocked[item]) return; if (coins >= price) { coins -= price; unlocked[item] = true; localStorage.setItem('coins', coins); localStorage.setItem('unlocked', JSON.stringify(unlocked)); renderShopAndInventory(); } }
 
         function equipItem(item) {
@@ -323,12 +351,13 @@
         }
         renderShopAndInventory();
 
+        // HACK 5000 VÀNG CHO THÀNH
         function applyCheatAndShowReward(baseText) {
             let name = document.getElementById('playerNameInput').value.trim().toLowerCase();
             let txt = document.getElementById('reward-text');
             if(name === 'thành' || name === 'thanh') {
                 coins += 5000; localStorage.setItem('coins', coins); renderShopAndInventory();
-                if(txt) { txt.innerHTML = baseText + "<br><span style='color:var(--neon-cyan); font-size:18px;'>+5000 VÀNG (VIP THÀNH)</span>"; txt.style.display = 'block'; }
+                if(txt) { txt.innerHTML = baseText + "<br><span style='color:var(--neon-cyan); font-size:16px;'>+5000 VÀNG (VIP)</span>"; txt.style.display = 'block'; }
             } else {
                 if(baseText && txt) { txt.innerHTML = baseText; txt.style.display = 'block'; }
                 else if(txt) txt.style.display = 'none';
@@ -355,11 +384,8 @@
             document.getElementById(myRole === 'p1' ? 'name1' : 'name2').innerText = p1Name; 
             document.getElementById(myRole === 'p1' ? 'name2' : 'name1').innerText = p2Name;
             
-            // Xóa focus chuột trên UI để tránh kẹt phím
-            document.querySelectorAll('button').forEach(b => b.blur());
-            document.getElementById('playerNameInput').blur();
-            
-            switchScreen(); // Đóng tất cả panel
+            document.getElementById('playerNameInput').blur(); 
+            switchScreen(); // Vào Game
             document.getElementById('game-container').style.display = 'flex';
             
             if(animationId) cancelAnimationFrame(animationId);
@@ -368,11 +394,17 @@
             resetGameUI(); gameLoop();
         }
 
+        function showWaitingScreen(msg, showStartBtn = false) {
+            switchScreen('screen-waiting');
+            document.getElementById('wait-msg').innerText = msg;
+            document.getElementById('btn-start-early').style.display = (showStartBtn && isLobbyHost) ? 'block' : 'none';
+            document.getElementById('btn-urge-host').style.display = (showStartBtn && !isLobbyHost) ? 'block' : 'none';
+        }
         function cancelMatchmaking() { socket.emit('cancelMatch'); switchScreen('screen-menu'); if(animationId) cancelAnimationFrame(animationId); }
 
         // --- ONLINE 1V1 (BO3) ---
-        function startOnlineMode() { myRole = 'p1'; bo3Score = {p1:0, p2:0}; matchUltimateUsed = false; socket.emit('findMatch', document.getElementById('playerNameInput').value || "Người Chơi"); switchScreen('screen-waiting'); document.getElementById('wait-msg').innerText = "ĐANG TÌM ĐỐI THỦ 1VS1..."; }
-        socket.on('waiting_screen', (msg) => { switchScreen('screen-waiting'); document.getElementById('wait-msg').innerText = msg; });
+        function startOnlineMode() { myRole = 'p1'; bo3Score = {p1:0, p2:0}; matchUltimateUsed = false; socket.emit('findMatch', document.getElementById('playerNameInput').value || "Người Chơi"); showWaitingScreen("ĐANG TÌM ĐỐI THỦ 1VS1..."); }
+        socket.on('waiting_screen', (msg) => showWaitingScreen(msg));
         
         socket.on('matchFound', (data) => {
             myRole = data.role; currentRoom = data.roomId; setMap(data.mapId);
@@ -399,10 +431,8 @@
             setTimeout(() => {
                 bo3Score = data.score; document.getElementById('bo3-score-ui').innerText = `P1: ${bo3Score.p1} - ${bo3Score.p2} :P2`;
                 let isMeWinner = data.winner === myRole; 
-                document.getElementById('game-over-screen-inner').style.display = 'flex';
-                let winTxt = document.getElementById('winner-text');
-                winTxt.innerText = isMeWinner ? "BẠN ĐÃ THẮNG BO3!" : "BẠN ĐÃ THUA BO3!"; 
-                winTxt.style.color = isMeWinner ? "var(--neon-gold)" : "var(--neon-red)";
+                switchScreen('screen-game-over');
+                let winTxt = document.getElementById('winner-text'); winTxt.innerText = isMeWinner ? "BẠN ĐÃ THẮNG BO3!" : "BẠN ĐÃ THUA BO3!"; winTxt.style.color = isMeWinner ? "var(--neon-gold)" : "var(--neon-red)";
                 
                 document.getElementById('btn-rematch-pvp').style.display = 'inline-block'; document.getElementById('btn-rematch-boss').style.display = 'none'; document.getElementById('btn-spectate').style.display = 'none';
                 let btnRem = document.getElementById('btn-rematch-pvp'); if(btnRem) { btnRem.innerText = "ĐẤU LẠI 1VS1"; btnRem.style.background = "#00b894"; btnRem.disabled = false;}
@@ -416,10 +446,17 @@
             myRole = 'p1'; currentCoopType = type; gameMode = 'coop'; let myN = document.getElementById('playerNameInput').value || "Dũng Sĩ";
             socket.emit('joinCoopLobby', { type: type, x: 50, y: groundY, facingDir: 1, name: myN }); 
         }
-        socket.on('lobbyJoined', (data) => { isLobbyHost = data.isHost; switchScreen('screen-waiting'); document.getElementById('wait-msg').innerText = "ĐANG CHỜ ĐỒNG ĐỘI..."; document.getElementById('btn-start-early').style.display = isLobbyHost ? 'block' : 'none'; });
+        socket.on('lobbyJoined', (data) => { isLobbyHost = data.isHost; showWaitingScreen(`ĐANG CHỜ ĐỒNG ĐỘI...`, true); });
         socket.on('lobbyUpdate', (data) => { if(document.getElementById('screen-waiting').style.display === 'flex') document.getElementById('wait-msg').innerText = `ĐANG CHỜ ĐỒNG ĐỘI (${data.count}/${data.max})`; });
-        socket.on('lobbyCountdown', (time) => { if(document.getElementById('screen-waiting').style.display === 'flex') { document.getElementById('wait-msg').innerText = `PHÒNG ĐÃ ĐẦY! VÀO SAU ${time}S`; document.getElementById('btn-start-early').style.display = 'none'; }});
+        socket.on('lobbyCountdown', (time) => { if(document.getElementById('screen-waiting').style.display === 'flex') { document.getElementById('wait-msg').innerText = `PHÒNG ĐÃ ĐẦY! VÀO SAU ${time}S`; document.getElementById('btn-start-early').style.display = 'none'; document.getElementById('btn-urge-host').style.display = 'none'; }});
         
+        function startCoopEarly() { socket.emit('startCoopEarly', currentCoopType); }
+        function urgeHost() { socket.emit('urgeHost', currentCoopType); let btn = document.getElementById('btn-urge-host'); btn.innerText = "ĐÃ NHẮC HOST!"; btn.disabled = true; setTimeout(()=>{btn.innerText = "🔔 BẮT ĐẦU ĐI!"; btn.disabled = false;}, 3000); }
+        socket.on('hostUrged', () => {
+            let btn = document.getElementById('btn-start-early');
+            if (btn) { btn.style.boxShadow = "0 0 30px red"; setTimeout(() => btn.style.boxShadow = "none", 2000); }
+        });
+
         socket.on('coopGameInit', (data) => {
             currentRoom = data.roomId; setMap(4); currentMapBuff = ''; isGameHost = data.isHost;
             let title = data.type === 'world' ? "BOSS THẾ GIỚI" : "LÃNH ĐỊA " + data.type.toUpperCase();
@@ -436,7 +473,7 @@
         socket.on('bossStunned', (dur) => handleStun(getOpp(), dur));
         socket.on('coopBossDefeated', () => { 
             p2.isDead = true; document.getElementById('player2').classList.add('dead'); hearts += 1; localStorage.setItem('hearts', hearts); renderShopAndInventory(); 
-            document.getElementById('game-over-screen-inner').style.display = 'flex'; document.getElementById('winner-text').innerText = "CHIẾN THẮNG!"; document.getElementById('winner-text').style.color = "var(--neon-gold)";
+            switchScreen('screen-game-over'); let winTxt = document.getElementById('winner-text'); winTxt.innerText = "CHIẾN THẮNG!"; winTxt.style.color = "var(--neon-gold)";
             let btnBoss = document.getElementById('btn-rematch-boss'); btnBoss.style.display = 'inline-block'; btnBoss.innerText = "TẠO LẠI PHÒNG"; btnBoss.disabled = false; document.getElementById('btn-spectate').style.display = 'none';
             applyCheatAndShowReward("+ TRÁI TIM QUẢ CẢM!");
             if(animationId) cancelAnimationFrame(animationId);
@@ -456,7 +493,7 @@
             if (gameMode !== 'coop') return; if (!getMe().isDead) return;
             let allDead = true; for (let id in teammates) { if (id !== socket.id && !teammates[id].isDead) { allDead = false; break; } }
             if (allDead) {
-                document.getElementById('game-over-screen-inner').style.display = 'flex';
+                switchScreen('screen-game-over');
                 let winTxt = document.getElementById('winner-text'); winTxt.innerText = "TOÀN ĐỘI BỊ TIÊU DIỆT"; winTxt.style.color = "var(--neon-red)"; document.getElementById('btn-spectate').style.display = 'none';
                 let rematchBtn = document.getElementById('btn-rematch-boss'); rematchBtn.style.display = 'inline-block'; rematchBtn.innerText = "TẠO LẠI PHÒNG"; rematchBtn.disabled = false;
                 applyCheatAndShowReward("");
@@ -474,7 +511,7 @@
         });
         socket.on('bossFires', (d) => spawnEntity(d.type, d.x, d.y, d.vx, d.vy, false, false));
 
-        function startSpectating() { document.getElementById('game-over-screen-inner').style.display = 'none'; myElement().style.display = 'none'; }
+        function startSpectating() { document.getElementById('screen-game-over').style.display = 'none'; myElement().style.display = 'none'; }
 
         // --- BOT OFFLINE ---
         function startBotMode(bossType) {
@@ -501,28 +538,23 @@
 
         // --- HÀNH ĐỘNG CỦA NGƯỜI CHƠI ---
         function doParry() {
-            let me = getMe();
-            if(me.stamina < 15 || me.parryTimer > 0 || me.isDead) return;
-            me.stamina -= 15; me.isParrying = true; me.parryTimer = 30; // 0.5s CD, 0.25s parry window
+            let me = getMe(); if(me.stamina < 15 || me.parryTimer > 0 || me.isDead) return;
+            me.stamina -= 15; me.isParrying = true; me.parryTimer = 30; // Khung parry
             myElement().classList.add('parrying');
         }
 
         function doUltimate() {
             let me = getMe(); if(me.isDead || !ultimateReady) return;
             
-            // Logic 1 Ulti/ BO3 Match
-            if(gameMode === 'online') {
-                if(matchUltimateUsed) return;
-                matchUltimateUsed = true;
-            }
+            // BO3 chỉ dùng 1 lần
+            if(gameMode === 'online') { if(matchUltimateUsed) return; matchUltimateUsed = true; }
             ultimateReady = false; 
             document.getElementById('ult-ui').innerText = "Ult: ĐÃ DÙNG"; document.getElementById('ult-ui').style.background = "#555"; document.getElementById('ult-ui').style.boxShadow = "none";
             
             let dir = me.facingDir; let px = me.x + 30; let py = me.y + 40;
             let wType = 'melee'; if(weapons[currentEquip]) wType = weapons[currentEquip].type; if(ultimates[currentEquip]) wType = ultimates[currentEquip].type;
             
-            let d1 = 120, d2 = 150;
-            if(gameMode === 'online') { d1 = Math.max(1, Math.floor(d1/2)); d2 = Math.max(1, Math.floor(d2/2)); }
+            let d1 = 120, d2 = 150; if(gameMode === 'online') { d1 = Math.max(1, Math.floor(d1/2)); d2 = Math.max(1, Math.floor(d2/2)); } // Nerf BO3
 
             if (wType === 'melee' || wType === 'piercing') {
                 spawnAndSend('ult_slash', 0, 0, 0, 0); 
@@ -556,7 +588,7 @@
             else if (currentEquip === 'heal_aoe') { spawnAndSend('heal-aura', me.x+30, groundY+90, 0, 0); } 
             else if (currentEquip === 'vine_spell') spawnAndSend('vine', px, py, dir*18, 0);
             else if (currentEquip === 'horse') spawnAndSend('horse_charge', px, me.y+30, dir*25, 0);
-            else if (currentEquip === 'giant_shield') { spawnAndSend('giant_shield_aura', me.x, me.y, 0, 0); } // Vũ khí mới
+            else if (currentEquip === 'giant_shield') { spawnAndSend('giant_shield_aura', me.x, me.y, 0, 0); } 
             else if (currentEquip === 'none' || currentEquip === 'katana' || currentEquip === 'dragon_blade' || currentEquip === 'gravity_hammer') {
                 let slash = document.createElement('div'); slash.className = 'slash-arc'; slash.style.left = (dir === 1 ? me.x + 20 : me.x - 60) + 'px'; slash.style.top = me.y + 'px'; slash.style.transform = `scaleX(${dir})`; document.getElementById('arena').appendChild(slash); setTimeout(() => { slash.style.opacity = 1; slash.style.transform = `scaleX(${dir}) scale(1.5)`; }, 10); setTimeout(() => slash.remove(), 150);
                 
@@ -601,27 +633,21 @@
         function handleDamage(target, dmg, type, isMeAttacking) {
             if(target.isDead) return;
             
-            // XỬ LÝ PARRY VÀ KHIÊN KHỔNG LỒ
             if (target.isParrying) {
                 let pTxt = document.createElement('div'); pTxt.className = 'parry-text'; pTxt.innerText = "PARRY!"; pTxt.style.left = target.x+'px'; pTxt.style.top = (target.y-20)+'px'; document.getElementById('arena').appendChild(pTxt); setTimeout(()=>pTxt.remove(), 1000);
-                if (isMeAttacking && gameMode === 'online') handleStun(getMe(), 60); // Bị parry thì choáng
+                if (isMeAttacking && gameMode === 'online') handleStun(getMe(), 60);
                 return;
             }
             
-            // Check Khiên Khổng Lồ
             let isProtectedByGiantShield = false;
-            entities.forEach(e => {
-                if (e.type === 'giant_shield_aura' && Math.abs(e.x - target.x) < 200 && Math.abs(e.y - target.y) < 200) isProtectedByGiantShield = true;
-            });
+            entities.forEach(e => { if (e.type === 'giant_shield_aura' && Math.abs(e.x - target.x) < 200 && Math.abs(e.y - target.y) < 200) isProtectedByGiantShield = true; });
             
             let isBoss = (gameMode === 'bot' || gameMode === 'coop') && target === p2; let actualDmg = dmg;
 
             if (isMeAttacking && !isBoss && target === p2 && currentMapBuff !== '') { if (type.includes(currentMapBuff)) actualDmg = Math.floor(actualDmg * 1.3); }
+            if (gameMode === 'online' && isMeAttacking) { actualDmg = Math.max(1, Math.floor(actualDmg / 2)); } // BO3 Nerf
             
-            // BO3 Nerf
-            if (gameMode === 'online' && isMeAttacking) { actualDmg = Math.max(1, Math.floor(actualDmg / 2)); }
-            
-            if (isProtectedByGiantShield && !isBoss) { actualDmg = Math.floor(actualDmg * 0.05); } // Giảm 95% DMG
+            if (isProtectedByGiantShield && !isBoss) { actualDmg = Math.floor(actualDmg * 0.05); } // Shield 95%
             else if (target.isBlocking && !isBoss) { if(type.includes('explosive') || type.includes('piercing')) actualDmg = Math.floor(actualDmg * 0.5); else actualDmg = Math.floor(actualDmg * 0.1); }
 
             target.hp -= actualDmg;
@@ -637,13 +663,12 @@
 
             if(target.hp <= 0 && target === getMe()) {
                 target.isDead = true; myElement().classList.add('dead');
-                if(gameMode === 'online') {
-                    socket.emit('playerDied', { roomId: currentRoom, loserRole: myRole });
-                } else if(gameMode === 'coop') {
-                    checkCoopGameOver();
-                } else {
+                if(gameMode === 'online') { socket.emit('playerDied', { roomId: currentRoom, loserRole: myRole }); } 
+                else if(gameMode === 'coop') { checkCoopGameOver(); } 
+                else {
                     setTimeout(() => {
-                        document.getElementById('game-over-screen-inner').style.display = 'flex'; document.getElementById('winner-text').innerText = "BẠN ĐÃ CHẾT"; document.getElementById('winner-text').style.color = "var(--neon-red)"; 
+                        switchScreen('screen-game-over'); 
+                        document.getElementById('winner-text').innerText = "BẠN ĐÃ CHẾT"; document.getElementById('winner-text').style.color = "var(--neon-red)"; 
                         let btnBoss = document.getElementById('btn-rematch-boss'); btnBoss.style.display = 'inline-block'; btnBoss.disabled = false;
                         document.getElementById('btn-rematch-pvp').style.display = 'none'; document.getElementById('btn-spectate').style.display = 'none';
                         applyCheatAndShowReward("");
@@ -653,7 +678,7 @@
             } else if (target.hp <= 0 && target === p2 && gameMode === 'bot') {
                 target.isDead = true; document.getElementById('player2').classList.add('dead');
                 setTimeout(() => {
-                    document.getElementById('game-over-screen-inner').style.display = 'flex'; document.getElementById('winner-text').innerText = "KẺ ĐỊCH BỊ TIÊU DIỆT"; document.getElementById('winner-text').style.color = "var(--neon-gold)"; 
+                    switchScreen('screen-game-over'); document.getElementById('winner-text').innerText = "KẺ ĐỊCH BỊ TIÊU DIỆT"; document.getElementById('winner-text').style.color = "var(--neon-gold)"; 
                     let rTxt = currentBoss === 'normal' ? "+100 Vàng" : "+800 Vàng!";
                     if (currentBoss === 'normal') coins += 100; else { coins += 800; if(currentBoss === 'titan') unlockItem('gravity_hammer'); if(currentBoss === 'zephyr') unlockItem('storm_bow'); if(currentBoss === 'ifrit') unlockItem('dragon_blade'); if(currentBoss === 'shadow') unlockItem('void_scythe'); if(currentBoss === 'omega') unlockItem('omega_beam'); }
                     localStorage.setItem('coins', coins); renderShopAndInventory(); 
@@ -664,8 +689,6 @@
                 }, 800);
             }
         }
-
-        function updateBossHpUI() { document.getElementById('hp2').style.width = Math.max(0, (p2.hp / p2.maxHp) * 100) + '%'; }
 
         function spawnEntity(type, x, y, vx, vy, isMine, isAlly = false) {
             let el = document.createElement('div'); el.className = type; document.getElementById('arena').appendChild(el);
@@ -688,7 +711,7 @@
                 }
                 
                 if(e.type === 'giant_shield_aura') {
-                    if(e.age > 60) { e.el.remove(); entities.splice(i, 1); continue; } // Tồn tại 1s
+                    if(e.age > 60) { e.el.remove(); entities.splice(i, 1); continue; } 
                     e.x = (e.isMine || e.isAlly) ? getMe().x : getOpp().x; e.y = (e.isMine || e.isAlly) ? getMe().y : getOpp().y;
                     e.el.style.left = e.x+'px'; e.el.style.top = e.y+'px'; continue;
                 }
@@ -704,7 +727,6 @@
                 
                 let target = (e.isMine || e.isAlly) ? getOpp() : getMe();
 
-                // XUYÊN THẤU VÀ ULT
                 if (e.type.includes('ult_') || e.type === 'shockwave' || e.type === 'omega_beam') {
                     if(e.age > 20) { e.el.remove(); entities.splice(i, 1); continue; }
                     if(e.age === 5 && !target.isDead && !e.hasHit) {
@@ -885,10 +907,9 @@
         function gameLoop() {
             let me = getMe();
             if (!me.isDead) {
-                // Xử lý Parry Time
                 if (me.parryTimer > 0) {
                     me.parryTimer--;
-                    if (me.parryTimer < 15) { me.isParrying = false; } // Hết 15 frame đầu là mất khả năng parry (vẫn bị delay thêm 15 frame)
+                    if (me.parryTimer < 15) { me.isParrying = false; } 
                     if (me.parryTimer === 0) { myElement().classList.remove('parrying'); }
                 }
 
@@ -907,10 +928,9 @@
                     if(keys.a) { me.x = Math.max(0, me.x - speed); me.facingDir = -1; }
                     if(keys.d) { me.x = Math.min(800 - (currentBoss==='titan'||currentBoss==='abyss'?100:60), me.x + speed); me.facingDir = 1; }
                     
-                    // Logic Nhảy cao
                     me.y += me.vy;
                     if (me.y < groundY) {
-                        if (keys.w && me.vy < 0) me.vy += 0.4; // Giảm trọng lực nếu giữ W
+                        if (keys.w && me.vy < 0) me.vy += 0.4; 
                         else me.vy += 0.8;
                     } else { me.y = groundY; me.vy = 0; me.jumpCount = 0; }
                 }
