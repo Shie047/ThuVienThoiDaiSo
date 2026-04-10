@@ -70,7 +70,6 @@ io.on('connection', (socket) => {
     });
 
     socket.on('playerAction', (data) => socket.to(data.roomId).emit('updateOpponent', data.playerData));
-    // FIX: Truyền toàn bộ gói data sát thương (kèm thuộc tính) để 2 máy đồng bộ chính xác 100%
     socket.on('playerHit', (data) => socket.to(data.roomId).emit('takeDamage', data));
     socket.on('shoot', (data) => socket.to(data.roomId).emit('opponentShoot', data));
     socket.on('applyStun', (data) => socket.to(data.roomId).emit('takeStun', data.duration));
