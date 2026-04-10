@@ -3,12 +3,10 @@ const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 
+// Phục vụ file tĩnh từ thư mục 'public'
 app.use(express.static('public'));
 
-// ===== MMO LOBBY SYSTEM =====
-const mmoPlayers = {};
-
-// ===== CORE GAME SYSTEM (GIỮ NGUYÊN) =====
+// ===== CORE GAME SYSTEM =====
 let waitingPlayer = null;
 let roomCounter = 0;
 const pvpRooms = {};
@@ -16,28 +14,6 @@ const coopLobbies = {};
 const coopGames = {};   
 
 io.on('connection', (socket) => {
-    
-    // --- LOBBY THẾ GIỚI MỞ ---
-    socket.on('joinMMO', (data) => {
-        mmoPlayers[socket.id] = { id: socket.id, name: data.name, x: 400, y: 300 };
-        socket.join('mmo_world');
-        io.to('mmo_world').emit('mmoUpdate', mmoPlayers);
-    });
-    socket.on('moveMMO', (data) => {
-        if (mmoPlayers[socket.id]) {
-            mmoPlayers[socket.id].x = data.x;
-            mmoPlayers[socket.id].y = data.y;
-            io.to('mmo_world').emit('mmoUpdate', mmoPlayers);
-        }
-    });
-    socket.on('leaveMMO', () => {
-        if (mmoPlayers[socket.id]) {
-            delete mmoPlayers[socket.id];
-            socket.leave('mmo_world');
-            io.to('mmo_world').emit('mmoUpdate', mmoPlayers);
-        }
-    });
-
     // === 1v1 MATCHMAKING (BO3) ===
     socket.on('findMatch', (playerName) => {
         socket.playerName = playerName;
@@ -75,37 +51,28 @@ io.on('connection', (socket) => {
         const room = pvpRooms[roomId];
         if(room) {
             room.readyVotes++;
-            if(room.readyVotes >= 2) {
-                room.readyVotes = 0; room.roundOver = false;
-                io.to(roomId).emit('startNextRound');
-            }
+            if(room.readyVotes >= 2) { room.readyVotes = 0; room.roundOver = false; io.to(roomId).emit('startNextRound'); }
         }
     });
 
     socket.on('rematchRequest', (roomId) => {
         const room = pvpRooms[roomId];
         if(room) {
-            room.rematchVotes++;
-            socket.to(roomId).emit('rematchOffer');
-            if(room.rematchVotes >= 2) {
-                room.rematchVotes = 0; room.score = {p1: 0, p2: 0}; room.roundOver = false;
-                io.to(roomId).emit('rematchStart');
-            }
+            room.rematchVotes++; socket.to(roomId).emit('rematchOffer');
+            if(room.rematchVotes >= 2) { room.rematchVotes = 0; room.score = {p1: 0, p2: 0}; room.roundOver = false; io.to(roomId).emit('rematchStart'); }
         }
     });
 
+    // === SYNC HÀNH ĐỘNG ===
     socket.on('playerAction', (data) => socket.to(data.roomId).emit('updateOpponent', data.playerData));
     socket.on('playerHit', (data) => socket.to(data.roomId).emit('takeDamage', data));
     socket.on('shoot', (data) => socket.to(data.roomId).emit('opponentShoot', data));
     socket.on('applyStun', (data) => socket.to(data.roomId).emit('takeStun', data.duration));
     socket.on('healTeammate', (data) => socket.to(data.roomId).emit('receiveHeal', data.amount));
 
-    // === CO-OP MULTIPLAYER ===
+    // === CO-OP BOSS LOBBY ===
     socket.on('joinCoopLobby', (data) => { 
-        const roomType = data.type;
-        const maxPlayers = roomType === 'world' ? 8 : 4;
-        const lobbyId = 'lobby_' + roomType;
-
+        const roomType = data.type; const maxPlayers = roomType === 'world' ? 8 : 4; const lobbyId = 'lobby_' + roomType;
         if (!coopLobbies[lobbyId]) coopLobbies[lobbyId] = { players: {}, max: maxPlayers, type: roomType, hostId: socket.id, timer: null };
         const lobby = coopLobbies[lobbyId];
         
@@ -116,8 +83,7 @@ io.on('connection', (socket) => {
         io.to(lobbyId).emit('lobbyUpdate', { count: Object.keys(lobby.players).length, max: maxPlayers });
         
         if (Object.keys(lobby.players).length >= maxPlayers && !lobby.timer) {
-            let timeLeft = 15;
-            io.to(lobbyId).emit('lobbyCountdown', timeLeft);
+            let timeLeft = 15; io.to(lobbyId).emit('lobbyCountdown', timeLeft);
             lobby.timer = setInterval(() => {
                 timeLeft--;
                 if(timeLeft <= 0) { clearInterval(lobby.timer); startCoopGame(lobbyId); } 
@@ -127,23 +93,19 @@ io.on('connection', (socket) => {
     });
     
     socket.on('urgeHost', (roomType) => {
-        const lobbyId = 'lobby_' + roomType;
-        const lobby = coopLobbies[lobbyId];
+        const lobbyId = 'lobby_' + roomType; const lobby = coopLobbies[lobbyId];
         if (lobby && lobby.hostId) io.to(lobby.hostId).emit('hostUrged');
     });
 
     socket.on('startCoopEarly', (roomType) => {
         const lobbyId = 'lobby_' + roomType;
         if(coopLobbies[lobbyId] && coopLobbies[lobbyId].hostId === socket.id) {
-            if(coopLobbies[lobbyId].timer) clearInterval(coopLobbies[lobbyId].timer);
-            startCoopGame(lobbyId);
+            if(coopLobbies[lobbyId].timer) clearInterval(coopLobbies[lobbyId].timer); startCoopGame(lobbyId);
         }
     });
 
     function startCoopGame(lobbyId) {
-        const lobby = coopLobbies[lobbyId];
-        if (!lobby || Object.keys(lobby.players).length === 0) return;
-        
+        const lobby = coopLobbies[lobbyId]; if (!lobby || Object.keys(lobby.players).length === 0) return;
         const gameId = 'game_' + lobbyId + '_' + Date.now();
         coopGames[gameId] = { players: lobby.players, bossHp: lobby.type === 'world' ? 150000 : 30000 };
 
@@ -161,8 +123,7 @@ io.on('connection', (socket) => {
 
     socket.on('coopPlayerAction', (data) => {
         if(socket.coopGameId && coopGames[socket.coopGameId]) {
-            coopGames[socket.coopGameId].players[socket.id] = data;
-            socket.to(socket.coopGameId).emit('updateTeammate', { id: socket.id, data: data });
+            coopGames[socket.coopGameId].players[socket.id] = data; socket.to(socket.coopGameId).emit('updateTeammate', { id: socket.id, data: data });
         }
     });
 
@@ -173,9 +134,7 @@ io.on('connection', (socket) => {
 
     socket.on('hitCoopBoss', (damage) => {
         if(!socket.coopGameId || !coopGames[socket.coopGameId]) return;
-        let game = coopGames[socket.coopGameId];
-        game.bossHp -= damage;
-        io.to(socket.coopGameId).emit('coopBossHpUpdate', game.bossHp);
+        let game = coopGames[socket.coopGameId]; game.bossHp -= damage; io.to(socket.coopGameId).emit('coopBossHpUpdate', game.bossHp);
         if (game.bossHp <= 0) { io.to(socket.coopGameId).emit('coopBossDefeated'); delete coopGames[socket.coopGameId]; }
     });
 
@@ -183,33 +142,20 @@ io.on('connection', (socket) => {
         for(let l in coopLobbies) {
             let lobby = coopLobbies[l];
             if(lobby.players[socketId]) {
-                delete lobby.players[socketId]; 
-                let ioSocket = io.sockets.sockets.get(socketId);
-                if(ioSocket) ioSocket.leave(l);
+                delete lobby.players[socketId]; let ioSocket = io.sockets.sockets.get(socketId); if(ioSocket) ioSocket.leave(l);
                 if (lobby.hostId === socketId) {
                     let keys = Object.keys(lobby.players);
                     if (keys.length > 0) { lobby.hostId = keys[0]; io.to(lobby.hostId).emit('lobbyJoined', { isHost: true }); }
                 }
-                if (lobby.timer && Object.keys(lobby.players).length < lobby.max) {
-                    clearInterval(lobby.timer); lobby.timer = null;
-                }
+                if (lobby.timer && Object.keys(lobby.players).length < lobby.max) { clearInterval(lobby.timer); lobby.timer = null; }
                 io.to(l).emit('lobbyUpdate', { count: Object.keys(lobby.players).length, max: lobby.max });
             }
         }
     }
 
     socket.on('cancelMatch', () => { if(waitingPlayer === socket) waitingPlayer = null; handleLobbyLeave(socket.id); });
-    
     socket.on('disconnect', () => { 
-        if (waitingPlayer === socket) waitingPlayer = null; 
-        handleLobbyLeave(socket.id);
-        
-        // Hủy MMO player khi ngắt kết nối
-        if (mmoPlayers[socket.id]) {
-            delete mmoPlayers[socket.id];
-            io.to('mmo_world').emit('mmoUpdate', mmoPlayers);
-        }
-
+        if (waitingPlayer === socket) waitingPlayer = null; handleLobbyLeave(socket.id);
         if (socket.coopGameId && coopGames[socket.coopGameId]) io.to(socket.coopGameId).emit('teammateLeft', socket.id);
     });
 });
