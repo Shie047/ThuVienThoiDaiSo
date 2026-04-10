@@ -211,6 +211,10 @@
                 </div>
                 <div class="bar-group">
                     <div class="health-bar-container" id="hp2-container"><div id="hp2" class="health-fill"></div><div class="player-name-tag" id="name2">Địch</div></div>
+                    <div class="stamina-bar-container" id="stm2-container" style="display:none;"><div id="stm2" class="stamina-fill"></div></div>
+                    <div class="hud-badges" id="badges2" style="right:0; flex-direction: row-reverse; display:none;">
+                        <div id="ult-ui2" class="ult-display">Ult: SẴN SÀNG</div>
+                    </div>
                 </div>
             </div>
 
@@ -239,7 +243,6 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // CĂN CHỈNH SCALE GIAO DIỆN PC
         function updateScale() {
             let w = window.innerWidth;
             let h = window.innerHeight;
@@ -249,7 +252,6 @@
         }
         window.addEventListener('resize', updateScale); updateScale();
 
-        // CHUYỂN ĐỔI MÀN HÌNH CHUẨN
         function switchScreen(screenId) {
             document.querySelectorAll('.fullscreen-overlay').forEach(p => p.style.display = 'none');
             document.getElementById('game-container').style.display = 'none';
@@ -276,12 +278,12 @@
         ];
         let currentMapBuff = '';
 
-        // VŨ KHÍ & KỸ NĂNG (Đã FIX Mìn Hẹn Giờ)
+        // VŨ KHÍ & KỸ NĂNG (Đã FIX Mìn Hẹn Giờ x3 Dmg, delay 2s)
         const weapons = {
             shield: { name: 'Khiên Thường', price: 100, type: 'defense', stm: 5, ammo: 0, firerate: 30 },
             gun: { name: 'Súng Lục', price: 150, type: 'ballistic', stm: 5, ammo: 1, firerate: 15 }, 
             katana: { name: 'Kiếm Katana', price: 200, type: 'melee', stm: 10, ammo: 0, firerate: 20 },
-            bomb: { name: 'Mìn Hẹn Giờ', price: 250, type: 'explosive', stm: 15, ammo: 0, firerate: 30 }, // Fix đạn 0, tốc độ nhanh
+            bomb: { name: 'Mìn Hẹn Giờ', price: 250, type: 'explosive', stm: 15, ammo: 0, firerate: 30 }, 
             shuriken: { name: 'Phi Tiêu', price: 300, type: 'ballistic', stm: 5, ammo: 0, firerate: 10 },
             vine_spell: { name: 'Phép Dây Leo', price: 400, type: 'magic', stm: 60, ammo: 0, firerate: 60 },
             shotgun: { name: 'Hoa Cải', price: 450, type: 'ballistic', stm: 15, ammo: 3, firerate: 35 }, 
@@ -330,7 +332,10 @@
             currentEquip = item; localStorage.setItem('currentEquip', item);
             document.querySelectorAll('.btn-equip').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll(`#eq-${item}`).forEach(btn => btn.classList.add('active')); 
-            let wData = weapons[item] || ultimates[item]; document.getElementById('ammo-ui').style.display = (wData && wData.ammo > 0) ? 'block' : 'none';
+            let wData = weapons[item] || ultimates[item]; 
+            let hasAmmo = (wData && wData.ammo > 0);
+            document.getElementById('ammo-ui').style.display = hasAmmo ? 'block' : 'none';
+            document.getElementById('ammo-ui2').style.display = hasAmmo ? 'block' : 'none';
             document.querySelectorAll('button').forEach(b => b.blur());
         }
         
@@ -343,7 +348,6 @@
         }
         renderShopAndInventory();
 
-        // HACK 5000 VÀNG CHO THÀNH
         function applyCheatAndShowReward(baseText) {
             let name = document.getElementById('playerNameInput').value.trim().toLowerCase();
             let txt = document.getElementById('reward-text');
@@ -361,7 +365,6 @@
         const getP1StartX = () => myRole === 'p1' ? 50 : 650; const getP2StartX = () => myRole === 'p1' ? 650 : 50;
         const getP1StartDir = () => myRole === 'p1' ? 1 : -1; const getP2StartDir = () => myRole === 'p1' ? -1 : 1;
         
-        // FIX LỖI P2: Thêm đầy đủ stamina, ammo, parry cho P2
         let p1 = { x: 50, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: 1, stunTimer: 0, isParrying: false, parryTimer: 0 };
         let p2 = { x: 650, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: -1, stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1 };
         let keys = { a: false, d: false, space: false, w: false };
@@ -372,11 +375,20 @@
 
         function setMap(mapIndex) { let map = maps[mapIndex]; currentMapBuff = map.buff; document.getElementById('map-name-display').innerText = `MAP: ${map.name} (BUFF: ${map.buff})`; document.getElementById('arena').style.background = map.bg; }
 
-        function initGame(mode, p1Name, p2Name) {
+        function initGame(mode, myName, oppName) {
             gameMode = mode; 
-            document.getElementById(myRole === 'p1' ? 'name1' : 'name2').innerText = p1Name; 
-            document.getElementById(myRole === 'p1' ? 'name2' : 'name1').innerText = p2Name;
+            // Giao diện người chơi (Me) luôn nằm bên trái (name1), đối thủ (Opp) luôn nằm bên phải (name2)
+            document.getElementById('name1').innerText = myName; 
+            document.getElementById('name2').innerText = oppName;
             
+            if (mode === 'online') {
+                document.getElementById('stm2-container').style.display = 'block';
+                document.getElementById('badges2').style.display = 'flex';
+            } else {
+                document.getElementById('stm2-container').style.display = 'none';
+                document.getElementById('badges2').style.display = 'none';
+            }
+
             switchScreen(); // Xóa màn hình chờ, menu
             document.getElementById('game-container').style.display = 'flex';
             
@@ -511,9 +523,12 @@
         function startBotMode(bossType) {
             myRole = 'p1'; currentBoss = bossType; let myN = document.getElementById('playerNameInput').value || "Người Chơi";
             let bossNames = { 'normal': 'Thực Tập Sinh', 'titan': 'TITAN', 'zephyr': 'ZEPHYR', 'ifrit': 'IFRIT', 'shadow': 'SHADOW', 'omega': 'OMEGA'};
-            setMap(Math.floor(Math.random() * 5)); initGame('bot', myN, bossNames[bossType]);
+            setMap(Math.floor(Math.random() * 5)); 
+            initGame('bot', myN, bossNames[bossType]);
+            
             let opp = getOpp(); if(bossType === 'omega') opp.maxHp = 6000; else if(bossType !== 'normal') opp.maxHp = 3000; else opp.maxHp = 800; 
-            opp.hp = opp.maxHp; document.getElementById('hp2-container').classList.toggle('boss-hp', bossType !== 'normal');
+            opp.hp = opp.maxHp; 
+            document.getElementById('hp2-container').classList.toggle('boss-hp', bossType !== 'normal');
             document.getElementById('player2').className = 'player ' + (bossType !== 'normal' ? 'boss-'+bossType : '');
             opp.lockedTargetId = null; opp.phase = 1;
         }
@@ -528,7 +543,7 @@
         socket.on('takeDamage', (dmg) => handleDamage(getMe(), dmg, 'unknown', false));
         socket.on('takeStun', (dur) => handleStun(getMe(), dur));
         socket.on('opponentShoot', (d) => spawnEntity(d.type || 'bullet', d.x, d.y, d.vx, d.vy || 0, false, false));
-        socket.on('receiveHeal', (amt) => { let me = getMe(); me.hp = Math.min(me.maxHp, me.hp + amt); document.getElementById(myRole==='p1'?'hp1':'hp2').style.width = (me.hp/me.maxHp)*100 + '%'; });
+        socket.on('receiveHeal', (amt) => { let me = getMe(); me.hp = Math.min(me.maxHp, me.hp + amt); document.getElementById('hp1').style.width = (me.hp/me.maxHp)*100 + '%'; });
 
         // --- HÀNH ĐỘNG CỦA NGƯỜI CHƠI ---
         function doParry() {
@@ -543,7 +558,9 @@
             // BO3 chỉ dùng 1 lần
             if(gameMode === 'online') { if(matchUltimateUsed) return; matchUltimateUsed = true; }
             ultimateReady = false; 
+            
             document.getElementById('ult-ui').innerText = "Ult: ĐÃ DÙNG"; document.getElementById('ult-ui').style.background = "#555"; document.getElementById('ult-ui').style.boxShadow = "none";
+            document.getElementById('ult-ui2').innerText = "Ult: ĐÃ DÙNG"; document.getElementById('ult-ui2').style.background = "#555"; document.getElementById('ult-ui2').style.boxShadow = "none";
             
             let dir = me.facingDir; let px = me.x + 30; let py = me.y + 40;
             let wType = 'melee'; if(weapons[currentEquip]) wType = weapons[currentEquip].type; if(ultimates[currentEquip]) wType = ultimates[currentEquip].type;
@@ -558,7 +575,7 @@
                 if(gameMode === 'online') socket.emit('playerHit', { roomId: currentRoom, damage: d2 }); else if(gameMode === 'coop') socket.emit('hitCoopBoss', 150); handleDamage(getOpp(), d2, 'explosive', true);
             } else if (wType === 'magic' || wType === 'defense' || wType === 'defense_aoe') {
                 spawnAndSend('ult_divine', 0, 0, 0, 0); 
-                me.hp = me.maxHp; document.getElementById(myRole==='p1'?'hp1':'hp2').style.width = '100%';
+                me.hp = me.maxHp; document.getElementById('hp1').style.width = '100%'; // Hồi máu bản thân luôn hiển thị bên Trái
                 if(gameMode === 'online' || gameMode === 'coop') socket.emit('healTeammate', { roomId: currentRoom, amount: 200 });
             } else { 
                 spawnAndSend('omega_beam', dir===1 ? px : px-800, py-20, 0, 0);
@@ -607,7 +624,7 @@
             else if (currentEquip === 'fireball') spawnAndSend('fireball', px, py-10, dir*10, 0); 
             else if (currentEquip === 'rocket') spawnAndSend('rocket', px, py, dir*15, 0);
             else if (currentEquip === 'shotgun') { spawnAndSend('shotgun_bullet', px, py, dir*18, -3); spawnAndSend('shotgun_bullet', px, py, dir*18, 0); spawnAndSend('shotgun_bullet', px, py, dir*18, 3); }
-            // MÌN HẸN GIỜ: Kiểm tra số lượng tối đa 4 quả
+            // MÌN HẸN GIỜ: Giới hạn 4 quả
             else if (currentEquip === 'bomb') {
                 let bombCount = entities.filter(e => e.type === 'bomb' && e.isMine).length;
                 if (bombCount >= 4) return;
@@ -653,12 +670,10 @@
             
             if(target === getMe()) { document.getElementById(myRole==='p1'?'player1':'player2').style.filter = 'brightness(0.5) sepia(1) hue-rotate(-50deg) saturate(5)'; setTimeout(() => document.getElementById(myRole==='p1'?'player1':'player2').style.filter = '', 150); }
 
-            if (target === p2) document.getElementById('hp2').style.width = Math.max(0, (p2.hp / p2.maxHp) * 100) + '%';
-            else { 
-                let hpFill = document.getElementById(target===p1 ? 'hp1' : 'hp2'); 
-                hpFill.style.width = Math.max(0, (target.hp / target.maxHp) * 100) + '%'; 
-                if(target.hp <= target.maxHp * 0.3) hpFill.style.background = 'linear-gradient(90deg, #c23616, var(--neon-red))'; 
-            }
+            // FIX: Cập nhật máu đúng giao diện
+            let hpFill = document.getElementById(target === getMe() ? 'hp1' : 'hp2'); 
+            hpFill.style.width = Math.max(0, (target.hp / target.maxHp) * 100) + '%'; 
+            if(target !== getMe() && target.hp <= target.maxHp * 0.3) hpFill.style.background = 'linear-gradient(90deg, #c23616, var(--neon-red))'; 
 
             if(target.hp <= 0 && target === getMe()) {
                 target.isDead = true; myElement().classList.add('dead');
@@ -695,7 +710,6 @@
         function spawnEntity(type, x, y, vx, vy, isMine, isAlly = false) {
             let el = document.createElement('div'); el.className = type; document.getElementById('arena').appendChild(el);
             let entity = { type: type, x: x, y: y, vx: vx, vy: vy, el: el, isMine: isMine, isAlly: isAlly, age: 0, hasHit: false };
-            // FIX: Thời gian nổ mìn đếm 2 giây
             if (type === 'bomb') { el.innerText = "2"; entity.timer = 2; let cd = setInterval(() => { entity.timer--; if(el) el.innerText = entity.timer; if(entity.timer <= 0) clearInterval(cd); }, 1000); }
             entities.push(entity);
         }
@@ -708,7 +722,7 @@
                     if(e.age > 180) { e.el.remove(); entities.splice(i, 1); continue; }
                     if(e.age % 30 === 0) { 
                         let ally = getMe(); 
-                        if(Math.abs(ally.x - e.x) < 100 && !ally.isDead) { ally.hp = Math.min(ally.maxHp, ally.hp + 5); document.getElementById(myRole==='p1'?'hp1':'hp2').style.width = (ally.hp/ally.maxHp)*100+'%'; }
+                        if(Math.abs(ally.x - e.x) < 100 && !ally.isDead) { ally.hp = Math.min(ally.maxHp, ally.hp + 5); document.getElementById('hp1').style.width = (ally.hp/ally.maxHp)*100+'%'; }
                         if(e.isMine && (gameMode==='online' || gameMode==='coop')) socket.emit('healTeammate', {roomId: currentRoom, amount: 5});
                     } continue;
                 }
@@ -739,13 +753,13 @@
                     } continue;
                 }
                 
-                // FIX: Mìn hẹn giờ (2 giây / Sát thương x3)
+                // Mìn hẹn giờ x3 sát thương
                 if (e.type === 'bomb') {
                     if (e.age > 120) { 
                         e.el.className = 'bomb-explode'; e.el.innerText = "";
                         if (Math.abs(e.x - target.x) < 90 && Math.abs(e.y - target.y) < 90 && !target.isDead && !e.hasHit) { 
                             e.hasHit = true; 
-                            let bombDmg = 120; // Sát thương cực lớn
+                            let bombDmg = 120;
                             if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: bombDmg}); 
                             if(e.isMine && gameMode==='coop') socket.emit('hitCoopBoss', bombDmg); 
                             if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, bombDmg, 'explosive', e.isMine); 
@@ -771,7 +785,7 @@
                     if(!e.type.includes('wave') && !e.type.includes('scythe') && e.type !== 'sniper_bullet' && e.type !== 'tornado') { e.hasHit = true; }
 
                     if(e.type === 'vine' && e.isMine) { if(gameMode==='online') socket.emit('applyStun', {roomId: currentRoom, duration: 90}); else if(gameMode==='coop') socket.emit('coopStunBoss', 90); handleStun(target, 90); }
-                    if(e.type === 'heal-beam') { if(e.isMine && (gameMode==='online'||gameMode==='coop')) socket.emit('healTeammate', {roomId: currentRoom, amount: 50}); let me = getMe(); me.hp = Math.min(me.maxHp, me.hp + 50); document.getElementById(myRole==='p1'?'hp1':'hp2').style.width = (me.hp/me.maxHp)*100+'%'; e.el.remove(); entities.splice(i, 1); continue; }
+                    if(e.type === 'heal-beam') { if(e.isMine && (gameMode==='online'||gameMode==='coop')) socket.emit('healTeammate', {roomId: currentRoom, amount: 50}); let me = getMe(); me.hp = Math.min(me.maxHp, me.hp + 50); document.getElementById('hp1').style.width = (me.hp/me.maxHp)*100+'%'; e.el.remove(); entities.splice(i, 1); continue; }
                     
                     if (e.type === 'rocket' && e.vx !== 0) {
                         e.el.className = 'bomb-explode'; e.vx = 0; e.vy = 0; 
@@ -795,7 +809,6 @@
         function runBotAI() {
             let bot = p2; let targetPlayer = getMe(); if(bot.isDead || bot.stunTimer > 0) return;
 
-            // AI ĐỔI MỤC TIÊU LINH HOẠT TRONG CO-OP
             if (gameMode === 'coop') {
                 if (!bot.lockedTargetId || Math.random() < 0.03) {
                     let validTargets = [];
@@ -826,7 +839,6 @@
             if(botWait === 15) { document.getElementById('player2').classList.add('boss-telegraph'); if(gameMode === 'coop' && isGameHost) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir, telegraph: true }); }
             if(botWait === 5) { document.getElementById('player2').classList.remove('boss-telegraph'); if(gameMode === 'coop' && isGameHost) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir, telegraph: false }); }
 
-            // Shadow Teleport
             if (currentBoss === 'shadow' && botWait <= 0 && Math.random() < (isPhase2?0.1:0.05)) { 
                 document.getElementById('darkness-overlay').style.opacity = 0.8; setTimeout(()=>document.getElementById('darkness-overlay').style.opacity = 0, 500);
                 bot.x = targetPlayer.x + (targetPlayer.facingDir * -60); bot.y = targetPlayer.y; bot.facingDir = targetPlayer.facingDir; botWait = isPhase2?25:40; 
@@ -926,22 +938,27 @@
             if(e.code === 'Space') keys.space = false;
         });
 
+        // FIX AN TOÀN NHẤT: Khởi tạo HP cứng để ngăn lỗi NaN làm mất máu, reset lại đúng vị trí
         function resetGameUI() {
             document.getElementById('game-over-screen-inner').style.display = 'none'; document.getElementById('btn-spectate').style.display = 'none';
-            document.getElementById('player1').style.display = 'block';
-            // Đảm bảo P2 luôn hiện khi reset
-            document.getElementById('player2').style.display = 'block'; 
-            p1 = { x: getP1StartX(), y: groundY, vy: 0, hp: p1.maxHp, maxHp: p1.maxHp, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP1StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0 };
-            p2 = { x: getP2StartX(), y: groundY, vy: 0, hp: p2.maxHp, maxHp: p2.maxHp, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP2StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1 };
+            document.getElementById('player1').style.display = 'block'; document.getElementById('player2').style.display = 'block'; 
+            
+            p1 = { x: getP1StartX(), y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP1StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0 };
+            p2 = { x: getP2StartX(), y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP2StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1 };
             entities.forEach(e => {if(e.el) e.el.remove()}); entities = [];
             
-            ultimateReady = true; document.getElementById('ult-ui').style.background = "#8e44ad"; document.getElementById('ult-ui').innerText = "Ult: SẴN SÀNG"; document.getElementById('ult-ui').style.boxShadow = "0 0 10px #8e44ad";
+            ultimateReady = true; 
+            document.getElementById('ult-ui').style.background = "#8e44ad"; document.getElementById('ult-ui').innerText = "Ult: SẴN SÀNG"; document.getElementById('ult-ui').style.boxShadow = "0 0 10px #8e44ad";
+            document.getElementById('ult-ui2').style.background = "#8e44ad"; document.getElementById('ult-ui2').innerText = "Ult: SẴN SÀNG"; document.getElementById('ult-ui2').style.boxShadow = "0 0 10px #8e44ad";
             
-            document.getElementById('player1').className = 'player'; document.getElementById('player1').classList.remove('parrying'); document.getElementById(myRole==='p1'?'hp1':'hp2').style.width = '100%'; document.getElementById(myRole==='p1'?'hp1':'hp2').style.background = 'linear-gradient(90deg, #00b894, var(--neon-cyan))';
+            document.getElementById('player1').className = 'player'; document.getElementById('player1').classList.remove('parrying'); 
+            document.getElementById('hp1').style.width = '100%'; document.getElementById('hp1').style.background = 'linear-gradient(90deg, #00b894, var(--neon-cyan))';
+            
             if(gameMode !== 'online' && gameMode !== 'coop') document.getElementById('player2').className = 'player ' + (currentBoss !== 'normal' ? 'boss-'+currentBoss : '');
-            let oppHpId = myRole==='p1'?'hp2':'hp1';
-            document.getElementById(oppHpId).style.width = '100%'; document.getElementById(oppHpId).style.background = document.getElementById(oppHpId+'-container').classList.contains('boss-hp') ? 'linear-gradient(90deg, #c23616, var(--neon-red))' : 'linear-gradient(90deg, #00b894, var(--neon-cyan))';
-            document.getElementById('stm1').style.width = '100%'; equipItem(currentEquip); 
+            
+            document.getElementById('hp2').style.width = '100%'; document.getElementById('hp2').style.background = document.getElementById('hp2-container').classList.contains('boss-hp') ? 'linear-gradient(90deg, #c23616, var(--neon-red))' : 'linear-gradient(90deg, #00b894, var(--neon-cyan))';
+            document.getElementById('stm1').style.width = '100%'; document.getElementById('stm2').style.width = '100%';
+            equipItem(currentEquip); 
         }
 
         function rematchBoss() { 
@@ -950,7 +967,7 @@
         }
         function requestRematchPvP() { let btnRem = document.getElementById('btn-rematch-pvp'); if(btnRem){ btnRem.innerText = "CHỜ ĐỐI THỦ..."; btnRem.style.background = "#555"; btnRem.disabled = true; } socket.emit('rematchRequest', currentRoom); }
         socket.on('rematchOffer', () => { let btnRem = document.getElementById('btn-rematch-pvp'); if(btnRem && !btnRem.disabled){ btnRem.innerText = "ĐỐI THỦ RỦ ĐẤU LẠI! ĐỒNG Ý"; } });
-        socket.on('rematchStart', () => { matchUltimateUsed = false; initGame('online', document.getElementById(myRole==='p1'?'name1':'name2').innerText, document.getElementById(myRole==='p1'?'name2':'name1').innerText); });
+        socket.on('rematchStart', () => { matchUltimateUsed = false; initGame('online', document.getElementById('name1').innerText, document.getElementById('name2').innerText); });
 
         function gameLoop() {
             let me = getMe();
@@ -965,7 +982,12 @@
                     if (!keys.space || attackCooldown > 0 || me.stamina < 5) { me.stamina = Math.min(100, me.stamina + 0.6); me.ammo = Math.min(30, me.ammo + 0.05); }
                     else { me.stamina = Math.min(100, me.stamina + 0.2); } 
                 }
-                document.getElementById('stm1').style.width = me.stamina + '%'; document.getElementById('ammo-text').innerText = Math.floor(me.ammo);
+                
+                // Cập nhật thanh Thể lực & Đạn tương ứng với bản thân đang chơi
+                let myStm = myRole === 'p1' ? 'stm1' : 'stm2';
+                let myAmmo = myRole === 'p1' ? 'ammo-text' : 'ammo-text2';
+                document.getElementById(myStm).style.width = me.stamina + '%'; 
+                document.getElementById(myAmmo).innerText = Math.floor(me.ammo);
 
                 if(attackCooldown > 0) attackCooldown--;
                 if(keys.space && attackCooldown <= 0) doAttack();
