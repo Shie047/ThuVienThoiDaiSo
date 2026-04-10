@@ -106,7 +106,6 @@
         .bullet { position: absolute; width: 20px; height: 6px; background: var(--neon-gold); border-radius: 3px; box-shadow: 0 0 8px var(--neon-gold);}
         .rock { position: absolute; width: 25px; height: 25px; background: #7f8fa6; border-radius: 5px; box-shadow: 0 0 10px #2d3436; }
         .boulder { position: absolute; width: 60px; height: 60px; background: #636e72; border-radius: 10px; box-shadow: 0 0 20px #2d3436; }
-        /* Đã xóa thuộc tính bottom: 0 để sửa lỗi lệch map Zephyr */
         .tornado { position: absolute; width: 80px; height: 150px; background: rgba(0, 184, 148, 0.6); border-radius: 50%; filter: blur(5px); box-shadow: 0 0 20px #00b894; }
 
         .bomb { position: absolute; width: 24px; height: 24px; background: #2d3436; border: 2px solid var(--neon-red); border-radius: 50%; color: white; font-size: 12px; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 10px var(--neon-red);}
@@ -285,6 +284,7 @@
         ];
         let currentMapBuff = '';
 
+        // CÂN BẰNG VŨ KHÍ CƠ BẢN VÀ THÊM 5 MÓN MỚI (CHIA ĐỀU HỆ)
         const weapons = {
             shield: { name: 'Khiên Thường', price: 100, type: 'defense', stm: 5, ammo: 0, firerate: 30 },
             gun: { name: 'Súng Lục', price: 150, type: 'ballistic', stm: 5, ammo: 1, firerate: 12 }, 
@@ -572,7 +572,6 @@
             myElement().classList.add('parrying');
         }
 
-        // ĐÃ CẬP NHẬT HIỆU ỨNG ULTIMATE ĐẸP MẮT
         function doUltimate() {
             let me = getMe(); if(me.isDead || !ultimateReady) return;
             
@@ -766,7 +765,6 @@
             entities.push(entity);
         }
 
-        // FIX BUG XUYÊN THẤU GÂY ĐỘT TỬ (INSTA-KILL)
         function updateEntities() {
             for(let i = entities.length - 1; i >= 0; i--) {
                 let e = entities[i]; e.age++;
@@ -803,28 +801,7 @@
                 
                 let target = (e.isMine || e.isAlly) ? getOpp() : getMe();
 
-                if (e.type.includes('ult_') || e.type === 'shockwave' || e.type === 'omega_beam') {
-                    if(e.age > 20) { e.el.remove(); entities.splice(i, 1); continue; }
-                    if(e.age === 5 && !target.isDead && !e.hasHit) {
-                        e.hasHit = true;
-                        if(e.type === 'shockwave' && target.y >= groundY - 20) { 
-                            let sDmg = 45; 
-                            if (!e.isMine && !e.isAlly && (gameMode==='bot'||gameMode==='coop')) sDmg = Math.floor(sDmg * 0.5); 
-                            if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: sDmg, type: 'explosive'}); 
-                            if(e.isMine && gameMode==='coop') socket.emit('hitCoopBoss', sDmg); 
-                            if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, sDmg, 'explosive', e.isMine); 
-                        }
-                        if(e.type === 'omega_beam' && target.x > e.x && target.x < e.x+800 && target.y > e.y-40 && target.y < e.y+60) { 
-                            let oDmg = 150; 
-                            if (!e.isMine && !e.isAlly && (gameMode==='bot'||gameMode==='coop')) oDmg = Math.floor(oDmg * 0.5); 
-                            if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: oDmg, type: 'energy'}); 
-                            if(e.isMine && gameMode==='coop') socket.emit('hitCoopBoss', oDmg); 
-                            if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, oDmg, 'energy', e.isMine); 
-                        }
-                    } continue;
-                }
-                
-                // ULTIMATES MỚI (RỒNG, HỐ ĐEN)
+                // ULTIMATES MỚI - ĐỒNG BỘ SÁT THƯƠNG
                 if (e.type === 'dragon_wave') {
                     if(e.age > 60) { e.el.remove(); entities.splice(i, 1); continue; }
                     if (Math.abs(e.x - target.x) < 100 && Math.abs(e.y - target.y) < 150 && !target.isDead && !e.hasHit) {
@@ -847,6 +824,27 @@
                         setTimeout(() => { if(e.el) e.el.remove(); }, 300); entities.splice(i, 1);
                     } continue;
                 }
+
+                if (e.type.includes('ult_') || e.type === 'shockwave' || e.type === 'omega_beam') {
+                    if(e.age > 20) { e.el.remove(); entities.splice(i, 1); continue; }
+                    if(e.age === 5 && !target.isDead && !e.hasHit) {
+                        e.hasHit = true;
+                        if(e.type === 'shockwave' && target.y >= groundY - 20) { 
+                            let sDmg = 45; 
+                            if (!e.isMine && !e.isAlly && (gameMode==='bot'||gameMode==='coop')) sDmg = Math.floor(sDmg * 0.5); 
+                            if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: sDmg, type: 'explosive'}); 
+                            if(e.isMine && gameMode==='coop') socket.emit('hitCoopBoss', sDmg); 
+                            if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, sDmg, 'explosive', e.isMine); 
+                        }
+                        if(e.type === 'omega_beam' && target.x > e.x && target.x < e.x+800 && target.y > e.y-40 && target.y < e.y+60) { 
+                            let oDmg = 150; 
+                            if (!e.isMine && !e.isAlly && (gameMode==='bot'||gameMode==='coop')) oDmg = Math.floor(oDmg * 0.5); 
+                            if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: oDmg, type: 'energy'}); 
+                            if(e.isMine && gameMode==='coop') socket.emit('hitCoopBoss', oDmg); 
+                            if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, oDmg, 'energy', e.isMine); 
+                        }
+                    } continue;
+                }
                 
                 if (e.type === 'bomb') {
                     if (e.age > 120) { 
@@ -862,8 +860,6 @@
                         setTimeout(() => { if(e.el) e.el.remove(); }, 300); entities.splice(i, 1);
                     } continue;
                 } 
-                
-                if (e.type === 'boss_melee') { if (e.age > 5) { e.el.remove(); entities.splice(i, 1); continue; } }
                 
                 let w = 15, h = 15, dmg = 15, dmgType = 'ballistic';
                 switch(e.type) {
@@ -895,7 +891,6 @@
 
                 if (e.x > target.x - w && e.x < target.x + 60 && e.y > target.y - h && e.y < target.y + 90 && !target.isDead && !e.hasHit) {
                     
-                    // CHẶN ĐỘT TỬ DO XUYÊN THẤU - Khóa lại luôn sau khi chạm lần đầu tiên
                     e.hasHit = true; 
 
                     if(e.type === 'vine' && e.isMine) { if(gameMode==='online') socket.emit('applyStun', {roomId: currentRoom, duration: 90}); else if(gameMode==='coop') socket.emit('coopStunBoss', 90); handleStun(target, 90); }
@@ -912,7 +907,6 @@
                         if(e.isMine && gameMode==='coop') socket.emit('hitCoopBoss', dmg); 
                         if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, dmg, dmgType, e.isMine); 
                         
-                        // Nếu là đạn xuyên thấu thì cho bay tiếp, ngược lại thì xóa
                         let isPiercing = ['sniper_bullet', 'tornado', 'storm_arrow', 'horse_charge', 'boss_melee'].includes(e.type) || e.type.includes('wave') || e.type.includes('scythe');
                         if (!isPiercing) { 
                             e.el.remove(); entities.splice(i, 1); continue; 
@@ -962,13 +956,18 @@
 
             let dist = bot.x - targetPlayer.x; botWait--;
             
-            // Xả Skill Không Cần Chờ Tới Gần
             let spd = currentBoss === 'zephyr' ? (isPhase2?14:10) : (currentBoss === 'titan' ? (isPhase2?4:2) : (isPhase2?7:5));
             if (isCoop) spd = Math.floor(spd * 1.5); 
 
-            // Giữ khoảng cách thay vì lao vào bằng được (Khoảng cách an toàn 150)
-            if (dist > 150) { bot.x -= spd; bot.facingDir = -1; } else if (dist < -150) { bot.x += spd; bot.facingDir = 1; }
-            else { bot.facingDir = dist > 0 ? -1 : 1; }
+            // CẬP NHẬT LOGIC AI MỚI: Tự động giữ khoảng cách và LUÔN xả skill
+            if (dist > 250) { bot.x -= spd; bot.facingDir = -1; } 
+            else if (dist < -250) { bot.x += spd; bot.facingDir = 1; }
+            else if (Math.abs(dist) < 150) { // Nếu sát quá thì lùi lại
+                bot.x += (dist > 0 ? spd : -spd);
+                bot.facingDir = dist > 0 ? -1 : 1;
+            } else { 
+                bot.facingDir = dist > 0 ? -1 : 1; 
+            }
 
             if(botWait === 15) { document.getElementById('player2').classList.add('boss-telegraph'); if(isGameHost) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir, telegraph: true }); }
             if(botWait === 5) { 
@@ -978,7 +977,6 @@
                 
                 let rand = Math.random();
                 
-                // BOSS CHỈ CÒN XẢ KỸ NĂNG, KHÔNG ĐÁNH TAY NỮA
                 if(currentBoss === 'titan') { 
                     bossSpawnAndSend('shockwave', 0, groundY+70, 0, 0);
                     document.getElementById('arena').classList.add('screen-shake'); setTimeout(()=>document.getElementById('arena').classList.remove('screen-shake'), 300);
@@ -1034,7 +1032,6 @@
             }
             
             if (botWait <= 0) {
-                // Tần suất xả skill cực gắt cho Solo và Coop
                 botWait = isCoop ? (isPhase2 ? 30 : 40) : (isPhase2 ? 35 : 45); 
             }
             
