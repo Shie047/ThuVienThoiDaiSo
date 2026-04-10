@@ -335,7 +335,6 @@
             let wData = weapons[item] || ultimates[item]; 
             let hasAmmo = (wData && wData.ammo > 0);
             
-            // BẢO VỆ NULL CHECK
             let ammoUi1 = document.getElementById('ammo-ui');
             let ammoUi2 = document.getElementById('ammo-ui2');
             if(ammoUi1) ammoUi1.style.display = hasAmmo ? 'block' : 'none';
@@ -351,7 +350,7 @@
                 for(let key in ultimates) document.querySelectorAll(`#eq-${key}`).forEach(b=>b.style.display='inline-block');
             }
         }
-        renderShopAndInventory(); // Bây giờ gọi hàm này sẽ không làm crash game nữa!
+        renderShopAndInventory(); 
 
         function applyCheatAndShowReward(baseText) {
             let name = document.getElementById('playerNameInput').value.trim().toLowerCase();
@@ -367,8 +366,9 @@
 
         // --- CORE GAME ---
         const groundY = 290; let entities = []; 
-        const getP1StartX = () => myRole === 'p1' ? 50 : 650; const getP2StartX = () => myRole === 'p1' ? 650 : 50;
-        const getP1StartDir = () => myRole === 'p1' ? 1 : -1; const getP2StartDir = () => myRole === 'p1' ? -1 : 1;
+        // FIX CỐ ĐỊNH CHỈ CHO PVP: Đảm bảo P1 ở 50 (trái), P2 ở 650 (phải) cho TẤT CẢ mọi người.
+        const getP1StartX = () => 50; const getP2StartX = () => 650;
+        const getP1StartDir = () => 1; const getP2StartDir = () => -1;
         
         let p1 = { x: 50, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: 1, stunTimer: 0, isParrying: false, parryTimer: 0 };
         let p2 = { x: 650, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: -1, stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1 };
@@ -564,7 +564,6 @@
             if(gameMode === 'online') { if(matchUltimateUsed) return; matchUltimateUsed = true; }
             ultimateReady = false; 
             
-            // NULL CHECK AN TOÀN
             let ult1 = document.getElementById('ult-ui');
             let ult2 = document.getElementById('ult-ui2');
             if(ult1) { ult1.innerText = "Ult: ĐÃ DÙNG"; ult1.style.background = "#555"; ult1.style.boxShadow = "none"; }
@@ -945,12 +944,13 @@
             if(e.code === 'Space') keys.space = false;
         });
 
+        // BẢO VỆ GIAO DIỆN INIT VÀ RESET
         function resetGameUI() {
             document.getElementById('game-over-screen-inner').style.display = 'none'; document.getElementById('btn-spectate').style.display = 'none';
             document.getElementById('player1').style.display = 'block'; document.getElementById('player2').style.display = 'block'; 
             
-            p1 = { x: getP1StartX(), y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP1StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0 };
-            p2 = { x: getP2StartX(), y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP2StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1 };
+            p1 = { x: getP1StartX(), y: groundY, vy: 0, hp: p1.maxHp || 200, maxHp: p1.maxHp || 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP1StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0 };
+            p2 = { x: getP2StartX(), y: groundY, vy: 0, hp: p2.maxHp || 200, maxHp: p2.maxHp || 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP2StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1 };
             entities.forEach(e => {if(e.el) e.el.remove()}); entities = [];
             
             ultimateReady = true; 
@@ -997,7 +997,6 @@
                     else { me.stamina = Math.min(100, me.stamina + 0.2); } 
                 }
                 
-                // NULL CHECK BẢO VỆ GIAO DIỆN STAMINA/AMMO
                 let myStm = myRole === 'p1' ? 'stm1' : 'stm2';
                 let myAmmo = myRole === 'p1' ? 'ammo-text' : 'ammo-text2';
                 let stmEl = document.getElementById(myStm);
