@@ -5,14 +5,39 @@ const io = require('socket.io')(http);
 
 app.use(express.static('public'));
 
+// ===== MMO LOBBY SYSTEM =====
+const mmoPlayers = {};
+
+// ===== CORE GAME SYSTEM (GIỮ NGUYÊN) =====
 let waitingPlayer = null;
 let roomCounter = 0;
 const pvpRooms = {};
-
 const coopLobbies = {}; 
 const coopGames = {};   
 
 io.on('connection', (socket) => {
+    
+    // --- LOBBY THẾ GIỚI MỞ ---
+    socket.on('joinMMO', (data) => {
+        mmoPlayers[socket.id] = { id: socket.id, name: data.name, x: 400, y: 300 };
+        socket.join('mmo_world');
+        io.to('mmo_world').emit('mmoUpdate', mmoPlayers);
+    });
+    socket.on('moveMMO', (data) => {
+        if (mmoPlayers[socket.id]) {
+            mmoPlayers[socket.id].x = data.x;
+            mmoPlayers[socket.id].y = data.y;
+            io.to('mmo_world').emit('mmoUpdate', mmoPlayers);
+        }
+    });
+    socket.on('leaveMMO', () => {
+        if (mmoPlayers[socket.id]) {
+            delete mmoPlayers[socket.id];
+            socket.leave('mmo_world');
+            io.to('mmo_world').emit('mmoUpdate', mmoPlayers);
+        }
+    });
+
     // === 1v1 MATCHMAKING (BO3) ===
     socket.on('findMatch', (playerName) => {
         socket.playerName = playerName;
@@ -174,9 +199,17 @@ io.on('connection', (socket) => {
     }
 
     socket.on('cancelMatch', () => { if(waitingPlayer === socket) waitingPlayer = null; handleLobbyLeave(socket.id); });
+    
     socket.on('disconnect', () => { 
         if (waitingPlayer === socket) waitingPlayer = null; 
         handleLobbyLeave(socket.id);
+        
+        // Hủy MMO player khi ngắt kết nối
+        if (mmoPlayers[socket.id]) {
+            delete mmoPlayers[socket.id];
+            io.to('mmo_world').emit('mmoUpdate', mmoPlayers);
+        }
+
         if (socket.coopGameId && coopGames[socket.coopGameId]) io.to(socket.coopGameId).emit('teammateLeft', socket.id);
     });
 });
