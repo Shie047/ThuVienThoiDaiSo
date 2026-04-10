@@ -276,12 +276,12 @@
         ];
         let currentMapBuff = '';
 
-        // VŨ KHÍ & KỸ NĂNG
+        // VŨ KHÍ & KỸ NĂNG (Đã FIX Mìn Hẹn Giờ)
         const weapons = {
             shield: { name: 'Khiên Thường', price: 100, type: 'defense', stm: 5, ammo: 0, firerate: 30 },
             gun: { name: 'Súng Lục', price: 150, type: 'ballistic', stm: 5, ammo: 1, firerate: 15 }, 
             katana: { name: 'Kiếm Katana', price: 200, type: 'melee', stm: 10, ammo: 0, firerate: 20 },
-            bomb: { name: 'Mìn Hẹn Giờ', price: 250, type: 'explosive', stm: 15, ammo: 1, firerate: 60 }, 
+            bomb: { name: 'Mìn Hẹn Giờ', price: 250, type: 'explosive', stm: 15, ammo: 0, firerate: 30 }, // Fix đạn 0, tốc độ nhanh
             shuriken: { name: 'Phi Tiêu', price: 300, type: 'ballistic', stm: 5, ammo: 0, firerate: 10 },
             vine_spell: { name: 'Phép Dây Leo', price: 400, type: 'magic', stm: 60, ammo: 0, firerate: 60 },
             shotgun: { name: 'Hoa Cải', price: 450, type: 'ballistic', stm: 15, ammo: 3, firerate: 35 }, 
@@ -361,8 +361,9 @@
         const getP1StartX = () => myRole === 'p1' ? 50 : 650; const getP2StartX = () => myRole === 'p1' ? 650 : 50;
         const getP1StartDir = () => myRole === 'p1' ? 1 : -1; const getP2StartDir = () => myRole === 'p1' ? -1 : 1;
         
+        // FIX LỖI P2: Thêm đầy đủ stamina, ammo, parry cho P2
         let p1 = { x: 50, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: 1, stunTimer: 0, isParrying: false, parryTimer: 0 };
-        let p2 = { x: 650, y: groundY, vy: 0, hp: 200, maxHp: 200, isDead: false, isBlocking: false, jumpCount: 0, facingDir: -1, stunTimer: 0, lockedTargetId: null, phase: 1 };
+        let p2 = { x: 650, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: -1, stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1 };
         let keys = { a: false, d: false, space: false, w: false };
 
         const myElement = () => document.getElementById(myRole === 'p1' ? 'player1' : 'player2'); 
@@ -606,7 +607,12 @@
             else if (currentEquip === 'fireball') spawnAndSend('fireball', px, py-10, dir*10, 0); 
             else if (currentEquip === 'rocket') spawnAndSend('rocket', px, py, dir*15, 0);
             else if (currentEquip === 'shotgun') { spawnAndSend('shotgun_bullet', px, py, dir*18, -3); spawnAndSend('shotgun_bullet', px, py, dir*18, 0); spawnAndSend('shotgun_bullet', px, py, dir*18, 3); }
-            else if (currentEquip === 'bomb') spawnAndSend('bomb', px-10, groundY+70, 0, 0);
+            // MÌN HẸN GIỜ: Kiểm tra số lượng tối đa 4 quả
+            else if (currentEquip === 'bomb') {
+                let bombCount = entities.filter(e => e.type === 'bomb' && e.isMine).length;
+                if (bombCount >= 4) return;
+                spawnAndSend('bomb', px-10, groundY+70, 0, 0);
+            }
             else if (currentEquip === 'grenade') spawnAndSend('grenade', px, me.y, dir*12, -12); 
             else if (currentEquip === 'void_scythe') spawnAndSend('void_scythe', px, py, dir*15, 0);
         }
@@ -689,7 +695,8 @@
         function spawnEntity(type, x, y, vx, vy, isMine, isAlly = false) {
             let el = document.createElement('div'); el.className = type; document.getElementById('arena').appendChild(el);
             let entity = { type: type, x: x, y: y, vx: vx, vy: vy, el: el, isMine: isMine, isAlly: isAlly, age: 0, hasHit: false };
-            if (type === 'bomb') { el.innerText = "3"; entity.timer = 3; let cd = setInterval(() => { entity.timer--; if(el) el.innerText = entity.timer; if(entity.timer <= 0) clearInterval(cd); }, 1000); }
+            // FIX: Thời gian nổ mìn đếm 2 giây
+            if (type === 'bomb') { el.innerText = "2"; entity.timer = 2; let cd = setInterval(() => { entity.timer--; if(el) el.innerText = entity.timer; if(entity.timer <= 0) clearInterval(cd); }, 1000); }
             entities.push(entity);
         }
 
@@ -732,10 +739,17 @@
                     } continue;
                 }
                 
+                // FIX: Mìn hẹn giờ (2 giây / Sát thương x3)
                 if (e.type === 'bomb') {
-                    if (e.age > 180) { 
+                    if (e.age > 120) { 
                         e.el.className = 'bomb-explode'; e.el.innerText = "";
-                        if (Math.abs(e.x - target.x) < 90 && Math.abs(e.y - target.y) < 90 && !target.isDead && !e.hasHit) { e.hasHit = true; if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: 40}); if(e.isMine && gameMode==='coop') socket.emit('hitCoopBoss', 40); if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, 40, 'explosive', e.isMine); }
+                        if (Math.abs(e.x - target.x) < 90 && Math.abs(e.y - target.y) < 90 && !target.isDead && !e.hasHit) { 
+                            e.hasHit = true; 
+                            let bombDmg = 120; // Sát thương cực lớn
+                            if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: bombDmg}); 
+                            if(e.isMine && gameMode==='coop') socket.emit('hitCoopBoss', bombDmg); 
+                            if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, bombDmg, 'explosive', e.isMine); 
+                        }
                         setTimeout(() => { if(e.el) e.el.remove(); }, 300); entities.splice(i, 1);
                     } continue;
                 } 
@@ -783,7 +797,6 @@
 
             // AI ĐỔI MỤC TIÊU LINH HOẠT TRONG CO-OP
             if (gameMode === 'coop') {
-                // 3% mỗi frame Boss sẽ ngẫu nhiên đổi mục tiêu để đánh lạc hướng
                 if (!bot.lockedTargetId || Math.random() < 0.03) {
                     let validTargets = [];
                     if (!getMe().isDead) validTargets.push({id: 'host', obj: getMe()});
@@ -813,14 +826,13 @@
             if(botWait === 15) { document.getElementById('player2').classList.add('boss-telegraph'); if(gameMode === 'coop' && isGameHost) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir, telegraph: true }); }
             if(botWait === 5) { document.getElementById('player2').classList.remove('boss-telegraph'); if(gameMode === 'coop' && isGameHost) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir, telegraph: false }); }
 
-            // Shadow Teleport cực hiểm
+            // Shadow Teleport
             if (currentBoss === 'shadow' && botWait <= 0 && Math.random() < (isPhase2?0.1:0.05)) { 
                 document.getElementById('darkness-overlay').style.opacity = 0.8; setTimeout(()=>document.getElementById('darkness-overlay').style.opacity = 0, 500);
                 bot.x = targetPlayer.x + (targetPlayer.facingDir * -60); bot.y = targetPlayer.y; bot.facingDir = targetPlayer.facingDir; botWait = isPhase2?25:40; 
                 document.getElementById('player2').classList.add('attacking'); setTimeout(() => document.getElementById('player2').classList.remove('attacking'), 150);
                 bossSpawnAndSend('boss_melee', bot.x + (bot.facingDir*40), bot.y, bot.facingDir, 0); 
                 
-                // Shadow Co-op Skill: Quăng phi đao hư không ra 2 hướng
                 if(gameMode === 'coop') {
                     bossSpawnAndSend('void_scythe', bot.x, bot.y, 15, 0);
                     bossSpawnAndSend('void_scythe', bot.x, bot.y, -15, 0);
@@ -834,7 +846,6 @@
 
             if (botWait > 0) { if (gameMode === 'coop' && isGameHost && bot.y < groundY) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir }); return; }
 
-            // Tốc độ boss tăng vọt 50% khi đánh Co-op
             let spd = currentBoss === 'zephyr' ? (isPhase2?14:10) : (currentBoss === 'titan' ? (isPhase2?4:2) : (isPhase2?7:5));
             if (gameMode === 'coop') spd = Math.floor(spd * 1.5);
 
@@ -842,7 +853,6 @@
             else {
                 bot.facingDir = dist > 0 ? -1 : 1; 
                 
-                // Tỉ lệ xả chiêu tăng gấp rưỡi trong Co-op
                 let atkRate = currentBoss === 'omega' ? (isPhase2?0.6:0.4) : (isPhase2?0.25:0.15);
                 if (gameMode === 'coop') atkRate *= 1.5;
 
@@ -852,7 +862,6 @@
                     
                     if(currentBoss === 'titan') { 
                         if (gameMode === 'coop' && rand < 0.4) {
-                            // Co-op Skill Titan: Động đất toàn diện + 3 Tảng đá bay nảy
                             bossSpawnAndSend('shockwave', 0, groundY+70, 0, 0);
                             bossSpawnAndSend('boulder', bot.x, bot.y-50, -8, -6);
                             bossSpawnAndSend('boulder', bot.x, bot.y-50, 8, -6);
@@ -864,7 +873,6 @@
                     else if(currentBoss === 'ifrit') { 
                         bossSpawnAndSend('fire_wave', bot.x+(bot.facingDir*40), bot.y, bot.facingDir*10, 0); 
                         if (gameMode === 'coop' && rand < 0.3) {
-                            // Co-op Skill Ifrit: Mưa Thiên Thạch
                             for(let i=0; i<4; i++) bossSpawnAndSend('meteor', Math.random()*800, -50 - Math.random()*150, 0, 8);
                             botWait = 60;
                         }
@@ -873,7 +881,6 @@
                     }
                     else if(currentBoss === 'omega') { 
                         if (gameMode === 'coop' && rand < 0.35) {
-                            // Co-op Skill Omega: Quét Laser toàn bản đồ
                             bossSpawnAndSend('laser', 400, bot.y-30, 20, 5);
                             bossSpawnAndSend('laser', 400, bot.y-30, -20, 5);
                             bossSpawnAndSend('omega_beam', 0, bot.y-20, 0, 0);
@@ -884,7 +891,6 @@
                     }
                     else if(currentBoss === 'zephyr') { 
                         if (gameMode === 'coop' && rand < 0.3) {
-                            // Co-op Skill Zephyr: Lốc xoáy kép
                             bossSpawnAndSend('tornado', bot.x - 50, groundY-60, -4, 0);
                             bossSpawnAndSend('tornado', bot.x + 50, groundY-60, 4, 0);
                             botWait = 40;
@@ -923,8 +929,10 @@
         function resetGameUI() {
             document.getElementById('game-over-screen-inner').style.display = 'none'; document.getElementById('btn-spectate').style.display = 'none';
             document.getElementById('player1').style.display = 'block';
+            // Đảm bảo P2 luôn hiện khi reset
+            document.getElementById('player2').style.display = 'block'; 
             p1 = { x: getP1StartX(), y: groundY, vy: 0, hp: p1.maxHp, maxHp: p1.maxHp, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP1StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0 };
-            p2 = { x: getP2StartX(), y: groundY, vy: 0, hp: p2.maxHp, maxHp: p2.maxHp, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP2StartDir(), stunTimer: 0, lockedTargetId: null, phase: 1 };
+            p2 = { x: getP2StartX(), y: groundY, vy: 0, hp: p2.maxHp, maxHp: p2.maxHp, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP2StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1 };
             entities.forEach(e => {if(e.el) e.el.remove()}); entities = [];
             
             ultimateReady = true; document.getElementById('ult-ui').style.background = "#8e44ad"; document.getElementById('ult-ui').innerText = "Ult: SẴN SÀNG"; document.getElementById('ult-ui').style.boxShadow = "0 0 10px #8e44ad";
@@ -953,7 +961,6 @@
                     if (me.parryTimer === 0) { myElement().classList.remove('parrying'); }
                 }
 
-                // Hồi phục thể lực và đạn
                 if(me.stunTimer <= 0) { 
                     if (!keys.space || attackCooldown > 0 || me.stamina < 5) { me.stamina = Math.min(100, me.stamina + 0.6); me.ammo = Math.min(30, me.ammo + 0.05); }
                     else { me.stamina = Math.min(100, me.stamina + 0.2); } 
@@ -963,7 +970,6 @@
                 if(attackCooldown > 0) attackCooldown--;
                 if(keys.space && attackCooldown <= 0) doAttack();
 
-                // FIX LỖI KẸT TRÊN KHÔNG: Phân tách di chuyển ngang và trọng lực
                 if(me.stunTimer > 0) { 
                     me.stunTimer--; keys.a = false; keys.d = false; 
                 } else {
@@ -972,10 +978,9 @@
                     if(keys.d) { me.x = Math.min(800 - (currentBoss==='titan'||currentBoss==='abyss'?100:60), me.x + speed); me.facingDir = 1; }
                 }
                 
-                // Trọng lực LUÔN LUÔN HOẠT ĐỘNG kể cả khi bị choáng
                 me.y += me.vy;
                 if (me.y < groundY) {
-                    if (keys.w && me.vy < 0 && me.stunTimer <= 0) me.vy += 0.4; // Chỉ được nhảy là lướt bay nếu không bị choáng
+                    if (keys.w && me.vy < 0 && me.stunTimer <= 0) me.vy += 0.4; 
                     else me.vy += 0.8;
                 } else { me.y = groundY; me.vy = 0; me.jumpCount = 0; }
 
@@ -983,7 +988,6 @@
                 else if (gameMode === 'coop') socket.emit('coopPlayerAction', { x: me.x, y: me.y, isBlocking: me.isBlocking, facingDir: me.facingDir });
             }
 
-            // FIX LỖI BOSS KẸT TRÊN KHÔNG
             if((gameMode === 'bot' || (gameMode === 'coop' && isGameHost)) && !p2.isDead) {
                 if(p2.stunTimer > 0) { 
                     p2.stunTimer--; 
@@ -993,7 +997,6 @@
                     runBotAI(); 
                 }
                 
-                // Trọng lực của Boss luôn hoạt động
                 p2.y += p2.vy; 
                 if (p2.y < groundY) p2.vy += 0.8; 
                 else { p2.y = groundY; p2.vy = 0; }
