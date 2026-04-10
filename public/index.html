@@ -299,6 +299,7 @@
         let teammates = {}; let animationId; let attackCooldown = 0; let ultimateReady = true; let matchUltimateUsed = false;
         let isLobbyHost = false; let isGameHost = false; 
         let bo3Score = { p1: 0, p2: 0 };
+        let bossTimerInterval = null; // Biến đếm ngược Boss ngày
         
         const maps = [ { name: "Hỏa Diện", bg: "linear-gradient(to bottom, #4a0e0e 0%, #1a0505 100%)", buff: "energy" }, { name: "Lõi Tương Lai", bg: "linear-gradient(to bottom, #001f3f 0%, #000 100%)", buff: "piercing" }, { name: "Cấm Địa", bg: "linear-gradient(to bottom, #2b3a2a 0%, #1a1a1a 100%)", buff: "ballistic" }, { name: "Phế Tích Thép", bg: "linear-gradient(to bottom, #3b3b3b 0%, #111 100%)", buff: "melee" }, { name: "Không Gian Ảo", bg: "linear-gradient(to bottom, #190033 0%, #000 100%)", buff: "explosive" } ];
         let currentMapBuff = '';
@@ -432,7 +433,28 @@
             
             if (currentDailyBoss.id === 'fish') {
                 document.getElementById('boss-timer-ui').style.display = 'block';
+                dailyBossTimer = 60.0;
                 document.getElementById('boss-timer-ui').innerText = '60.0s';
+                
+                // Clear timer cũ nếu có
+                if (bossTimerInterval) clearInterval(bossTimerInterval);
+                
+                // Bắt đầu đếm ngược
+                bossTimerInterval = setInterval(() => {
+                    if (p1.isDead || p2.isDead || gameMode !== 'daily_boss') {
+                        clearInterval(bossTimerInterval);
+                        return;
+                    }
+                    
+                    dailyBossTimer -= 0.1;
+                    document.getElementById('boss-timer-ui').innerText = Math.max(0, dailyBossTimer).toFixed(1) + 's';
+                    
+                    if (dailyBossTimer <= 0) {
+                        clearInterval(bossTimerInterval);
+                        showFloatingText(p1.x, p1.y, "HẾT GIỜ!", 'boss-warning');
+                        handleDamage(p1, 9999, 'magic', false); 
+                    }
+                }, 100);
             }
         }
 
@@ -489,6 +511,7 @@
         }
 
         function resetGameUI() {
+            if (bossTimerInterval) { clearInterval(bossTimerInterval); bossTimerInterval = null; }
             document.getElementById('game-over-screen-inner').style.display = 'none'; document.getElementById('btn-spectate').style.display = 'none';
             
             p1 = { x: getP1StartX(), y: groundY, vy: 0, hp: p1.maxHp || 200, maxHp: p1.maxHp || 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP1StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
@@ -541,13 +564,59 @@
         function selectBoss(type) { showCoopLobby(type); }
 
         socket.on('coopGameInit', (data) => { currentBoss = data.type === 'world' ? 'omega' : data.type; currentRoom = data.roomId; setMap(4); currentMapBuff = ''; isGameHost = data.isHost; let title = data.type === 'world' ? "BOSS THẾ GIỚI" : "LÃNH ĐỊA " + data.type.toUpperCase(); document.getElementById('map-name-display').innerText = `SỰ KIỆN: ${title}`; initGame('coop', document.getElementById('playerNameInput').value || "Dũng Sĩ", title); document.getElementById('hp2-container').classList.add('boss-hp'); p2.maxHp = data.bossHp; p2.hp = data.bossHp; p2.x = 400; p2.lockedTargetId = null; p2.phase = 1; document.getElementById('player2').className = 'player boss-' + currentBoss; teammates = data.teammates; updateTeammatesUI(); updateBossHpUI(); });
-        socket.on('updateTeammate', (data) => { teammates[data.id] = data.data; updateTeammatesUI(); checkCoopGameOver(); }); socket.on('teammateShoot', (d) => spawnEntity(d.type, d.x, d.y, d.vx, d.vy, false, true)); socket.on('coopBossHpUpdate', (hp) => { p2.hp = hp; updateBossHpUI(); }); socket.on('bossStunned', (dur) => handleStun(getOpp(), dur));
+        socket.on('updateTeammate', (data) => { teammates[data.id] = data.data; updateTeammatesUI(); checkCoopGameOver(); }); socket.on('teammateShoot', (d) => spawnEntity(d.type, d.x, d.y, d.vx, d.vy, false, true)); 
+        
+        socket.on('coopBossHpUpdate', (hp) => { 
+            p2.hp = hp; 
+            updateBossHpUI(); 
+            if (p2.hp <= 0 && !p2.isDead) {
+                p2.isDead = true;
+                document.getElementById('player2').classList.add('dead');
+            }
+        }); 
+        
+        socket.on('bossStunned', (dur) => handleStun(getOpp(), dur));
         socket.on('coopBossDefeated', () => { p2.isDead = true; document.getElementById('player2').classList.add('dead'); hearts += 1; localStorage.setItem('hearts', hearts); let gotShard = false; if (Math.random() < 0.3) { shards++; localStorage.setItem('shards', shards); gotShard = true; } renderShopAndInventory(); document.getElementById('game-over-screen-inner').style.display = 'flex'; document.getElementById('winner-text').innerText = "CHIẾN THẮNG!"; document.getElementById('winner-text').style.color = "var(--neon-gold)"; document.getElementById('btn-rematch-boss').style.display = 'inline-block'; document.getElementById('btn-rematch-boss').disabled = false; document.getElementById('btn-spectate').style.display = 'none'; document.getElementById('reward-text').innerText = "+ TRÁI TIM QUẢ CẢM!" + (gotShard ? " & 1 MẢNH CỔ ĐẠI!" : ""); document.getElementById('reward-text').style.display = 'block'; if(animationId) cancelAnimationFrame(animationId); });
+        
         function updateTeammatesUI() { let container = document.getElementById('teammates-container'); container.innerHTML = ''; for(let id in teammates) { if(id === socket.id) continue; let t = teammates[id]; let el = document.createElement('div'); el.className = 'player teammate'; el.style.left = t.x + 'px'; el.style.top = t.y + 'px'; el.style.transform = `scaleX(${t.facingDir})`; if(t.isBlocking) el.classList.add('blocking'); if(t.isDead) el.classList.add('dead'); container.appendChild(el); } }
-        function checkCoopGameOver() { if (gameMode !== 'coop') return; if (!getMe().isDead) return; let allDead = true; for (let id in teammates) { if (id !== socket.id && !teammates[id].isDead) { allDead = false; break; } } if (allDead) { document.getElementById('game-over-screen-inner').style.display = 'flex'; let winTxt = document.getElementById('winner-text'); winTxt.innerText = "TOÀN ĐỘI BỊ TIÊU DIỆT"; winTxt.style.color = "var(--neon-red)"; document.getElementById('btn-spectate').style.display = 'none'; document.getElementById('btn-rematch-boss').style.display = 'inline-block'; document.getElementById('btn-rematch-boss').disabled = false; if(animationId) cancelAnimationFrame(animationId); } }
+        
+        function checkCoopGameOver() {
+            if (gameMode !== 'coop') return;
+            
+            let aliveCount = 0;
+            if (!getMe().isDead) aliveCount++;
+            
+            for (let id in teammates) {
+                if (!teammates[id].isDead) {
+                    aliveCount++;
+                }
+            }
+
+            if (aliveCount === 0) {
+                let gameOverScreen = document.getElementById('game-over-screen-inner');
+                gameOverScreen.style.display = 'flex';
+                
+                let winTxt = document.getElementById('winner-text');
+                winTxt.innerText = "TOÀN ĐỘI BỊ TIÊU DIỆT";
+                winTxt.style.color = "var(--neon-red)";
+                
+                document.getElementById('btn-spectate').style.display = 'none';
+                document.getElementById('btn-rematch-boss').style.display = 'inline-block';
+                document.getElementById('btn-rematch-boss').disabled = false;
+                document.getElementById('reward-text').style.display = 'none'; 
+                
+                if (animationId) cancelAnimationFrame(animationId);
+            }
+        }
+        
         socket.on('updateBoss', (data) => { if (gameMode === 'coop' && !isGameHost) { p2.x = data.x; p2.y = data.y; p2.facingDir = data.facingDir; if(data.isAttacking) { document.getElementById('player2').classList.add('attacking'); setTimeout(() => document.getElementById('player2').classList.remove('attacking'), 150); } if(data.telegraph) document.getElementById('player2').classList.add('boss-telegraph'); else document.getElementById('player2').classList.remove('boss-telegraph'); if(data.phase2 && p2.phase === 1) { p2.phase = 2; document.getElementById('player2').classList.add('phase2-aura'); } } });
         socket.on('bossFires', (d) => spawnEntity(d.type, d.x, d.y, d.vx, d.vy, false, false));
-        function startSpectating() { document.getElementById('game-over-screen-inner').style.display = 'none'; myElement().style.display = 'none'; }
+        
+        function startSpectating() { 
+            document.getElementById('game-over-screen-inner').style.display = 'none'; 
+            myElement().style.display = 'none'; 
+            setTimeout(checkCoopGameOver, 500); 
+        }
 
         function startBotMode(bossType) {
             myRole = 'p1'; currentBoss = bossType; let myN = document.getElementById('playerNameInput').value || "Người Chơi";
@@ -726,7 +795,9 @@
 
             if(target === getMe()) { document.getElementById(myRole==='p1'?'player1':'player2').style.filter = 'brightness(0.5) sepia(1) hue-rotate(-50deg) saturate(5)'; setTimeout(() => document.getElementById(myRole==='p1'?'player1':'player2').style.filter = '', 150); }
 
-            let hpFill = document.getElementById(target === p1 ? 'hp1' : 'hp2'); hpFill.style.width = Math.max(0, (target.hp / target.maxHp) * 100) + '%'; 
+            let hpFill = document.getElementById(target === p1 ? 'hp1' : 'hp2'); 
+            let clampedHp = Math.max(0, Math.min(target.hp, target.maxHp));
+            hpFill.style.width = (clampedHp / target.maxHp) * 100 + '%'; 
             if(target === p2 && target.hp <= target.maxHp * 0.3) hpFill.style.background = 'linear-gradient(90deg, #c23616, var(--neon-red))'; 
 
             if(target.hp <= 0 && target === getMe()) {
@@ -770,7 +841,17 @@
             }
         }
 
-        function updateBossHpUI() { document.getElementById('hp2').style.width = Math.max(0, (p2.hp / p2.maxHp) * 100) + '%'; }
+        function updateBossHpUI() { 
+            let currentHp = Math.max(0, Math.min(p2.hp, p2.maxHp));
+            document.getElementById('hp2').style.width = (currentHp / p2.maxHp) * 100 + '%'; 
+            
+            let hpFill = document.getElementById('hp2');
+            if(currentHp <= p2.maxHp * 0.3) {
+                hpFill.style.background = 'linear-gradient(90deg, #c23616, var(--neon-red))'; 
+            } else {
+                hpFill.style.background = document.getElementById('hp2-container').classList.contains('boss-hp') ? 'linear-gradient(90deg, #c23616, var(--neon-red))' : 'linear-gradient(90deg, #00b894, var(--neon-cyan))';
+            }
+        }
 
         function spawnEntity(type, x, y, vx, vy, isMine, isAlly = false, effect = null) {
             let el = document.createElement('div'); el.className = type; document.getElementById('arena').appendChild(el);
@@ -795,7 +876,7 @@
                 
                 if (e.type === 'target-ring') {
                     if (e.age > 60) {
-                        spawnAndSend('lightning_strike', e.x, -200, 0, 0); // Nổ thiên lôi sau 1 giây
+                        spawnAndSend('lightning_strike', e.x, -200, 0, 0); 
                         e.el.remove(); entities.splice(i, 1);
                     }
                     continue;
@@ -964,7 +1045,7 @@
 
             if (bot.statusEffects.slow > 0) spd = Math.max(1, Math.floor(spd / 2));
 
-            // FIX 3: NÂNG CẤP KỸ NĂNG ĐẶC TRƯNG CỦA BOSS NGÀY
+            // NÂNG CẤP KỸ NĂNG ĐẶC TRƯNG CỦA BOSS NGÀY
             if (gameMode === 'daily_boss') {
                 let dId = currentDailyBoss.id;
                 let botEl = document.getElementById('player2');
@@ -1081,6 +1162,79 @@
                 else botWait = isCoop ? (isPhase2 ? 25 : 35) : (isPhase2 ? 35 : 45); 
             }
             if (isCoop && isGameHost && botWait > 0) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir });
+        }
+        
+        // --- CÁC HÀM UPDATE VÀ INPUT TRONG GAME ---
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('playerNameInput') === document.activeElement) return;
+            if (['w', 'a', 's', 'd', ' ', 'shift', 'e'].includes(e.key.toLowerCase())) e.preventDefault();
+            let k = e.key.toLowerCase(); if (keys.hasOwnProperty(k)) keys[k] = true;
+            if (k === ' ') doAttack();
+            if (k === 'e') doParry();
+            if (k === 's') doUltimate();
+            if (k === 'shift') { getMe().isBlocking = true; myElement().classList.add('blocking'); }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            if (document.getElementById('playerNameInput') === document.activeElement) return;
+            let k = e.key.toLowerCase(); if (keys.hasOwnProperty(k)) keys[k] = false;
+            if (k === 'shift') { getMe().isBlocking = false; myElement().classList.remove('blocking'); }
+        });
+
+        function gameLoop() {
+            if (document.getElementById('game-container').style.display !== 'none') {
+                let me = getMe(); let opp = getOpp();
+                
+                if (!me.isDead) {
+                    if (me.stunTimer > 0) {
+                        me.stunTimer--;
+                    } else {
+                        if (keys.a && !me.isBlocking && me.x > 0) { me.x -= 6; me.facingDir = -1; }
+                        if (keys.d && !me.isBlocking && me.x < 740) { me.x += 6; me.facingDir = 1; }
+                        if (keys.w && me.y === groundY) { me.vy = -12; me.y -= 1; }
+                    }
+
+                    if (me.y < groundY) { me.vy += 0.6; me.y += me.vy; if (me.y >= groundY) { me.y = groundY; me.vy = 0; } }
+                    
+                    if (me.stamina < 100 && !me.isBlocking && !me.isParrying && attackCooldown <= 0) me.stamina += 0.3;
+                    if (attackCooldown > 0) attackCooldown--;
+                    if (me.parryTimer > 0) { me.parryTimer--; if (me.parryTimer <= 0) { me.isParrying = false; myElement().classList.remove('parrying'); } }
+
+                    if (me.statusEffects.burn > 0) { me.statusEffects.burn--; if(me.statusEffects.burn % 30 === 0) handleDamage(me, 2, 'magic', false); if(me.statusEffects.burn <= 0) myElement().classList.remove('status-burn'); }
+                    if (me.statusEffects.slow > 0) { me.statusEffects.slow--; if(me.statusEffects.slow <= 0) myElement().classList.remove('status-slow'); }
+                    if (me.statusEffects.bleed > 0) { me.statusEffects.bleed--; if(me.statusEffects.bleed % 60 === 0) handleDamage(me, 10, 'magic', false); if(me.statusEffects.bleed <= 0) myElement().classList.remove('status-bleed'); }
+
+                    myElement().style.left = me.x + 'px'; myElement().style.top = me.y + 'px'; myElement().style.transform = `scaleX(${me.facingDir})`;
+                    let stmId = myRole === 'p1' ? 'stm1' : 'stm2';
+                    let stmEl = document.getElementById(stmId); if(stmEl) stmEl.style.width = Math.max(0, me.stamina) + '%';
+                    
+                    let ammoUi = document.getElementById(myRole === 'p1' ? 'ammo-text' : 'ammo-text2');
+                    if (ammoUi) ammoUi.innerText = me.ammo;
+                }
+
+                if (gameMode === 'bot' || (gameMode === 'coop' && isGameHost) || gameMode === 'daily_boss') {
+                    if (!opp.isDead) runBotAI();
+                }
+
+                if (gameMode !== 'online' && !opp.isDead) {
+                    if (opp.y < groundY && !opp.isBurrowed) { opp.vy += 0.6; opp.y += opp.vy; if (opp.y >= groundY) { opp.y = groundY; opp.vy = 0; } }
+                    
+                    if (opp.statusEffects.burn > 0) { opp.statusEffects.burn--; if(opp.statusEffects.burn % 30 === 0) handleDamage(opp, 2, 'magic', false); if(opp.statusEffects.burn <= 0) oppElement().classList.remove('status-burn'); }
+                    if (opp.statusEffects.slow > 0) { opp.statusEffects.slow--; if(opp.statusEffects.slow <= 0) oppElement().classList.remove('status-slow'); }
+                    if (opp.statusEffects.bleed > 0) { opp.statusEffects.bleed--; if(opp.statusEffects.bleed % 60 === 0) handleDamage(opp, 10, 'magic', false); if(opp.statusEffects.bleed <= 0) oppElement().classList.remove('status-bleed'); }
+                    
+                    if (!opp.isBurrowed) {
+                        oppElement().style.left = opp.x + 'px'; oppElement().style.top = opp.y + 'px'; oppElement().style.transform = `scaleX(${opp.facingDir})`;
+                    }
+                }
+
+                updateEntities();
+
+                if (gameMode === 'online' || gameMode === 'coop') {
+                    socket.emit('playerUpdate', { roomId: currentRoom, x: me.x, y: me.y, isBlocking: me.isBlocking, facingDir: me.facingDir });
+                }
+            }
+            animationId = requestAnimationFrame(gameLoop);
         }
     </script>
 </body>
