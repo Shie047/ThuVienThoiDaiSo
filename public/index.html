@@ -87,7 +87,7 @@
         .screen-shake { animation: shake 0.4s; animation-iteration-count: 1; }
         #darkness-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: #050505; opacity: 0; pointer-events:none; z-index: 40; transition: opacity 0.3s; }
 
-        /* VẬT LÝ & VFX */
+        /* VẬT LÝ & VFX MỚI VÀ ĐÃ ĐƯỢC CHỈNH SỬA LẠI */
         .parry-text { position: absolute; color: #f1c40f; font-weight: bold; font-size: 20px; text-shadow: 0 0 10px #f1c40f, 2px 2px 2px #000; animation: floatUp 1s forwards; z-index: 50; pointer-events: none; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-40px); } }
 
@@ -96,17 +96,18 @@
         .shockwave { width: 800px; height: 50px; background: linear-gradient(to top, rgba(217, 83, 79, 0.9), transparent); position: absolute; bottom: 0; left: 0; opacity: 0.8; z-index: 15;}
         .heal-aura { width: 220px; height: 220px; background: radial-gradient(circle, rgba(46, 204, 113, 0.6), transparent); border-radius: 50%; position: absolute; transform: translate(-110px, -110px); z-index: 2; mix-blend-mode: screen;}
         .heal-beam { position: absolute; width: 50px; height: 12px; background: #2ecc71; border-radius: 6px; box-shadow: 0 0 20px #2ecc71, 0 0 10px #fff; }
-        
-        /* Hiệu ứng đã FIX cho Kiếm Rồng & Các vũ khí khác */
-        .fire_wave { position: absolute; width: 50px; height: 120px; background: linear-gradient(to right, transparent, var(--neon-red), #fff); border-radius: 50%; box-shadow: 0 0 25px var(--neon-red), inset 0 0 10px #fff; z-index: 15; filter: contrast(1.5) saturate(2); }
-        .plasma_bullet { position: absolute; width: 35px; height: 8px; background: #00cec9; border-radius: 4px; box-shadow: 0 0 15px #00cec9; }
+        .boss_melee { position: absolute; width: 70px; height: 100px; background: transparent; z-index: 20;}
+
+        /* HIỆU ỨNG VŨ KHÍ MỚI VÀ ĐẠN */
+        .plasma_bullet { position: absolute; width: 30px; height: 8px; background: #00cec9; border-radius: 4px; box-shadow: 0 0 15px #00cec9; }
         .holy_light { position: absolute; width: 45px; height: 45px; background: radial-gradient(circle, #ffeaa7, #fdcb6e); border-radius: 50%; box-shadow: 0 0 25px #ffeaa7; mix-blend-mode: screen; }
         .storm_arrow { position: absolute; width: 4px; height: 35px; background: #fff; box-shadow: 0 0 10px #00cec9; border-radius: 2px;}
 
         .bullet { position: absolute; width: 20px; height: 6px; background: var(--neon-gold); border-radius: 3px; box-shadow: 0 0 8px var(--neon-gold);}
         .rock { position: absolute; width: 25px; height: 25px; background: #7f8fa6; border-radius: 5px; box-shadow: 0 0 10px #2d3436; }
         .boulder { position: absolute; width: 60px; height: 60px; background: #636e72; border-radius: 10px; box-shadow: 0 0 20px #2d3436; }
-        .tornado { position: absolute; width: 80px; height: 150px; background: rgba(0, 184, 148, 0.6); border-radius: 50%; bottom: 0; filter: blur(5px); box-shadow: 0 0 20px #00b894; }
+        /* Đã xóa thuộc tính bottom: 0 để sửa lỗi lệch map Zephyr */
+        .tornado { position: absolute; width: 80px; height: 150px; background: rgba(0, 184, 148, 0.6); border-radius: 50%; filter: blur(5px); box-shadow: 0 0 20px #00b894; }
 
         .bomb { position: absolute; width: 24px; height: 24px; background: #2d3436; border: 2px solid var(--neon-red); border-radius: 50%; color: white; font-size: 12px; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 10px var(--neon-red);}
         .grenade { position: absolute; width: 16px; height: 16px; background: #00b894; border-radius: 50%; box-shadow: inset -3px -3px 6px rgba(0,0,0,0.5), 0 0 8px #00b894;}
@@ -125,11 +126,12 @@
         .horse_charge { position: absolute; width: 90px; height: 70px; background: rgba(139, 69, 19, 0.85); border-radius: 12px; box-shadow: 0 0 25px #8B4513; border-right: 6px solid #fff; }
         .meteor { position: absolute; width: 50px; height: 50px; background: radial-gradient(circle, #fff, var(--neon-red)); border-radius: 50%; box-shadow: 0 0 40px var(--neon-red); z-index: 15;}
 
-        /* EFFECT ULTIMATE CHUYÊN NGHIỆP */
-        .ult_slash { position: absolute; width: 800px; height: 400px; background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,0,0,0.4) 20px, rgba(255,0,0,0.4) 40px); z-index: 20; opacity: 0.9; top: 0; left: 0; filter: contrast(1.5);}
-        .ult_nuke { position: absolute; width: 800px; height: 400px; background: radial-gradient(circle, #fff, var(--neon-gold), var(--neon-red), transparent); opacity: 0.85; z-index: 20; mix-blend-mode: screen; top: 0; left: 0;}
+        /* HIỆU ỨNG ULTIMATE MỚI VÀ CHUYÊN NGHIỆP */
         .ult_divine { position: absolute; width: 800px; height: 400px; background: rgba(46, 204, 113, 0.5); box-shadow: inset 0 0 80px #2ecc71; z-index: 20; top: 0; left: 0;}
         .omega_beam { position: absolute; width: 800px; height: 60px; background: rgba(255,255,255,0.95); box-shadow: 0 0 30px var(--neon-gold), 0 0 60px var(--neon-red); z-index: 1; }
+        .dragon_wave { position: absolute; width: 150px; height: 200px; background: linear-gradient(to right, transparent, var(--neon-red), #f1c40f); border-radius: 50%; box-shadow: 0 0 40px var(--neon-red); mix-blend-mode: screen; filter: saturate(2) contrast(1.5);}
+        .black_hole { position: absolute; width: 120px; height: 120px; background: radial-gradient(circle, #000, #8e44ad); border-radius: 50%; box-shadow: 0 0 50px #8e44ad; animation: spin 2s linear infinite; }
+        .void_slash { position: absolute; width: 250px; height: 250px; background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(142, 68, 173, 0.5) 10px, rgba(142, 68, 173, 0.5) 20px); border-radius: 50%; filter: contrast(2); z-index: 25; }
 
         /* LỚP PHỦ GAME OVER KHÔNG TRÀN */
         #game-over-screen-inner { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(11, 12, 16, 0.95); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; border-radius: 8px;}
@@ -283,7 +285,6 @@
         ];
         let currentMapBuff = '';
 
-        // CÂN BẰNG VŨ KHÍ CƠ BẢN VÀ THÊM 5 MÓN MỚI (CHIA ĐỀU HỆ)
         const weapons = {
             shield: { name: 'Khiên Thường', price: 100, type: 'defense', stm: 5, ammo: 0, firerate: 30 },
             gun: { name: 'Súng Lục', price: 150, type: 'ballistic', stm: 5, ammo: 1, firerate: 12 }, 
@@ -308,7 +309,6 @@
             giant_shield: { name: 'Khiên Khổng Lồ', price: 1500, type: 'defense_aoe', stm: 50, ammo: 0, firerate: 50 }
         };
 
-        // ĐÃ NERF VÀ CHỐNG SPAM KIẾM RỒNG (FIRERATE CAO HƠN, STM NHIỀU HƠN)
         const ultimates = {
             dragon_blade: { name: '[VIP] Kiếm Rồng', drop: 'ifrit', type: 'energy', stm: 20, ammo: 0, firerate: 45 }, 
             gravity_hammer: { name: '[VIP] Búa Trọng Lực', drop: 'titan', type: 'explosive', stm: 10, ammo: 0, firerate: 25 },
@@ -572,6 +572,7 @@
             myElement().classList.add('parrying');
         }
 
+        // ĐÃ CẬP NHẬT HIỆU ỨNG ULTIMATE ĐẸP MẮT
         function doUltimate() {
             let me = getMe(); if(me.isDead || !ultimateReady) return;
             
@@ -586,37 +587,28 @@
             let dir = me.facingDir; let px = me.x + 30; let py = me.y + 40;
             let wType = 'melee'; if(weapons[currentEquip]) wType = weapons[currentEquip].type; if(ultimates[currentEquip]) wType = ultimates[currentEquip].type;
             
-            // KỸ NĂNG ULTIMATE ĐƯỢC THIẾT KẾ RIÊNG BIỆT (CHUYÊN NGHIỆP HƠN)
             if (currentEquip === 'dragon_blade') {
-                spawnAndSend('ult_slash', 0, 0, 0, 0); 
-                let d1 = 150; if(gameMode === 'online') { d1 = Math.max(1, Math.floor(d1/2)); socket.emit('playerHit', { roomId: currentRoom, damage: d1, type: 'energy' }); } else if(gameMode === 'coop') socket.emit('hitCoopBoss', 150); 
-                handleDamage(getOpp(), d1, 'energy', true);
+                spawnAndSend('dragon_wave', px, me.y - 50, dir * 20, 0); 
             } 
             else if (currentEquip === 'gravity_hammer') {
-                spawnAndSend('ult_nuke', px-400, py-200, 0, 0); 
-                let d2 = 200; if(gameMode === 'online') { d2 = Math.max(1, Math.floor(d2/2)); socket.emit('playerHit', { roomId: currentRoom, damage: d2, type: 'explosive' }); } else if(gameMode === 'coop') socket.emit('hitCoopBoss', 200); 
-                handleDamage(getOpp(), d2, 'explosive', true);
-                // Hiệu ứng hút kẻ địch về phía mình
-                let opp = getOpp(); if(!opp.isDead) opp.x = me.x + (dir * 80);
+                let targetX = getOpp().x;
+                spawnAndSend('black_hole', targetX - 30, groundY - 20, 0, 0); 
             } 
             else if (currentEquip === 'storm_bow') {
-                // Mưa tên diện rộng
-                for(let i = 0; i < 8; i++) spawnAndSend('storm_arrow', me.x + (dir * 100) + (Math.random() * 300 * dir), -100, 0, 10 + Math.random()*5);
+                for(let i = 0; i < 15; i++) spawnAndSend('storm_arrow', me.x + (dir * 50) + (Math.random() * 600 * dir), -100 - Math.random()*200, 0, 10 + Math.random()*5);
             }
             else if (currentEquip === 'void_scythe') {
-                // Dịch chuyển ám sát
                 let opp = getOpp(); if(!opp.isDead) {
-                    me.x = opp.x + (opp.facingDir * -60);
-                    me.y = opp.y;
-                    me.facingDir = opp.facingDir;
-                    spawnAndSend('void_scythe', me.x, me.y, me.facingDir*15, 0);
+                    me.x = opp.x + (opp.facingDir * -60); me.y = opp.y; me.facingDir = opp.facingDir;
+                    spawnAndSend('void_slash', me.x - 90, me.y - 80, 0, 0);
+                    spawnAndSend('void_scythe', me.x, me.y, me.facingDir*25, 0);
+                    spawnAndSend('void_scythe', me.x, me.y-40, me.facingDir*25, 0);
                 }
             }
             else if (currentEquip === 'omega_beam') {
                 spawnAndSend('omega_beam', dir===1 ? px : px-800, py-20, 0, 0);
             }
             else {
-                // Default Ultimates
                 let d1 = 120, d2 = 150; if(gameMode === 'online') { d1 = Math.max(1, Math.floor(d1/2)); d2 = Math.max(1, Math.floor(d2/2)); }
                 if (wType === 'melee' || wType === 'piercing') {
                     spawnAndSend('ult_slash', 0, 0, 0, 0); 
@@ -658,10 +650,8 @@
                 slash.style.width = arcW + 'px';
                 slash.style.left = (dir === 1 ? me.x + 20 : me.x - (arcW/2)) + 'px'; slash.style.top = me.y + 'px'; slash.style.transform = `scaleX(${dir})`; document.getElementById('arena').appendChild(slash); setTimeout(() => { slash.style.opacity = 1; slash.style.transform = `scaleX(${dir}) scale(1.5)`; }, 10); setTimeout(() => slash.remove(), 150);
                 
-                if(currentEquip === 'dragon_blade') spawnAndSend('fire_wave', px, me.y, dir*12, 0);
                 if(currentEquip === 'gravity_hammer') spawnAndSend('shockwave', 0, groundY+70, 0, 0);
 
-                // KIẾM RỒNG ĐÃ ĐƯỢC BUFF SÁT THƯƠNG CHÉM GẦN LÊN 100
                 let dmg = currentEquip === 'dragon_blade' ? 100 : (currentEquip === 'gravity_hammer' ? 85 : (currentEquip === 'katana' ? 35 : (currentEquip === 'spear' ? 30 : 15))); 
                 let range = (currentEquip === 'spear' || currentEquip === 'dragon_blade') ? 180 : (currentEquip === 'katana' ? 120 : 70);
                 
@@ -776,6 +766,7 @@
             entities.push(entity);
         }
 
+        // FIX BUG XUYÊN THẤU GÂY ĐỘT TỬ (INSTA-KILL)
         function updateEntities() {
             for(let i = entities.length - 1; i >= 0; i--) {
                 let e = entities[i]; e.age++;
@@ -794,6 +785,11 @@
                     e.x = (e.isMine || e.isAlly) ? getMe().x : getOpp().x; e.y = (e.isMine || e.isAlly) ? getMe().y : getOpp().y;
                     e.el.style.left = e.x+'px'; e.el.style.top = e.y+'px'; continue;
                 }
+                
+                if(e.type === 'void_slash') {
+                    if(e.age > 30) { e.el.remove(); entities.splice(i, 1); continue; } 
+                    e.el.style.left = e.x+'px'; e.el.style.top = e.y+'px'; continue;
+                }
 
                 if (e.type === 'grenade') { e.x += e.vx; e.y += e.vy; e.vy += 0.8; }
                 else if (e.type === 'void_scythe') { e.x += e.vx; e.vx *= 0.9; if(e.age > 25) e.vx -= (e.vx > 0 ? 1 : -1); } 
@@ -807,7 +803,6 @@
                 
                 let target = (e.isMine || e.isAlly) ? getOpp() : getMe();
 
-                // ULTIMATES DAMAGE
                 if (e.type.includes('ult_') || e.type === 'shockwave' || e.type === 'omega_beam') {
                     if(e.age > 20) { e.el.remove(); entities.splice(i, 1); continue; }
                     if(e.age === 5 && !target.isDead && !e.hasHit) {
@@ -826,6 +821,30 @@
                             if(e.isMine && gameMode==='coop') socket.emit('hitCoopBoss', oDmg); 
                             if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, oDmg, 'energy', e.isMine); 
                         }
+                    } continue;
+                }
+                
+                // ULTIMATES MỚI (RỒNG, HỐ ĐEN)
+                if (e.type === 'dragon_wave') {
+                    if(e.age > 60) { e.el.remove(); entities.splice(i, 1); continue; }
+                    if (Math.abs(e.x - target.x) < 100 && Math.abs(e.y - target.y) < 150 && !target.isDead && !e.hasHit) {
+                        e.hasHit = true;
+                        let dWaveDmg = 150;
+                        if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: dWaveDmg, type: 'energy'}); 
+                        if(e.isMine && gameMode==='coop') socket.emit('hitCoopBoss', dWaveDmg); 
+                        if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, dWaveDmg, 'energy', e.isMine); 
+                    } continue;
+                }
+                if (e.type === 'black_hole') {
+                    if(e.age > 100) { 
+                        e.el.className = 'bomb-explode'; 
+                        if (Math.abs(e.x - target.x) < 120 && Math.abs(e.y - target.y) < 120 && !target.isDead && !e.hasHit) { 
+                            e.hasHit = true; let bhDmg = 200;
+                            if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: bhDmg, type: 'explosive'}); 
+                            if(e.isMine && gameMode==='coop') socket.emit('hitCoopBoss', bhDmg); 
+                            if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, bhDmg, 'explosive', e.isMine); 
+                        }
+                        setTimeout(() => { if(e.el) e.el.remove(); }, 300); entities.splice(i, 1);
                     } continue;
                 }
                 
@@ -875,7 +894,9 @@
                 }
 
                 if (e.x > target.x - w && e.x < target.x + 60 && e.y > target.y - h && e.y < target.y + 90 && !target.isDead && !e.hasHit) {
-                    if(!e.type.includes('wave') && !e.type.includes('scythe') && e.type !== 'sniper_bullet' && e.type !== 'tornado' && e.type !== 'storm_arrow') { e.hasHit = true; }
+                    
+                    // CHẶN ĐỘT TỬ DO XUYÊN THẤU - Khóa lại luôn sau khi chạm lần đầu tiên
+                    e.hasHit = true; 
 
                     if(e.type === 'vine' && e.isMine) { if(gameMode==='online') socket.emit('applyStun', {roomId: currentRoom, duration: 90}); else if(gameMode==='coop') socket.emit('coopStunBoss', 90); handleStun(target, 90); }
                     if(e.type === 'heal-beam') { if(e.isMine && (gameMode==='online'||gameMode==='coop')) socket.emit('healTeammate', {roomId: currentRoom, amount: 50}); let me = getMe(); me.hp = Math.min(me.maxHp, me.hp + 50); let hpId = myRole === 'p1' ? 'hp1' : 'hp2'; document.getElementById(hpId).style.width = (me.hp/me.maxHp)*100+'%'; e.el.remove(); entities.splice(i, 1); continue; }
@@ -890,7 +911,12 @@
                         if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: dmg, type: dmgType}); 
                         if(e.isMine && gameMode==='coop') socket.emit('hitCoopBoss', dmg); 
                         if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, dmg, dmgType, e.isMine); 
-                        if(e.hasHit && e.type !== 'horse_charge' && e.type !== 'boss_melee') { e.el.remove(); entities.splice(i, 1); continue; } 
+                        
+                        // Nếu là đạn xuyên thấu thì cho bay tiếp, ngược lại thì xóa
+                        let isPiercing = ['sniper_bullet', 'tornado', 'storm_arrow', 'horse_charge', 'boss_melee'].includes(e.type) || e.type.includes('wave') || e.type.includes('scythe');
+                        if (!isPiercing) { 
+                            e.el.remove(); entities.splice(i, 1); continue; 
+                        } 
                     }
                 }
                 if ((e.type === 'grenade' && e.y > groundY + 70) || (e.type === 'meteor' && e.y > groundY + 60) || (e.type === 'storm_arrow' && e.y > groundY + 60) || (e.type === 'boulder' && e.y > groundY+50) || (e.type === 'rock' && e.y > groundY+50) || e.x < -200 || e.x > 1000) { e.el.remove(); entities.splice(i, 1); }
@@ -904,7 +930,6 @@
 
         let botWait = 0; 
         
-        // TĂNG TẦN SUẤT RA CHIÊU VÀ KHÔNG ÁP SÁT LÀM MẤT CHIÊU
         function runBotAI() {
             let bot = p2; let targetPlayer = getMe(); if(bot.isDead || bot.stunTimer > 0) return;
 
@@ -953,6 +978,7 @@
                 
                 let rand = Math.random();
                 
+                // BOSS CHỈ CÒN XẢ KỸ NĂNG, KHÔNG ĐÁNH TAY NỮA
                 if(currentBoss === 'titan') { 
                     bossSpawnAndSend('shockwave', 0, groundY+70, 0, 0);
                     document.getElementById('arena').classList.add('screen-shake'); setTimeout(()=>document.getElementById('arena').classList.remove('screen-shake'), 300);
@@ -1009,7 +1035,7 @@
             
             if (botWait <= 0) {
                 // Tần suất xả skill cực gắt cho Solo và Coop
-                botWait = isCoop ? (isPhase2 ? 35 : 45) : (isPhase2 ? 40 : 55); 
+                botWait = isCoop ? (isPhase2 ? 30 : 40) : (isPhase2 ? 35 : 45); 
             }
             
             if (isCoop && isGameHost && botWait > 0) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir });
