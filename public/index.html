@@ -82,7 +82,7 @@
         /* ĐẶC ĐIỂM RIÊNG CỦA BOSS MỚI */
         @keyframes rainbowFish { 0% { filter: hue-rotate(0deg) saturate(2) brightness(1.5); } 100% { filter: hue-rotate(360deg) saturate(2) brightness(1.5); } }
         .boss-fish { background: linear-gradient(to bottom, #74b9ff, #0984e3) !important; animation: rainbowFish 2s linear infinite !important; box-shadow: 0 0 20px #0984e3 !important;}
-        .fade-out { opacity: 0 !important; pointer-events: none; transition: opacity 1s ease-in-out !important; } /* Cho Giun Cát lặn */
+        .fade-out { opacity: 0 !important; pointer-events: none; transition: opacity 1s ease-in-out !important; } 
         .reflecting { box-shadow: 0 0 30px 10px #81ecec, inset 0 0 20px #81ecec !important; } 
 
         .boss-titan { background: linear-gradient(to bottom, #b2bec3, #636e72) !important; width: 75px !important; height: 105px !important; }
@@ -110,7 +110,7 @@
         .heal-beam { position: absolute; width: 50px; height: 12px; background: #2ecc71; border-radius: 6px; box-shadow: 0 0 20px #2ecc71, 0 0 10px #fff; }
         .boss_melee { position: absolute; width: 70px; height: 100px; background: transparent; z-index: 20;}
 
-        /* HIỆU ỨNG ĐẠN & VŨ KHÍ MỚI (Tối ưu) */
+        /* HIỆU ỨNG ĐẠN & VŨ KHÍ MỚI CAO CẤP */
         .plasma_bullet { position: absolute; width: 30px; height: 8px; background: #00cec9; border-radius: 4px; box-shadow: 0 0 15px #00cec9; }
         .holy_light { position: absolute; width: 45px; height: 45px; background: radial-gradient(circle, #ffeaa7, #fdcb6e); border-radius: 50%; box-shadow: 0 0 25px #ffeaa7; mix-blend-mode: screen; }
         .storm_arrow { position: absolute; width: 4px; height: 35px; background: #fff; box-shadow: 0 0 10px #00cec9; border-radius: 2px;}
@@ -120,7 +120,11 @@
         .tornado { position: absolute; width: 80px; height: 150px; background: rgba(0, 184, 148, 0.6); border-radius: 50%; filter: blur(5px); box-shadow: 0 0 20px #00b894; }
         .bomb { position: absolute; width: 24px; height: 24px; background: #2d3436; border: 2px solid var(--neon-red); border-radius: 50%; color: white; font-size: 12px; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 10px var(--neon-red);}
         .grenade { position: absolute; width: 16px; height: 16px; background: #00b894; border-radius: 50%; box-shadow: inset -3px -3px 6px rgba(0,0,0,0.5), 0 0 8px #00b894;}
+        
         @keyframes spin { 100% { transform: rotate(360deg); } } 
+        @keyframes flash { 0% { opacity: 1; filter: contrast(2) drop-shadow(0 0 20px #fff); } 50% { opacity: 0.3; filter: contrast(1); } 100% { opacity: 1; filter: contrast(2) drop-shadow(0 0 20px #fff); } }
+        @keyframes strobeBlood { 0% { opacity: 1; filter: contrast(2) drop-shadow(0 0 10px red); } 50% { opacity: 0.5; filter: contrast(1); } 100% { opacity: 1; filter: contrast(2) drop-shadow(0 0 10px red); } }
+        
         .shuriken { width: 28px; height: 28px; background: #ccc; clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%); animation: spin 0.1s linear infinite; position: absolute; filter: drop-shadow(0 0 4px #fff);}
         .shotgun_bullet { position: absolute; width: 10px; height: 10px; background: #fdcb6e; border-radius: 50%; box-shadow: 0 0 6px #fdcb6e;}
         .sniper_bullet { position: absolute; width: 50px; height: 4px; background: #fff; box-shadow: 0 0 15px #fff, -10px 0 10px rgba(255,255,255,0.5); }
@@ -133,23 +137,25 @@
         .horse_charge { position: absolute; width: 90px; height: 70px; background: rgba(139, 69, 19, 0.85); border-radius: 12px; box-shadow: 0 0 25px #8B4513; border-right: 6px solid #fff; }
         .meteor { position: absolute; width: 50px; height: 50px; background: radial-gradient(circle, #fff, var(--neon-red)); border-radius: 50%; box-shadow: 0 0 40px var(--neon-red); z-index: 15;}
         
-        /* CẬP NHẬT: ĐẠN ĐỘC NHẤT & CƠ CHẾ BOSS */
-        .bubble { position: absolute; width: 35px; height: 35px; background: radial-gradient(circle, rgba(255,255,255,0.8), rgba(0, 206, 201, 0.5)); border: 2px solid #00cec9; border-radius: 50%; box-shadow: 0 0 15px #00cec9; animation: rainbowFish 1s linear infinite; }
-        .wind_blade { position: absolute; width: 80px; height: 15px; background: rgba(85, 239, 196, 0.8); border-radius: 50%; box-shadow: 0 0 20px #55efc4; }
-        .plague_cloud { position: absolute; width: 250px; height: 150px; background: radial-gradient(ellipse, rgba(0, 184, 148, 0.6), transparent); filter: blur(10px); z-index: 5; }
-        .lightning_strike { position: absolute; width: 20px; height: 400px; background: #fff; box-shadow: 0 0 20px #f1c40f, inset 0 0 10px #f1c40f; z-index: 15; }
-        .blood_drain_beam { position: absolute; width: 800px; height: 2px; background: var(--neon-red); box-shadow: 0 0 10px var(--neon-red); z-index: 15; }
+        /* CẬP NHẬT TỐI ƯU: ĐẠN ĐỘC NHẤT & CƠ CHẾ BOSS */
+        .bubble { position: absolute; width: 40px; height: 40px; background: radial-gradient(circle, rgba(255,255,255,0.9), rgba(0, 206, 201, 0.4)); border-radius: 50%; box-shadow: inset 0 0 12px #fff, 0 0 15px #00cec9; animation: rainbowFish 1.5s linear infinite; }
+        .wind_blade { position: absolute; width: 60px; height: 60px; background: transparent; border-radius: 50%; box-shadow: -10px 0 20px #55efc4; border-left: 8px solid #00b894; animation: spin 0.2s linear infinite; z-index: 10; }
+        .plague_cloud { position: absolute; width: 250px; height: 150px; background: radial-gradient(ellipse, rgba(0, 184, 148, 0.7), transparent); filter: blur(8px); z-index: 5; animation: spin 4s linear infinite; }
+        .lightning_strike { position: absolute; width: 25px; height: 400px; background: #fff; box-shadow: 0 0 20px #f1c40f, inset 0 0 10px #f1c40f; z-index: 15; animation: flash 0.1s infinite;}
+        .blood_drain_beam { position: absolute; width: 800px; height: 4px; background: var(--neon-red); box-shadow: 0 0 15px var(--neon-red); z-index: 15; animation: strobeBlood 0.2s infinite; }
         
-        .earth-spike { position: absolute; width: 30px; height: 80px; background: linear-gradient(to top, #8B4513, #d35400); clip-path: polygon(50% 0%, 0% 100%, 100% 100%); transform-origin: bottom center; animation: spikeRise 0.2s ease-out forwards; z-index: 12; filter: drop-shadow(0 0 5px #e17055); }
+        .earth-spike { position: absolute; width: 35px; height: 90px; background: linear-gradient(to top, #4b2e13, #e67e22); clip-path: polygon(50% 0%, 15% 100%, 85% 100%); transform-origin: bottom center; animation: spikeRise 0.15s ease-out forwards; z-index: 12; filter: drop-shadow(0 0 8px #d35400); }
         @keyframes spikeRise { 0% { transform: scaleY(0); } 100% { transform: scaleY(1); } }
         
-        .acid-bomb { position: absolute; width: 24px; height: 24px; background: radial-gradient(circle, #55efc4, #00b894); border-radius: 50%; box-shadow: 0 0 15px #00b894; z-index: 10; }
-        .acid-pool { position: absolute; width: 80px; height: 15px; background: rgba(46, 204, 113, 0.8); border-radius: 50%; box-shadow: 0 0 15px #2ecc71, inset 0 0 10px #27ae60; z-index: 1; transform-origin: center; animation: poolSpread 0.3s ease-out forwards; }
+        .acid-bomb { position: absolute; width: 26px; height: 26px; background: radial-gradient(circle, #55efc4, #00b894); border-radius: 50%; box-shadow: 0 0 15px #00b894; z-index: 10; }
+        
+        @keyframes pulseAcid { 0% { transform: scaleX(1); opacity: 0.8; } 50% { transform: scaleX(1.1) scaleY(1.2); opacity: 1; box-shadow: 0 0 20px #2ecc71, inset 0 0 15px #27ae60; } 100% { transform: scaleX(1); opacity: 0.8; } }
+        .acid-pool { position: absolute; width: 90px; height: 18px; background: rgba(46, 204, 113, 0.85); border-radius: 50%; box-shadow: 0 0 15px #2ecc71, inset 0 0 10px #27ae60; z-index: 1; transform-origin: center; animation: poolSpread 0.3s ease-out forwards, pulseAcid 2s infinite 0.3s; }
         @keyframes poolSpread { 0% { transform: scaleX(0); opacity: 0; } 100% { transform: scaleX(1); opacity: 1; } }
 
         /* VÒNG LÔI CỦA NHỆN */
-        .target-ring { position: absolute; width: 60px; height: 20px; border: 3px dashed #a29bfe; border-radius: 50%; box-shadow: 0 0 10px #a29bfe; animation: shrinkRing 1s forwards; z-index: 1; }
-        @keyframes shrinkRing { 0% { transform: scale(2); opacity: 0; } 50% { opacity: 1; } 100% { transform: scale(1); opacity: 1; background: rgba(162, 155, 254, 0.5); } }
+        .target-ring { position: absolute; width: 60px; height: 20px; border: 4px dashed #a29bfe; border-radius: 50%; box-shadow: 0 0 15px #a29bfe; z-index: 1; animation: lockOn 1.5s forwards; }
+        @keyframes lockOn { 0% { transform: scale(3) rotate(0deg); opacity: 0; } 30% { opacity: 1; border-color: #a29bfe;} 80% { transform: scale(1) rotate(180deg); border-color: red; background: rgba(255,0,0,0.2); opacity: 1;} 100% { transform: scale(1) rotate(360deg); opacity: 1; background: rgba(255,0,0,0.5); border-color: red;} }
 
         .ult_divine { position: absolute; width: 800px; height: 400px; background: rgba(46, 204, 113, 0.5); box-shadow: inset 0 0 80px #2ecc71; z-index: 20; top: 0; left: 0;}
         .omega_beam { position: absolute; width: 800px; height: 60px; background: rgba(255,255,255,0.95); box-shadow: 0 0 30px var(--neon-gold), 0 0 60px var(--neon-red); z-index: 1; }
@@ -289,7 +295,7 @@
             </div>
 
             <div style="background: rgba(0,0,0,0.6); padding: 10px 20px; border-radius: 8px; margin-top: 15px; font-size: 14px; text-align: center; border: 1px solid #333; color: #ccc; width: 100%; box-sizing: border-box;">
-                <span style="color:var(--neon-cyan)">[A] [D]: Đi</span> &nbsp;|&nbsp; <span style="color:var(--neon-gold)">[Nhấn W]: Nhảy (Có Double Jump)</span> &nbsp;|&nbsp; <span style="color:#00b894">[Shift]: Đỡ</span> &nbsp;|&nbsp; <span style="color:#f39c12">[E]: PARRY</span> &nbsp;|&nbsp; <span style="color:var(--neon-red)">[Space]: Tấn Công</span> &nbsp;|&nbsp; <span style="color:#8e44ad">[S]: Tối Thượng</span>
+                <span style="color:var(--neon-cyan)">[A] [D]: Đi</span> &nbsp;|&nbsp; <span style="color:var(--neon-gold)">[Nhấn/Giữ W]: Nhảy Cao & Double Jump</span> &nbsp;|&nbsp; <span style="color:#00b894">[Shift]: Đỡ</span> &nbsp;|&nbsp; <span style="color:#f39c12">[E]: PARRY</span> &nbsp;|&nbsp; <span style="color:var(--neon-red)">[Space]: Đánh</span> &nbsp;|&nbsp; <span style="color:#8e44ad">[S]: Tối Thượng</span>
             </div>
         </div>
     </div>
@@ -487,7 +493,7 @@
         
         let p1 = { x: 50, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: 1, stunTimer: 0, isParrying: false, parryTimer: 0, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
         let p2 = { x: 650, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: -1, stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1, isBurrowed: false, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
-        let keys = { a: false, d: false, space: false, w: false, w_pressed: false }; // Thêm w_pressed để chống spam phím
+        let keys = { a: false, d: false, space: false, w: false, w_pressed: false }; 
 
         const myElement = () => document.getElementById(myRole === 'p1' ? 'player1' : 'player2'); const oppElement = () => document.getElementById(myRole === 'p1' ? 'player2' : 'player1');
         const getMe = () => myRole === 'p1' ? p1 : p2; const getOpp = () => myRole === 'p1' ? p2 : p1;
@@ -643,17 +649,17 @@
             let pTxt = document.createElement('div'); pTxt.className = `effect-text ${cssClass}`; pTxt.innerText = text; pTxt.style.left = x+'px'; pTxt.style.top = (y-20)+'px'; document.getElementById('arena').appendChild(pTxt); setTimeout(()=>pTxt.remove(), 1000);
         }
 
-        // HÀM NHẢY KÉP (Double Jump)
+        // HÀM NHẢY KÉP (Double Jump) ĐƯỢC LÀM LẠI
         function doJump() {
             let me = getMe();
             if (me.isDead || me.stunTimer > 0 || me.isBlocking) return;
             
             if (me.y >= groundY) {
-                me.vy = -13; // Lực nhảy cơ bản cao hơn
+                me.vy = -18; // Nhảy rất cao (gấp rưỡi lực ban đầu, lên độ cao gần gấp đôi)
                 me.y -= 1;
                 me.jumpCount = 1;
             } else if (me.jumpCount < 2) {
-                me.vy = -11; // Lực double jump
+                me.vy = -15; // Double jump
                 me.jumpCount = 2;
                 showFloatingText(me.x, me.y, "DOUBLE JUMP!", "status-text");
             }
@@ -770,7 +776,6 @@
             else if (currentEquip === 'void_scythe') spawnAndSend('void_scythe', px, py, dir*15, 0);
             
             else if (currentEquip === 'bubble_spell') spawnAndSend('bubble', px, py, dir*10, -5);
-            // THAY ĐỔI: Chông đất mọc từ dưới lên
             else if (currentEquip === 'earth_spike') {
                 spawnAndSend('earth_spike', px + dir*60, groundY+10, 0, 0);
                 setTimeout(() => spawnAndSend('earth_spike', px + dir*140, groundY+10, 0, 0), 100);
@@ -840,16 +845,15 @@
                     socket.emit('playerDied', { roomId: currentRoom, loserRole: myRole }); 
                 } 
                 else if(gameMode === 'coop') { 
-                    // MỞ BẢNG OVER TRONG CO-OP KHI BẢN THÂN CHẾT VÀ HIỆN NÚT SPECTATE
                     document.getElementById('game-over-screen-inner').style.display = 'flex'; 
                     document.getElementById('winner-text').innerText = "BẠN ĐÃ CHẾT"; 
                     document.getElementById('winner-text').style.color = "var(--neon-red)"; 
-                    document.getElementById('btn-rematch-boss').style.display = 'none'; // Ẩn khi còn ng khác sống
+                    document.getElementById('btn-rematch-boss').style.display = 'none'; 
                     document.getElementById('btn-spectate').style.display = 'inline-block';
                     document.getElementById('btn-rematch-pvp').style.display = 'none';
                     document.getElementById('reward-text').style.display = 'none';
                     
-                    checkCoopGameOver(); // Kiểm tra nếu toàn đội cũng hẹo
+                    checkCoopGameOver(); 
                 } 
                 else {
                     setTimeout(() => {
@@ -941,7 +945,7 @@
                         e.age = 0;
                     }
                 } else if (e.type === 'acid_pool') {
-                    if (e.age > 240) { e.el.remove(); entities.splice(i, 1); continue; }
+                    if (e.age > 400) { e.el.remove(); entities.splice(i, 1); continue; }
                     if (e.age % 30 === 0) { // Gây sát thương theo thời gian
                         let target = e.isMine ? getOpp() : getMe();
                         if (target.x + 30 > e.x && target.x < e.x + 80 && Math.abs(target.y - groundY) < 30 && !target.isDead) {
@@ -1071,9 +1075,9 @@
                     case 'plasma_bullet': dmg = 25; w=30; h=8; dmgType='energy'; break;
                     case 'holy_light': dmg = 35; w=35; h=35; dmgType='magic'; break;
                     case 'bullet': dmg = 20; break;
-                    case 'bubble': dmg = 30; w=35; h=35; dmgType='magic'; break;
-                    case 'wind_blade': dmg = 30; w=80; h=15; dmgType='energy'; break;
-                    case 'acid_bomb': dmg = 30; w=24; h=24; dmgType='explosive'; break;
+                    case 'bubble': dmg = 30; w=40; h=40; dmgType='magic'; break;
+                    case 'wind_blade': dmg = 30; w=60; h=60; dmgType='energy'; break;
+                    case 'acid_bomb': dmg = 30; w=26; h=26; dmgType='explosive'; break;
                 }
 
                 if (!e.isMine && !e.isAlly && (gameMode === 'bot' || gameMode === 'coop' || gameMode === 'daily_boss')) { dmg = Math.floor(dmg * 0.5); }
@@ -1139,6 +1143,7 @@
 
             if (bot.statusEffects.slow > 0) spd = Math.max(1, Math.floor(spd / 2));
 
+            // NÂNG CẤP KỸ NĂNG ĐẶC TRƯNG CỦA BOSS NGÀY
             if (gameMode === 'daily_boss') {
                 let dId = currentDailyBoss.id;
                 let botEl = document.getElementById('player2');
@@ -1195,15 +1200,19 @@
                     else if (dId === 'worm') {
                         // SỬA ĐỔI: Giun giờ sẽ mọc chông đất xịn xò
                         bossSpawnAndSend('earth_spike', targetPlayer.x, groundY+10, 0, 0);
-                        setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x + 70, groundY+10, 0, 0), 150);
-                        setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x - 70, groundY+10, 0, 0), 300);
+                        setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x + 80, groundY+10, 0, 0), 150);
+                        setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x - 80, groundY+10, 0, 0), 300);
+                        setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x + 160, groundY+10, 0, 0), 450);
+                        setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x - 160, groundY+10, 0, 0), 600);
                     }
                     else if (dId === 'wind') {
-                        bossSpawnAndSend('wind_blade', bot.x, bot.y, bot.facingDir*25, 0);
-                        setTimeout(() => bossSpawnAndSend('wind_blade', bot.x, bot.y+20, bot.facingDir*25, 0), 100);
+                        bossSpawnAndSend('wind_blade', bot.x, bot.y, bot.facingDir*25, -2);
+                        bossSpawnAndSend('wind_blade', bot.x, bot.y+20, bot.facingDir*25, 0);
+                        bossSpawnAndSend('wind_blade', bot.x, bot.y+40, bot.facingDir*25, 2);
                     }
                     else if (dId === 'spider') { 
-                        bossSpawnAndSend('rocket', bot.x, bot.y, bot.facingDir*20, 0); 
+                        bossSpawnAndSend('rocket', targetPlayer.x + (Math.random()*200-100), -50, 0, 8); 
+                        setTimeout(() => bossSpawnAndSend('rocket', targetPlayer.x + (Math.random()*200-100), -50, 0, 8), 200); 
                     }
                     else if (dId === 'toad') { 
                         // SỬA ĐỔI: Cóc bắn bom axit rớt đọng hố
@@ -1217,10 +1226,10 @@
                         bossSpawnAndSend('boss_melee', bot.x+(bot.facingDir*40), bot.y, bot.facingDir, 0); 
                     }
                     else if (dId === 'bat') { 
-                        bot.y = groundY - 150; 
-                        bossSpawnAndSend('fireball', bot.x, bot.y, bot.facingDir*10, 5);
-                        bossSpawnAndSend('fireball', bot.x, bot.y, bot.facingDir*12, 8);
-                        bossSpawnAndSend('fireball', bot.x, bot.y, bot.facingDir*8, 12);
+                        bot.y = groundY - 200; 
+                        bossSpawnAndSend('fireball', bot.x, bot.y, bot.facingDir*5, 10);
+                        setTimeout(() => bossSpawnAndSend('fireball', bot.x, bot.y, bot.facingDir*10, 10), 200);
+                        setTimeout(() => bossSpawnAndSend('fireball', bot.x, bot.y, bot.facingDir*15, 10), 400);
                     }
                     else if (dId === 'ninja') { 
                         bossSpawnAndSend('shuriken', bot.x, bot.y, bot.facingDir*30, -4); 
@@ -1285,7 +1294,7 @@
                 keys.w_pressed = false;
                 let me = getMe();
                 // Short Hop: Nhả W sớm rơi nhanh
-                if (me.vy < 0) me.vy *= 0.5; 
+                if (me.vy < 0) me.vy *= 0.4; 
             }
         });
 
