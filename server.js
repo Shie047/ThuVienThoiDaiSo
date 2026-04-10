@@ -48,7 +48,7 @@ io.on('connection', (socket) => {
     socket.on('applyStun', (data) => socket.to(data.roomId).emit('takeStun', data.duration));
     socket.on('healTeammate', (data) => socket.to(data.roomId).emit('receiveHeal', data.amount));
 
-    // === CO-OP MULTIPLAYER (LÃNH ĐỊA & THẾ GIỚI) ===
+    // === CO-OP MULTIPLAYER ===
     socket.on('joinCoopLobby', (data) => { 
         const roomType = data.type;
         const maxPlayers = roomType === 'world' ? 8 : 4;
@@ -61,23 +61,29 @@ io.on('connection', (socket) => {
 
         socket.join(lobbyId); lobby.players[socket.id] = data;
         
-        // Gửi quyền Host cho client
+        // Cấp quyền Host cho người tạo phòng đầu tiên
         socket.emit('lobbyJoined', { isHost: lobby.hostId === socket.id });
         io.to(lobbyId).emit('lobbyUpdate', { count: Object.keys(lobby.players).length, max: maxPlayers });
         
-        // Kích hoạt đếm ngược 15s nếu đủ người
+        // Kích hoạt tự động đếm ngược 15s nếu phòng đầy người
         if (Object.keys(lobby.players).length >= maxPlayers && !lobby.timer) {
             let timeLeft = 15;
             io.to(lobbyId).emit('lobbyCountdown', timeLeft);
             lobby.timer = setInterval(() => {
                 timeLeft--;
-                if(timeLeft <= 0) {
-                    clearInterval(lobby.timer);
-                    startCoopGame(lobbyId);
-                } else {
-                    io.to(lobbyId).emit('lobbyCountdown', timeLeft);
-                }
+                if(timeLeft <= 0) { clearInterval(lobby.timer); startCoopGame(lobbyId); } 
+                else io.to(lobbyId).emit('lobbyCountdown', timeLeft);
             }, 1000);
+        }
+    });
+
+    // Tính năng Thành viên dục Host
+    socket.on('urgeHost', (roomType) => {
+        const lobbyId = 'lobby_' + roomType;
+        const lobby = coopLobbies[lobbyId];
+        if (lobby && lobby.hostId) {
+            // Gửi sự kiện chỉ đích danh tới Host
+            io.to(lobby.hostId).emit('hostUrged');
         }
     });
     
@@ -96,7 +102,7 @@ io.on('connection', (socket) => {
         const gameId = 'game_' + lobbyId + '_' + Date.now();
         coopGames[gameId] = { players: lobby.players, bossHp: lobby.type === 'world' ? 150000 : 30000 };
 
-        let isHost = true; // Chuyển quyền Host AI cho người đầu tiên
+        let isHost = true; 
         for(let id in lobby.players) {
             const s = io.sockets.sockets.get(id);
             if(s) { 
@@ -139,17 +145,16 @@ io.on('connection', (socket) => {
                 delete lobby.players[socketId]; 
                 let ioSocket = io.sockets.sockets.get(socketId);
                 if(ioSocket) ioSocket.leave(l);
-
-                // Nếu Host thoát, chuyển quyền Host cho người khác
+                
+                // Cấp quyền Host cho người kế tiếp nếu Host thoát
                 if (lobby.hostId === socketId) {
                     let keys = Object.keys(lobby.players);
-                    if (keys.length > 0) {
-                        lobby.hostId = keys[0];
-                        io.to(lobby.hostId).emit('lobbyJoined', { isHost: true });
+                    if (keys.length > 0) { 
+                        lobby.hostId = keys[0]; 
+                        io.to(lobby.hostId).emit('lobbyJoined', { isHost: true }); 
                     }
                 }
                 
-                // Hủy đếm ngược nếu phòng rớt xuống dưới max
                 if (lobby.timer && Object.keys(lobby.players).length < lobby.max) {
                     clearInterval(lobby.timer); lobby.timer = null;
                 }
@@ -158,11 +163,7 @@ io.on('connection', (socket) => {
         }
     }
 
-    socket.on('cancelMatch', () => { 
-        if(waitingPlayer === socket) waitingPlayer = null; 
-        handleLobbyLeave(socket.id);
-    });
-
+    socket.on('cancelMatch', () => { if(waitingPlayer === socket) waitingPlayer = null; handleLobbyLeave(socket.id); });
     socket.on('disconnect', () => { 
         if (waitingPlayer === socket) waitingPlayer = null; 
         handleLobbyLeave(socket.id);
