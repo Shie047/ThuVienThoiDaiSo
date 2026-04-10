@@ -21,7 +21,6 @@ io.on('connection', (socket) => {
             const mapIndex = Math.floor(Math.random() * 5); 
 
             socket.join(roomId); waitingPlayer.join(roomId);
-            // Thêm biến roundOver để chống bug spam
             pvpRooms[roomId] = { p1: waitingPlayer, p2: socket, score: {p1: 0, p2: 0}, mapId: mapIndex, readyVotes: 0, rematchVotes: 0, roundOver: false };
             
             waitingPlayer.emit('matchFound', { role: 'p1', roomId: roomId, oppName: socket.playerName, mapId: mapIndex });
@@ -32,11 +31,10 @@ io.on('connection', (socket) => {
         }
     });
 
-    // CHỈ XỬ LÝ KHI CÓ NGƯỜI CHẾT (BÁO TỪ CLIENT CỦA NGƯỜI THUA)
     socket.on('playerDied', (data) => {
         const room = pvpRooms[data.roomId];
         if (room && !room.roundOver) {
-            room.roundOver = true; // Khóa lại để không nhận 2 lần
+            room.roundOver = true; 
             const winnerRole = data.loserRole === 'p1' ? 'p2' : 'p1';
             room.score[winnerRole]++;
             
@@ -48,36 +46,32 @@ io.on('connection', (socket) => {
         }
     });
 
-    // 2 NGƯỜI CÙNG SẴN SÀNG MỚI QUA HIỆP
     socket.on('nextRoundReady', (roomId) => {
         const room = pvpRooms[roomId];
         if(room) {
             room.readyVotes++;
             if(room.readyVotes >= 2) {
-                room.readyVotes = 0;
-                room.roundOver = false; // Mở khóa cho hiệp sau
+                room.readyVotes = 0; room.roundOver = false;
                 io.to(roomId).emit('startNextRound');
             }
         }
     });
 
-    // 2 NGƯỜI CÙNG ĐỒNG Ý ĐÁNH LẠI
     socket.on('rematchRequest', (roomId) => {
         const room = pvpRooms[roomId];
         if(room) {
             room.rematchVotes++;
             socket.to(roomId).emit('rematchOffer');
             if(room.rematchVotes >= 2) {
-                room.rematchVotes = 0;
-                room.score = {p1: 0, p2: 0}; // Reset điểm BO3
-                room.roundOver = false;
+                room.rematchVotes = 0; room.score = {p1: 0, p2: 0}; room.roundOver = false;
                 io.to(roomId).emit('rematchStart');
             }
         }
     });
 
     socket.on('playerAction', (data) => socket.to(data.roomId).emit('updateOpponent', data.playerData));
-    socket.on('playerHit', (data) => socket.to(data.roomId).emit('takeDamage', data.damage));
+    // FIX: Truyền toàn bộ gói data sát thương (kèm thuộc tính) để 2 máy đồng bộ chính xác 100%
+    socket.on('playerHit', (data) => socket.to(data.roomId).emit('takeDamage', data));
     socket.on('shoot', (data) => socket.to(data.roomId).emit('opponentShoot', data));
     socket.on('applyStun', (data) => socket.to(data.roomId).emit('takeStun', data.duration));
     socket.on('healTeammate', (data) => socket.to(data.roomId).emit('receiveHeal', data.amount));
