@@ -2,11 +2,8 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Souls Fighter - The Final Polish</title>
+    <title>Đấu Trường Thời Đại Số - Epic Daily Bosses</title>
     <style>
-        /* =========================================
-           PHẦN 1: CSS - GIAO DIỆN & HIỆU ỨNG (Khoảng 100 dòng)
-           ========================================= */
         :root { --scale: 1; --neon-cyan: #66fcf1; --neon-red: #ff4757; --neon-gold: #f1c40f; --bg-dark: #0b0c10; --neon-purple: #8e44ad; }
         body { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100vw; height: 100vh; background-color: var(--bg-dark); color: #c5c6c7; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; user-select: none; overflow: hidden; }
         
@@ -16,7 +13,7 @@
         
         .title-glow { color: var(--neon-cyan); margin-top: 0; letter-spacing: 4px; text-transform: uppercase; text-shadow: 0 0 15px var(--neon-cyan); }
         .input-name { padding: 12px; font-size: 16px; border-radius: 6px; border: 1px solid var(--neon-cyan); background: #1f2833; color: var(--neon-cyan); margin-bottom: 15px; width: 80%; text-align: center; font-weight: bold; text-transform: uppercase; outline: none; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);}
-        input { user-select: text; } /* Cho phép bôi đen text để sửa tên */
+        input { user-select: text; }
         
         .btn { background: #1f2833; color: var(--neon-cyan); border: 2px solid var(--neon-cyan); padding: 12px; font-size: 14px; cursor: pointer; border-radius: 6px; font-weight: bold; margin: 6px 0; width: 85%; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;}
         .btn:hover:not(:disabled) { background: var(--neon-cyan); color: var(--bg-dark); box-shadow: 0 0 15px var(--neon-cyan); transform: scale(1.02);}
@@ -36,6 +33,7 @@
         #shop-list { display: flex; flex-direction: column; width: 100%; gap: 10px;}
         .shop-item { display: flex; justify-content: space-between; background: rgba(31, 40, 51, 0.8); padding: 12px 20px; border-radius: 8px; align-items: center; font-size: 14px; border: 1px solid var(--neon-cyan); box-shadow: inset 0 0 10px rgba(0,0,0,0.5);}
 
+        /* GIAO DIỆN GAME CHÍNH */
         #game-container { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; z-index: 10; background-color: var(--bg-dark);}
         .game-wrapper { display: flex; flex-direction: column; align-items: center; width: 800px; transform: scale(var(--scale)); transform-origin: center center; }
 
@@ -60,9 +58,10 @@
         .ammo-display { background: #2f3640; border: 1px solid #7f8fa6; }
         .ult-display { background: #8e44ad; border: 1px solid #fff; box-shadow: 0 0 10px #8e44ad; }
 
+        /* SÀN ĐẤU & HIỆU ỨNG */
         #arena { width: 800px; height: 400px; background-color: #1e272e; position: relative; border: 4px solid var(--neon-cyan); border-radius: 12px; box-shadow: 0 15px 40px rgba(0,0,0,0.9), inset 0 0 60px rgba(0,0,0,0.6); overflow: hidden;}
         
-        .player { width: 60px; height: 90px; position: absolute; background: linear-gradient(to bottom, #81ecec, var(--neon-cyan)); border-radius: 8px; z-index: 5; transition: filter 0.1s, opacity 0.3s; box-shadow: 0 0 15px rgba(102,252,241,0.4);}
+        .player { width: 60px; height: 90px; position: absolute; background: linear-gradient(to bottom, #81ecec, var(--neon-cyan)); border-radius: 8px; z-index: 5; transition: filter 0.1s, opacity 0.5s ease-in-out; box-shadow: 0 0 15px rgba(102,252,241,0.4);}
         #player2 { background: linear-gradient(to bottom, #ff7675, var(--neon-red)); box-shadow: 0 0 15px rgba(255,71,87,0.4);}
         .teammate { background: linear-gradient(to bottom, #55efc4, #00b894); box-shadow: 0 0 15px rgba(0,184,148,0.4); opacity: 0.85; }
         
@@ -74,12 +73,17 @@
         .phase2-aura { box-shadow: 0 0 30px 15px rgba(255, 0, 0, 0.7) !important; filter: saturate(2) contrast(1.5) !important; }
         .dead { transform: rotate(-90deg) translateY(30px) !important; filter: grayscale(100%); opacity: 0.3; z-index: 1;}
         .stunned { filter: sepia(100%) hue-rotate(50deg) saturate(400%) !important; box-shadow: 0 0 25px #00b894; }
-        .burrowed { opacity: 0.2; pointer-events: none; filter: grayscale(100%); transform: translateY(50px); } 
-        .reflecting { box-shadow: 0 0 30px 10px #81ecec, inset 0 0 20px #81ecec !important; } 
-
+        
+        /* HIỆU ỨNG TÌNH TRẠNG (STATUS EFFECTS) */
         .status-burn { filter: sepia(1) hue-rotate(-50deg) saturate(5) !important; }
         .status-slow { filter: hue-rotate(180deg) saturate(2) !important; }
         .status-bleed { filter: contrast(1.5) drop-shadow(0 0 10px red) !important; }
+
+        /* ĐẶC ĐIỂM RIÊNG CỦA BOSS MỚI */
+        @keyframes rainbowFish { 0% { filter: hue-rotate(0deg) saturate(2) brightness(1.5); } 100% { filter: hue-rotate(360deg) saturate(2) brightness(1.5); } }
+        .boss-fish { background: linear-gradient(to bottom, #74b9ff, #0984e3) !important; animation: rainbowFish 2s linear infinite !important; box-shadow: 0 0 20px #0984e3 !important;}
+        .fade-out { opacity: 0 !important; pointer-events: none; transition: opacity 1s ease-in-out !important; } /* Cho Giun Cát lặn */
+        .reflecting { box-shadow: 0 0 30px 10px #81ecec, inset 0 0 20px #81ecec !important; } 
 
         .boss-titan { background: linear-gradient(to bottom, #b2bec3, #636e72) !important; width: 75px !important; height: 105px !important; }
         .boss-zephyr { background: linear-gradient(to bottom, #55efc4, #00b894) !important; box-shadow: 0 0 25px #00b894; }
@@ -91,12 +95,13 @@
         .screen-shake { animation: shake 0.4s; animation-iteration-count: 1; }
         #darkness-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: #050505; opacity: 0; pointer-events:none; z-index: 40; transition: opacity 0.3s; }
 
+        /* VẬT LÝ & VFX TEXT */
         .parry-text, .effect-text { position: absolute; font-weight: bold; font-size: 20px; text-shadow: 2px 2px 2px #000; animation: floatUp 1s forwards; z-index: 50; pointer-events: none; }
         .parry-text { color: #f1c40f; text-shadow: 0 0 10px #f1c40f, 2px 2px 2px #000; }
         .headshot-text { color: #ff4757; text-shadow: 0 0 10px #ff4757, 2px 2px 2px #000; font-size: 24px; font-style: italic; }
         .status-text { color: #00cec9; font-size: 16px; }
-        .boss-warning { color: #e17055; font-size: 22px; text-shadow: 0 0 10px #e17055, 2px 2px 2px #000; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-40px); } }
+        .boss-warning { color: #e17055; font-size: 22px; text-shadow: 0 0 10px #e17055, 2px 2px 2px #000; z-index: 100; animation: floatUp 1.5s forwards; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
 
         .slash-arc { position: absolute; width: 120px; height: 120px; border-right: 12px solid rgba(255,255,255,0.9); border-radius: 50%; opacity: 0; transform: translateY(-20px); z-index: 10; filter: drop-shadow(0 0 8px #fff);}
         .bomb-explode { width: 180px; height: 180px; background: radial-gradient(circle, #fbc531, #e84118 60%, transparent); border-radius: 50%; position: absolute; transform: translate(-90px, -90px); opacity: 0.95; z-index: 15; mix-blend-mode: screen;}
@@ -105,6 +110,7 @@
         .heal-beam { position: absolute; width: 50px; height: 12px; background: #2ecc71; border-radius: 6px; box-shadow: 0 0 20px #2ecc71, 0 0 10px #fff; }
         .boss_melee { position: absolute; width: 70px; height: 100px; background: transparent; z-index: 20;}
 
+        /* HIỆU ỨNG ĐẠN & VŨ KHÍ MỚI */
         .plasma_bullet { position: absolute; width: 30px; height: 8px; background: #00cec9; border-radius: 4px; box-shadow: 0 0 15px #00cec9; }
         .holy_light { position: absolute; width: 45px; height: 45px; background: radial-gradient(circle, #ffeaa7, #fdcb6e); border-radius: 50%; box-shadow: 0 0 25px #ffeaa7; mix-blend-mode: screen; }
         .storm_arrow { position: absolute; width: 4px; height: 35px; background: #fff; box-shadow: 0 0 10px #00cec9; border-radius: 2px;}
@@ -127,11 +133,16 @@
         .horse_charge { position: absolute; width: 90px; height: 70px; background: rgba(139, 69, 19, 0.85); border-radius: 12px; box-shadow: 0 0 25px #8B4513; border-right: 6px solid #fff; }
         .meteor { position: absolute; width: 50px; height: 50px; background: radial-gradient(circle, #fff, var(--neon-red)); border-radius: 50%; box-shadow: 0 0 40px var(--neon-red); z-index: 15;}
         
-        .bubble { position: absolute; width: 35px; height: 35px; background: radial-gradient(circle, rgba(255,255,255,0.8), rgba(0, 206, 201, 0.5)); border: 2px solid #00cec9; border-radius: 50%; box-shadow: 0 0 15px #00cec9; }
+        /* ĐẠN ĐỘC NHẤT & CƠ CHẾ BOSS */
+        .bubble { position: absolute; width: 35px; height: 35px; background: radial-gradient(circle, rgba(255,255,255,0.8), rgba(0, 206, 201, 0.5)); border: 2px solid #00cec9; border-radius: 50%; box-shadow: 0 0 15px #00cec9; animation: rainbowFish 1s linear infinite; }
         .wind_blade { position: absolute; width: 80px; height: 15px; background: rgba(85, 239, 196, 0.8); border-radius: 50%; box-shadow: 0 0 20px #55efc4; }
         .plague_cloud { position: absolute; width: 250px; height: 150px; background: radial-gradient(ellipse, rgba(0, 184, 148, 0.6), transparent); filter: blur(10px); z-index: 5; }
         .lightning_strike { position: absolute; width: 20px; height: 400px; background: #fff; box-shadow: 0 0 20px #f1c40f, inset 0 0 10px #f1c40f; z-index: 15; }
         .blood_drain_beam { position: absolute; width: 800px; height: 2px; background: var(--neon-red); box-shadow: 0 0 10px var(--neon-red); z-index: 15; }
+        
+        /* VÒNG LÔI CỦA NHỆN */
+        .target-ring { position: absolute; width: 60px; height: 20px; border: 3px dashed #a29bfe; border-radius: 50%; box-shadow: 0 0 10px #a29bfe; animation: shrinkRing 1s forwards; z-index: 1; }
+        @keyframes shrinkRing { 0% { transform: scale(2); opacity: 0; } 50% { opacity: 1; } 100% { transform: scale(1); opacity: 1; background: rgba(162, 155, 254, 0.5); } }
 
         .ult_divine { position: absolute; width: 800px; height: 400px; background: rgba(46, 204, 113, 0.5); box-shadow: inset 0 0 80px #2ecc71; z-index: 20; top: 0; left: 0;}
         .omega_beam { position: absolute; width: 800px; height: 60px; background: rgba(255,255,255,0.95); box-shadow: 0 0 30px var(--neon-gold), 0 0 60px var(--neon-red); z-index: 1; }
@@ -193,7 +204,7 @@
             </div>
 
             <button class="btn btn-merchant" id="btn-fight-daily" onclick="startDailyBoss()">KHIÊU CHIẾN NGAY</button>
-            <button class="btn" id="btn-vip-reset" style="display:none; background:var(--neon-red); color:#fff; border-color:var(--neon-red);" onclick="resetDailyBossVIP()">[VIP] CẬP NHẬT BOSS NGÀY MỚI</button>
+            <button class="btn" id="btn-vip-reset" style="display:none; background:var(--neon-red); color:#fff; border-color:var(--neon-red);" onclick="resetDailyBossVIP()">[VIP] ĐỔI BOSS MỚI</button>
             <button class="btn" style="background: #2d3436; border-color:#636e72; color:#fff;" onclick="switchScreen('screen-menu')">RỜI ĐI</button>
         </div>
     </div>
@@ -292,6 +303,7 @@
         const maps = [ { name: "Hỏa Diện", bg: "linear-gradient(to bottom, #4a0e0e 0%, #1a0505 100%)", buff: "energy" }, { name: "Lõi Tương Lai", bg: "linear-gradient(to bottom, #001f3f 0%, #000 100%)", buff: "piercing" }, { name: "Cấm Địa", bg: "linear-gradient(to bottom, #2b3a2a 0%, #1a1a1a 100%)", buff: "ballistic" }, { name: "Phế Tích Thép", bg: "linear-gradient(to bottom, #3b3b3b 0%, #111 100%)", buff: "melee" }, { name: "Không Gian Ảo", bg: "linear-gradient(to bottom, #190033 0%, #000 100%)", buff: "explosive" } ];
         let currentMapBuff = '';
 
+        // CÂN BẰNG VŨ KHÍ
         const weapons = {
             energy_shield: { name: 'Khiên Năng Lượng', price: 100, type: 'defense', stm: 5, ammo: 0, firerate: 30 },
             heavy_pistol: { name: 'Súng Phá Giáp', price: 150, type: 'piercing', stm: 5, ammo: 1, firerate: 15 },
@@ -338,16 +350,16 @@
         };
 
         const dailyBosses = [
-            { id: 'fish', name: 'Cá Khổng Lồ', weapon: 'bubble_spell', color: '#0984e3', hint: 'Phải hạ gục trước khi nó bơi đi mất (60 giây)!' },
-            { id: 'worm', name: 'Giun Cát', weapon: 'earth_spike', color: '#e17055', hint: 'Nó sẽ chui xuống đất tàng hình và trồi lên cắn bạn!' },
-            { id: 'wind', name: 'Tinh Linh Gió', weapon: 'wind_blade', color: '#55efc4', hint: 'Tạo lốc xoáy hất văng mọi đạn đạo!' },
-            { id: 'spider', name: 'Nhện Máy', weapon: 'emp_missile', color: '#a29bfe', hint: 'Cảnh giác với cơn mưa tên lửa của nó!' },
+            { id: 'fish', name: 'Cá Khổng Lồ', weapon: 'bubble_spell', color: '#0984e3', hint: 'Bong bóng màu sắc rực rỡ nhưng đừng để chạm vào! Bạn chỉ có 60 giây.' },
+            { id: 'worm', name: 'Giun Cát', weapon: 'earth_spike', color: '#e17055', hint: 'Cẩn thận khi nó lặn mất tăm, mặt đất sẽ rung chuyển!' },
+            { id: 'wind', name: 'Tinh Linh Gió', weapon: 'wind_blade', color: '#55efc4', hint: 'Tốc độ chém đao gió của nó là phi thường!' },
+            { id: 'spider', name: 'Nhện Máy', weapon: 'emp_missile', color: '#a29bfe', hint: 'Cảnh báo! Nó gọi vòng lôi nhắm từ trên không!' },
             { id: 'toad', name: 'Cóc Độc', weapon: 'toxic_bomb', color: '#00b894', hint: 'Xả vùng độc tồn tại vĩnh viễn trên sân!' },
             { id: 'golem', name: 'Golem Pha Lê', weapon: 'crystal_shield', color: '#81ecec', hint: 'Nó có thể bật khiên phản đòn lại bạn!' },
             { id: 'bat', name: 'Dơi Lửa', weapon: 'flamethrower', color: '#d63031', hint: 'Bay lượn trên cao và nhả lửa liên tục!' },
             { id: 'ninja', name: 'Ninja Bóng Tối', weapon: 'lightning_shuriken', color: '#2d3436', hint: 'Giật lùi về sau và phóng phi tiêu dồn dập!' },
             { id: 'bird', name: 'Lôi Điểu', weapon: 'lightning_spear', color: '#fdcb6e', hint: 'Gọi sấm sét giật tung cả đấu trường!' },
-            { id: 'knight', name: 'Kỵ Sĩ Nguyền', weapon: 'vampiric_sword', color: '#6c5ce7', hint: 'Mỗi cú chém của hắn sẽ hút máu bạn!' }
+            { id: 'knight', name: 'Kỵ Sĩ Nguyền', weapon: 'vampiric_sword', color: '#6c5ce7', hint: 'Lướt áp sát bạn với những cú chém hút máu!' }
         ];
 
         let coins = parseInt(localStorage.getItem('coins')) || 0; let hearts = parseInt(localStorage.getItem('hearts')) || 0; let shards = parseInt(localStorage.getItem('shards')) || 0;
@@ -387,7 +399,6 @@
             vipBossOffset++;
             localStorage.setItem('vipBossOffset', vipBossOffset);
             
-            // Cập nhật lại Boss
             bossIndex = (new Date().getDate() + vipBossOffset) % 10;
             currentDailyBoss = dailyBosses[bossIndex];
 
@@ -405,7 +416,18 @@
             let opp = getOpp(); opp.maxHp = 1500; opp.hp = opp.maxHp; 
             document.getElementById('hp2-container').classList.add('boss-hp');
             let p2El = document.getElementById('player2');
-            p2El.className = 'player'; p2El.style.background = currentDailyBoss.color; p2El.style.boxShadow = `0 0 20px ${currentDailyBoss.color}`;
+            
+            // Xử lý đồ họa màu mè cho Cá
+            if (currentDailyBoss.id === 'fish') {
+                p2El.className = 'player boss-fish';
+                p2El.style.background = ''; // Xóa CSS nền đè
+                p2El.style.boxShadow = '';
+            } else {
+                p2El.className = 'player'; 
+                p2El.style.background = currentDailyBoss.color; 
+                p2El.style.boxShadow = `0 0 20px ${currentDailyBoss.color}`;
+            }
+
             opp.lockedTargetId = null; opp.phase = 1;
             
             if (currentDailyBoss.id === 'fish') {
@@ -480,7 +502,10 @@
             
             let p1El = document.getElementById('player1'); let p2El = document.getElementById('player2');
             p1El.className = 'player'; p1El.classList.remove('parrying', 'dead', 'status-burn', 'status-slow', 'status-bleed'); p1El.style.display = 'block'; 
-            p2El.className = 'player ' + ((gameMode !== 'online' && gameMode !== 'coop' && currentBoss !== 'normal' && gameMode !== 'daily_boss') ? 'boss-'+currentBoss : '');
+            
+            if (gameMode !== 'daily_boss' || currentDailyBoss.id !== 'fish') {
+                p2El.className = 'player ' + ((gameMode !== 'online' && gameMode !== 'coop' && currentBoss !== 'normal' && gameMode !== 'daily_boss') ? 'boss-'+currentBoss : '');
+            }
             p2El.classList.remove('parrying', 'dead', 'phase2-aura', 'burrowed', 'reflecting', 'status-burn', 'status-slow', 'status-bleed'); p2El.style.display = 'block';
             
             document.getElementById('hp1').style.width = '100%'; document.getElementById('hp1').style.background = 'linear-gradient(90deg, #00b894, var(--neon-cyan))';
@@ -490,7 +515,6 @@
             if (stm1El) stm1El.style.width = '100%'; if (stm2El) stm2El.style.width = '100%';
             
             equipItem(currentEquip); 
-            document.getElementById('btn-rematch-boss').style.display = 'none'; // Ẩn lúc mới vào
         }
 
         function showWaitingScreen(msg, showStartBtn = false) { switchScreen('screen-waiting'); document.getElementById('wait-msg').innerText = msg; document.getElementById('btn-start-early').style.display = (showStartBtn && isLobbyHost) ? 'block' : 'none'; document.getElementById('btn-urge-host').style.display = (showStartBtn && !isLobbyHost) ? 'block' : 'none'; }
@@ -712,10 +736,7 @@
                 else {
                     setTimeout(() => {
                         document.getElementById('game-over-screen-inner').style.display = 'flex'; document.getElementById('winner-text').innerText = "BẠN ĐÃ CHẾT"; document.getElementById('winner-text').style.color = "var(--neon-red)"; 
-                        
-                        // FIX: NÚT ĐÁNH LẠI LUÔN HIỆN KHI CHẾT
                         document.getElementById('btn-rematch-boss').style.display = 'inline-block'; document.getElementById('btn-rematch-boss').disabled = false;
-                        
                         document.getElementById('btn-rematch-pvp').style.display = 'none'; document.getElementById('btn-spectate').style.display = 'none';
                         document.getElementById('reward-text').style.display = 'none';
                         if(animationId) cancelAnimationFrame(animationId);
@@ -771,6 +792,14 @@
                 
                 if(e.type === 'ult_slash') { if(e.age > 24) { e.el.remove(); entities.splice(i, 1); continue; } e.el.style.left = e.x+'px'; e.el.style.top = e.y+'px'; continue; }
                 if(e.type === 'ult_nuke') { if(e.age > 30) { e.el.remove(); entities.splice(i, 1); continue; } e.el.style.left = e.x+'px'; e.el.style.top = e.y+'px'; continue; }
+                
+                if (e.type === 'target-ring') {
+                    if (e.age > 60) {
+                        spawnAndSend('lightning_strike', e.x, -200, 0, 0); // Nổ thiên lôi sau 1 giây
+                        e.el.remove(); entities.splice(i, 1);
+                    }
+                    continue;
+                }
 
                 if (e.type === 'grenade') { e.x += e.vx; e.y += e.vy; e.vy += 0.8; }
                 else if (e.type === 'void_scythe') { e.x += e.vx; e.vx *= 0.9; if(e.age > 25) e.vx -= (e.vx > 0 ? 1 : -1); } 
@@ -880,7 +909,6 @@
                     if(e.type === 'emp_missile') { if(gameMode==='online') socket.emit('applyStun', {roomId: currentRoom, duration: 40}); else if(gameMode==='coop') socket.emit('coopStunBoss', 40); handleStun(target, 40); }
                     if(e.type === 'heal-beam') { if(e.isMine && (gameMode==='online'||gameMode==='coop'||gameMode==='daily_boss')) socket.emit('healTeammate', {roomId: currentRoom, amount: 50}); let me = getMe(); me.hp = Math.min(me.maxHp, me.hp + 50); let hpId = myRole === 'p1' ? 'hp1' : 'hp2'; document.getElementById(hpId).style.width = (me.hp/me.maxHp)*100+'%'; e.el.remove(); entities.splice(i, 1); continue; }
                     
-                    // TỈ LỆ HEADSHOT CHO CÁC LOẠI ĐẠN ĐẠO
                     let isHeadshot = false;
                     if (['bullet', 'sniper_bullet', 'shotgun_bullet', 'plasma_bullet', 'shuriken', 'storm_arrow'].includes(e.type)) {
                         if (Math.random() < 0.2) isHeadshot = true;
@@ -934,38 +962,38 @@
             if (isCoop) spd = Math.floor(spd * 1.5); 
             if (gameMode === 'daily_boss') spd = 4;
 
-            // BỊ LÀM CHẬM (SLOW EFFECT)
             if (bot.statusEffects.slow > 0) spd = Math.max(1, Math.floor(spd / 2));
 
-            // FIX 3: NÂNG CẤP SKILL ĐẶC TRƯNG CỦA BOSS NGÀY
+            // FIX 3: NÂNG CẤP KỸ NĂNG ĐẶC TRƯNG CỦA BOSS NGÀY
             if (gameMode === 'daily_boss') {
                 let dId = currentDailyBoss.id;
                 let botEl = document.getElementById('player2');
 
                 if (dId === 'worm') {
                     if (!bot.isBurrowed && Math.random() < 0.01 && botWait < -60) { 
-                        bot.isBurrowed = true; botEl.classList.add('burrowed'); botWait = 180; 
+                        bot.isBurrowed = true; botEl.classList.add('fade-out'); botWait = 180; 
                         showFloatingText(bot.x, bot.y, "ĐỘN THỔ!", 'boss-warning');
                     }
                     if (bot.isBurrowed) {
-                        bot.x = targetPlayer.x; 
+                        bot.x = targetPlayer.x; // Áp sát dần người chơi khi đang tàng hình
                         if (botWait === 5) { 
-                            bot.isBurrowed = false; botEl.classList.remove('burrowed'); 
+                            bot.isBurrowed = false; botEl.classList.remove('fade-out'); 
                             bossSpawnAndSend('boulder', bot.x, groundY+40, 0, -10); 
                             if (Math.abs(bot.x - targetPlayer.x) < 80) handleDamage(targetPlayer, 80, 'melee', false); 
                         }
-                        return; 
+                        return; // Ngừng logic bình thường khi đang trốn
                     }
                 }
                 
                 if (dId === 'golem' && Math.random() < 0.01 && botWait < -60) { 
                     botEl.classList.add('reflecting'); 
-                    showFloatingText(bot.x, bot.y, "KHIÊU KHÍCH!", 'boss-warning');
+                    showFloatingText(bot.x, bot.y, "PHẢN ĐÒN!", 'boss-warning');
                     setTimeout(() => botEl.classList.remove('reflecting'), 2000); 
                 }
 
-                if (dId === 'spider' && botWait === 40) {
-                    showFloatingText(bot.x, bot.y, "MƯA TÊN LỬA!", 'boss-warning');
+                if (dId === 'spider' && botWait === 60) {
+                    showFloatingText(targetPlayer.x, groundY, "MƯA TÊN LỬA!", 'boss-warning');
+                    bossSpawnAndSend('target-ring', targetPlayer.x, groundY, 0, 0); // Thả nhẫn mục tiêu xuống đất
                 }
                 
                 if (dId === 'ninja' && botWait === 30) {
@@ -1000,8 +1028,6 @@
                         setTimeout(() => bossSpawnAndSend('wind_blade', bot.x, bot.y+20, bot.facingDir*25, 0), 100);
                     }
                     else if (dId === 'spider') { 
-                        bossSpawnAndSend('rocket', targetPlayer.x-50, -50, 0, 10); 
-                        bossSpawnAndSend('rocket', targetPlayer.x+50, -100, 0, 10); 
                         bossSpawnAndSend('rocket', bot.x, bot.y, bot.facingDir*20, 0); 
                     }
                     else if (dId === 'toad') { 
@@ -1035,7 +1061,7 @@
                     else if (dId === 'knight') { 
                         bot.x = targetPlayer.x + (targetPlayer.facingDir * 60);
                         bossSpawnAndSend('boss_melee', bot.x+(bot.facingDir*40), bot.y, bot.facingDir, 0); 
-                        bot.hp = Math.min(bot.maxHp, bot.hp + 50);
+                        bot.hp = Math.min(bot.maxHp, bot.hp + 50); // Hút máu mạnh
                     }
                 }
                 else { 
@@ -1049,9 +1075,9 @@
                 }
             }
             
-            // FIX 2: TĂNG THỜI GIAN CHỜ CỦA BOSS NGÀY (Chậm lại, dễ thở hơn)
+            // THỜI GIAN HỒI CHIÊU CỦA BOSS
             if (botWait <= 0) { 
-                if (gameMode === 'daily_boss') botWait = 90; // Thay vì 50, lên 90 ~ 1.5 giây nghỉ
+                if (gameMode === 'daily_boss') botWait = 80; // Giãn nhịp độ đánh Boss ngày ra để dễ thở hơn
                 else botWait = isCoop ? (isPhase2 ? 25 : 35) : (isPhase2 ? 35 : 45); 
             }
             if (isCoop && isGameHost && botWait > 0) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir });
