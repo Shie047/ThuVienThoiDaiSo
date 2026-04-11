@@ -138,6 +138,17 @@ io.on('connection', (socket) => {
         if (game.bossHp <= 0) { io.to(socket.coopGameId).emit('coopBossDefeated'); delete coopGames[socket.coopGameId]; }
     });
 
+    // CHỨC NĂNG RỜI KHỎI CO-OP (CHỦ ĐỘNG)
+    socket.on('leaveCoop', () => {
+        if (socket.coopGameId && coopGames[socket.coopGameId]) {
+            delete coopGames[socket.coopGameId].players[socket.id];
+            socket.to(socket.coopGameId).emit('teammateLeft', socket.id);
+            socket.leave(socket.coopGameId);
+            socket.coopGameId = null;
+        }
+        handleLobbyLeave(socket.id);
+    });
+
     function handleLobbyLeave(socketId) {
         for(let l in coopLobbies) {
             let lobby = coopLobbies[l];
@@ -156,7 +167,10 @@ io.on('connection', (socket) => {
     socket.on('cancelMatch', () => { if(waitingPlayer === socket) waitingPlayer = null; handleLobbyLeave(socket.id); });
     socket.on('disconnect', () => { 
         if (waitingPlayer === socket) waitingPlayer = null; handleLobbyLeave(socket.id);
-        if (socket.coopGameId && coopGames[socket.coopGameId]) io.to(socket.coopGameId).emit('teammateLeft', socket.id);
+        if (socket.coopGameId && coopGames[socket.coopGameId]) {
+            delete coopGames[socket.coopGameId].players[socket.id]; // Dọn dẹp data khi mất kết nối đột ngột
+            io.to(socket.coopGameId).emit('teammateLeft', socket.id);
+        }
     });
 });
 
