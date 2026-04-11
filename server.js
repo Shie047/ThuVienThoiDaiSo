@@ -3,10 +3,8 @@ const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 
-// Phục vụ file tĩnh từ thư mục 'public'
 app.use(express.static('public'));
 
-// ===== CORE GAME SYSTEM =====
 let waitingPlayer = null;
 let roomCounter = 0;
 const pvpRooms = {};
@@ -14,7 +12,6 @@ const coopLobbies = {};
 const coopGames = {};   
 
 io.on('connection', (socket) => {
-    // === 1v1 MATCHMAKING (BO3) ===
     socket.on('findMatch', (playerName) => {
         socket.playerName = playerName;
         if (waitingPlayer && waitingPlayer !== socket) {
@@ -63,14 +60,12 @@ io.on('connection', (socket) => {
         }
     });
 
-    // === SYNC HÀNH ĐỘNG ===
     socket.on('playerAction', (data) => socket.to(data.roomId).emit('updateOpponent', data.playerData));
     socket.on('playerHit', (data) => socket.to(data.roomId).emit('takeDamage', data));
     socket.on('shoot', (data) => socket.to(data.roomId).emit('opponentShoot', data));
     socket.on('applyStun', (data) => socket.to(data.roomId).emit('takeStun', data.duration));
     socket.on('healTeammate', (data) => socket.to(data.roomId).emit('receiveHeal', data.amount));
 
-    // === CO-OP BOSS LOBBY ===
     socket.on('joinCoopLobby', (data) => { 
         const roomType = data.type; const maxPlayers = roomType === 'world' ? 8 : 4; const lobbyId = 'lobby_' + roomType;
         if (!coopLobbies[lobbyId]) coopLobbies[lobbyId] = { players: {}, max: maxPlayers, type: roomType, hostId: socket.id, timer: null };
@@ -107,7 +102,7 @@ io.on('connection', (socket) => {
     function startCoopGame(lobbyId) {
         const lobby = coopLobbies[lobbyId]; if (!lobby || Object.keys(lobby.players).length === 0) return;
         const gameId = 'game_' + lobbyId + '_' + Date.now();
-        coopGames[gameId] = { players: lobby.players, bossHp: lobby.type === 'world' ? 150000 : 30000 };
+        coopGames[gameId] = { players: lobby.players, bossHp: lobby.type === 'world' ? 150000 : 30000, teamWiped: false };
 
         let isHost = true; 
         for(let id in lobby.players) {
@@ -121,9 +116,21 @@ io.on('connection', (socket) => {
         delete coopLobbies[lobbyId]; 
     }
 
+    // Server kiểm tra và báo tử Toàn Đội ở đây
     socket.on('coopPlayerAction', (data) => {
         if(socket.coopGameId && coopGames[socket.coopGameId]) {
-            coopGames[socket.coopGameId].players[socket.id] = data; socket.to(socket.coopGameId).emit('updateTeammate', { id: socket.id, data: data });
+            let game = coopGames[socket.coopGameId];
+            game.players[socket.id] = data; 
+            socket.to(socket.coopGameId).emit('updateTeammate', { id: socket.id, data: data });
+            
+            let aliveCount = 0;
+            for(let id in game.players) {
+                if(!game.players[id].isDead) aliveCount++;
+            }
+            if(aliveCount === 0 && !game.teamWiped) {
+                game.teamWiped = true;
+                io.to(socket.coopGameId).emit('coopTeamWiped');
+            }
         }
     });
 
@@ -138,11 +145,25 @@ io.on('connection', (socket) => {
         if (game.bossHp <= 0) { io.to(socket.coopGameId).emit('coopBossDefeated'); delete coopGames[socket.coopGameId]; }
     });
 
-    // CHỨC NĂNG RỜI KHỎI CO-OP (CHỦ ĐỘNG)
     socket.on('leaveCoop', () => {
         if (socket.coopGameId && coopGames[socket.coopGameId]) {
-            delete coopGames[socket.coopGameId].players[socket.id];
+            let game = coopGames[socket.coopGameId];
+            delete game.players[socket.id];
             socket.to(socket.coopGameId).emit('teammateLeft', socket.id);
+            
+            let aliveCount = 0;
+            let total = 0;
+            for(let id in game.players) {
+                total++;
+                if(!game.players[id].isDead) aliveCount++;
+            }
+            if(total > 0 && aliveCount === 0 && !game.teamWiped) {
+                game.teamWiped = true;
+                io.to(socket.coopGameId).emit('coopTeamWiped');
+            } else if (total === 0) {
+                delete coopGames[socket.coopGameId];
+            }
+
             socket.leave(socket.coopGameId);
             socket.coopGameId = null;
         }
@@ -168,8 +189,22 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => { 
         if (waitingPlayer === socket) waitingPlayer = null; handleLobbyLeave(socket.id);
         if (socket.coopGameId && coopGames[socket.coopGameId]) {
-            delete coopGames[socket.coopGameId].players[socket.id]; // Dọn dẹp data khi mất kết nối đột ngột
+            let game = coopGames[socket.coopGameId];
+            delete game.players[socket.id];
             io.to(socket.coopGameId).emit('teammateLeft', socket.id);
+            
+            let aliveCount = 0;
+            let total = 0;
+            for(let id in game.players) {
+                total++;
+                if(!game.players[id].isDead) aliveCount++;
+            }
+            if(total > 0 && aliveCount === 0 && !game.teamWiped) {
+                game.teamWiped = true;
+                io.to(socket.coopGameId).emit('coopTeamWiped');
+            } else if (total === 0) {
+                delete coopGames[socket.coopGameId];
+            }
         }
     });
 });
