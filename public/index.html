@@ -371,7 +371,7 @@
             earth_spike: { name: '[ĐỘC NHẤT] Chông Đất', type: 'piercing', stm: 12, maxAmmo: 0, firerate: 25, ult_type: 'earth_shatter', dmg: 75, effect: 'bleed' },
             wind_blade: { name: '[ĐỘC NHẤT] Đao Gió', type: 'energy', stm: 8, maxAmmo: 0, firerate: 15, ult_type: 'hurricane', dmg: 55, effect: 'bleed' },
             emp_missile: { name: '[ĐỘC NHẤT] Tên Lửa Điện', type: 'explosive', stm: 20, maxAmmo: 3, ammoRegen: 0.02, firerate: 40, ult_type: 'orbital_strike', dmg: 90, effect: 'slow' },
-            toxic_bomb: { name: '[ĐỘC NHẤT] Bom Dịch Độc', type: 'explosive', stm: 15, maxAmmo: 5, ammoRegen: 0.03, firerate: 30, ult_type: 'plague_cloud', dmg: 60, effect: 'bleed' },
+            toxic_bomb: { name: '[ĐỘC NHẤT] Bom Dịch Độc', type: 'explosive', stm: 15, maxAmmo: 5, ammoRegen: 0.05, firerate: 25, ult_type: 'plague_cloud', dmg: 60, effect: 'bleed' },
             crystal_shield: { name: '[ĐỘC NHẤT] Khiên Pha Lê', type: 'defense', stm: 2, maxAmmo: 0, firerate: 20, ult_type: 'crystal_prison', dmg: 0 },
             flamethrower: { name: '[ĐỘC NHẤT] Súng Phun Lửa', type: 'energy', stm: 2, maxAmmo: 50, ammoRegen: 0.1, firerate: 5, ult_type: 'inferno', dmg: 40, effect: 'burn' },
             lightning_shuriken: { name: '[ĐỘC NHẤT] Phi Tiêu Điện', type: 'ballistic', stm: 5, maxAmmo: 0, firerate: 10, ult_type: 'shadow_strike', dmg: 35, effect: 'bleed' },
@@ -558,7 +558,6 @@
             document.getElementById('game-over-screen-inner').style.display = 'none'; document.getElementById('btn-spectate').style.display = 'none';
             document.getElementById('btn-leave-coop').style.display = 'none';
             
-            // XỬ LÝ BUFF MÁU 2000 TRONG PVP
             let p1Max = (gameMode === 'online') ? 2000 : 200;
             p1 = { x: getP1StartX(), y: groundY, vy: 0, hp: p1Max, maxHp: p1Max, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP1StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
             
@@ -872,8 +871,9 @@
             }
             else if (currentEquip === 'wind_blade') spawnAndSend('wind_blade', px, py, dir*25, 0, wEffect);
             else if (currentEquip === 'toxic_bomb') {
-                spawnAndSend('acid_bomb', px, py, dir*10, -8, wEffect);
-                spawnAndSend('acid_bomb', px, py, dir*14, -10, wEffect);
+                spawnAndSend('acid_bomb', px, py, dir*8, -6, wEffect);
+                spawnAndSend('acid_bomb', px, py, dir*12, -9, wEffect);
+                spawnAndSend('acid_bomb', px, py, dir*16, -12, wEffect);
             }
             else if (currentEquip === 'lightning_shuriken') { spawnAndSend('shuriken', px, py, dir*35, -1, wEffect); spawnAndSend('shuriken', px, py, dir*35, 1, wEffect); }
             else if (currentEquip === 'lightning_spear') spawnAndSend('sniper_bullet', px, py, dir*45, 0, wEffect);
@@ -1034,11 +1034,11 @@
                         e.age = 0;
                     }
                 } else if (e.type === 'acid_pool') {
-                    if (e.age > 400) { e.el.remove(); entities.splice(i, 1); continue; }
-                    if (e.age % 30 === 0) { 
+                    if (e.age > 500) { e.el.remove(); entities.splice(i, 1); continue; }
+                    if (e.age % 20 === 0) { 
                         let target = e.isMine ? getOpp() : getMe();
                         if (target.x + 30 > e.x && target.x < e.x + 80 && Math.abs(target.y - groundY) < 30 && !target.isDead) {
-                            handleDamage(target, 8, 'magic', e.isMine, 'bleed'); 
+                            handleDamage(target, 15, 'magic', e.isMine, 'bleed'); 
                         }
                     }
                 }
@@ -1237,7 +1237,7 @@
                 let botEl = document.getElementById('player2');
 
                 if (dId === 'worm') {
-                    if (!bot.isBurrowed && Math.random() < 0.01 && botWait < -60) { 
+                    if (!bot.isBurrowed && Math.random() < 0.005 && botWait < -100) { 
                         bot.isBurrowed = true; botEl.classList.add('fade-out'); botWait = 180; 
                         showFloatingText(bot.x, bot.y, "ĐỘN THỔ!", 'boss-warning');
                     }
@@ -1246,7 +1246,7 @@
                         if (botWait === 5) { 
                             bot.isBurrowed = false; botEl.classList.remove('fade-out'); 
                             bossSpawnAndSend('boulder', bot.x, groundY+40, 0, -10); 
-                            if (Math.abs(bot.x - targetPlayer.x) < 80) handleDamage(targetPlayer, 80, 'melee', false); 
+                            if (Math.abs(bot.x - targetPlayer.x) < 50) handleDamage(targetPlayer, 50, 'melee', false); 
                         }
                         return; 
                     }
@@ -1290,9 +1290,9 @@
                         bossSpawnAndSend('bubble', bot.x, bot.y-80, bot.facingDir*16, -10);
                     }
                     else if (dId === 'worm') {
-                        for(let i=0; i<=4; i++) {
-                            setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x + (i*80), groundY+10, 0, 0), i*100);
-                            setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x - (i*80), groundY+10, 0, 0), i*100);
+                        for(let i=0; i<=2; i++) {
+                            setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x + (i*100), groundY+10, 0, 0), i*200);
+                            if(i > 0) setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x - (i*100), groundY+10, 0, 0), i*200);
                         }
                     }
                     else if (dId === 'wind') {
