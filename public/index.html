@@ -405,7 +405,7 @@
                 renderShopAndInventory();
             }
         }
-        checkVipName(document.getElementById('playerNameInput').value); // Kiểm tra lúc khởi động
+        checkVipName(document.getElementById('playerNameInput').value); 
 
         let vipBossOffset = parseInt(localStorage.getItem('vipBossOffset')) || 0;
         let todayDateStr = new Date().toDateString();
@@ -568,7 +568,6 @@
             equipItem(currentEquip); 
         }
 
-        // HÀM REMATCH / RỜI KHỎI
         function rematchBoss() {
             if (gameMode === 'bot') {
                 startBotMode(currentBoss);
@@ -582,7 +581,6 @@
             startOnlineMode();
         }
         function leaveCoop() {
-            // Hàm rời khỏi dành riêng cho Coop
             if(gameMode==='coop' && socket) socket.emit('leaveCoop');
             location.reload(); 
         }
@@ -611,7 +609,10 @@
         function selectBoss(type) { showCoopLobby(type); }
 
         socket.on('coopGameInit', (data) => { currentBoss = data.type === 'world' ? 'omega' : data.type; currentRoom = data.roomId; setMap(4); currentMapBuff = ''; isGameHost = data.isHost; let title = data.type === 'world' ? "BOSS THẾ GIỚI" : "LÃNH ĐỊA " + data.type.toUpperCase(); document.getElementById('map-name-display').innerText = `SỰ KIỆN: ${title}`; initGame('coop', document.getElementById('playerNameInput').value || "Dũng Sĩ", title); document.getElementById('hp2-container').classList.add('boss-hp'); p2.maxHp = data.bossHp; p2.hp = data.bossHp; p2.x = 400; p2.lockedTargetId = null; p2.phase = 1; document.getElementById('player2').className = 'player boss-' + currentBoss; teammates = data.teammates; updateTeammatesUI(); updateBossHpUI(); });
-        socket.on('updateTeammate', (data) => { teammates[data.id] = data.data; updateTeammatesUI(); checkCoopGameOver(); }); socket.on('teammateShoot', (d) => spawnEntity(d.type, d.x, d.y, d.vx, d.vy, false, true)); 
+        
+        socket.on('updateTeammate', (data) => { teammates[data.id] = data.data; updateTeammatesUI(); checkCoopGameOver(); }); 
+        socket.on('teammateLeft', (id) => { if(teammates[id]) { delete teammates[id]; updateTeammatesUI(); checkCoopGameOver(); } });
+        socket.on('teammateShoot', (d) => spawnEntity(d.type, d.x, d.y, d.vx, d.vy, false, true)); 
         
         socket.on('coopBossHpUpdate', (hp) => { 
             p2.hp = hp; 
@@ -650,7 +651,7 @@
                 document.getElementById('btn-rematch-boss').style.display = 'inline-block';
                 document.getElementById('btn-rematch-boss').disabled = false;
                 document.getElementById('reward-text').style.display = 'none'; 
-                document.getElementById('btn-leave-coop').style.display = 'inline-block'; // Hiển thị nút rời khỏi
+                document.getElementById('btn-leave-coop').style.display = 'inline-block';
                 
                 if (animationId) cancelAnimationFrame(animationId);
             }
@@ -676,7 +677,11 @@
         socket.on('updateOpponent', (oppData) => { if(gameMode !== 'online') return; let opp = getOpp(); opp.x = oppData.x; opp.y = oppData.y; opp.isBlocking = oppData.isBlocking; if (oppData.facingDir) opp.facingDir = oppData.facingDir; oppElement().classList.toggle('blocking', opp.isBlocking); });
         socket.on('takeDamage', (data) => handleDamage(getMe(), data.damage, data.type || 'unknown', false, data.effect || null, data.isCrit || false));
         socket.on('takeStun', (dur) => handleStun(getMe(), dur));
-        socket.on('opponentShoot', (d) => spawnEntity(d.type || 'bullet', d.x, d.y, d.vx, d.vy || 0, false, false));
+        socket.on('opponentShoot', (d) => {
+            spawnEntity(d.type || 'bullet', d.x, d.y, d.vx, d.vy || 0, false, false);
+            // Kích hoạt animation khi địch bắn (Online 1v1)
+            let oEl = oppElement(); oEl.classList.add('attacking'); setTimeout(()=>oEl.classList.remove('attacking'), 150);
+        });
         socket.on('receiveHeal', (amt) => { let me = getMe(); me.hp = Math.min(me.maxHp, me.hp + amt); let hpId = myRole === 'p1' ? 'hp1' : 'hp2'; document.getElementById(hpId).style.width = (me.hp/me.maxHp)*100 + '%'; });
 
         function doParry() { let me = getMe(); if(me.stamina < 15 || me.parryTimer > 0 || me.isDead) return; me.stamina -= 15; me.isParrying = true; me.parryTimer = 30; myElement().classList.add('parrying'); }
@@ -689,11 +694,11 @@
             showFloatingText(me.x, me.y, "NẠP ĐẠN...", 'status-text');
             setTimeout(() => {
                 if (!me.isDead) {
-                    me.ammo = 30; // Nạp lại max băng đạn
+                    me.ammo = 30; 
                     me.isReloading = false;
                     showFloatingText(me.x, me.y, "ĐÃ NẠP!", 'parry-text');
                 }
-            }, 1500); // Mất 1.5 giây để nạp
+            }, 1500); 
         }
 
         function showFloatingText(x, y, text, cssClass) {
@@ -773,14 +778,12 @@
 
             if (me.stamina < costStm) return;
             
-            // Nếu dùng súng mà hết đạn -> tự động nạp
             if (costAmmo > 0 && me.ammo < costAmmo) {
                 doReload();
                 return;
             }
             
             me.stamina -= costStm; me.ammo -= costAmmo; 
-            
             attackCooldown = currentEquip === 'none' ? 8 : Math.max(6, Math.floor(wData.firerate * 0.35)); 
             
             myElement().classList.add('attacking'); 
@@ -925,13 +928,16 @@
             hpFill.style.width = (clampedHp / target.maxHp) * 100 + '%'; 
             if(target === p2 && target.hp <= target.maxHp * 0.3) hpFill.style.background = 'linear-gradient(90deg, #c23616, var(--neon-red))'; 
 
-            // Xử lý khi chết
+            // XỬ LÝ CHẾT TRONG COOP CHUẨN XÁC
             if(target.hp <= 0 && target === getMe()) {
                 target.isDead = true; myElement().classList.add('dead');
                 if(gameMode === 'online') { 
                     socket.emit('playerDied', { roomId: currentRoom, loserRole: myRole }); 
                 } 
                 else if(gameMode === 'coop') { 
+                    // Báo tử cho cả đội lập tức để hệ thống nhận diện TOÀN DIỆT
+                    socket.emit('coopPlayerAction', { x: target.x, y: target.y, isBlocking: false, facingDir: target.facingDir, isDead: true });
+
                     document.getElementById('game-over-screen-inner').style.display = 'flex'; 
                     document.getElementById('winner-text').innerText = "BẠN ĐÃ CHẾT"; 
                     document.getElementById('winner-text').style.color = "var(--neon-red)"; 
@@ -1222,7 +1228,8 @@
 
             let dist = bot.x - targetPlayer.x; botWait--;
             let spd = currentBoss === 'zephyr' ? (isPhase2?14:10) : (currentBoss === 'titan' ? (isPhase2?4:2) : (isPhase2?7:5));
-            if (isCoop) spd = Math.floor(spd * 1.5); 
+            // NERF COOP BOSS: Tốc độ di chuyển chậm lại một chút
+            if (isCoop) spd = Math.floor(spd * 1.1); 
             if (gameMode === 'daily_boss') spd = 4;
 
             if (bot.statusEffects.slow > 0) spd = Math.max(1, Math.floor(spd / 2));
@@ -1341,9 +1348,10 @@
                 }
             }
             
+            // NERF COOP BOSS: Tăng thêm thời gian nghỉ (delay)
             if (botWait <= 0) { 
                 if (gameMode === 'daily_boss') botWait = 80; 
-                else botWait = isCoop ? (isPhase2 ? 25 : 35) : (isPhase2 ? 35 : 45); 
+                else botWait = isCoop ? (isPhase2 ? 70 : 90) : (isPhase2 ? 35 : 45); 
             }
             if (isCoop && isGameHost && botWait > 0) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir });
         }
@@ -1429,7 +1437,6 @@
                 }
 
                 if (!opp.isDead) {
-                    // Logic mô phỏng vật lý và hiệu ứng của Opponent nếu không phải chế độ Online
                     if (gameMode !== 'online') {
                         if (opp.y < groundY && !opp.isBurrowed) { opp.vy += 0.6; opp.y += opp.vy; if (opp.y >= groundY) { opp.y = groundY; opp.vy = 0; } }
                         
@@ -1438,7 +1445,6 @@
                         if (opp.statusEffects.bleed > 0) { opp.statusEffects.bleed--; if(opp.statusEffects.bleed % 60 === 0) handleDamage(opp, 10, 'magic', false); if(opp.statusEffects.bleed <= 0) oppElement().classList.remove('status-bleed'); }
                     }
                     
-                    // CẬP NHẬT GIAO DIỆN CHUNG CHO TẤT CẢ CÁC MODE (Bao gồm Online)
                     if (!opp.isBurrowed) {
                         oppElement().style.left = opp.x + 'px'; oppElement().style.top = opp.y + 'px'; oppElement().style.transform = `scaleX(${opp.facingDir})`;
                     }
@@ -1446,8 +1452,12 @@
 
                 updateEntities();
 
-                if (gameMode === 'online' || gameMode === 'coop') {
-                    socket.emit('playerUpdate', { roomId: currentRoom, x: me.x, y: me.y, isBlocking: me.isBlocking, facingDir: me.facingDir });
+                // LỖI ĐỒNG BỘ 1v1 NẰM Ở ĐÂY: Cần gọi 'playerAction' thay vì 'playerUpdate' để đúng với thiết lập của Server.
+                // Đồng thời, với Co-op phải gửi lệnh 'coopPlayerAction' liên tục kể cả khi chết để cập nhật trạng thái 'isDead'.
+                if (gameMode === 'online') {
+                    socket.emit('playerAction', { roomId: currentRoom, playerData: { x: me.x, y: me.y, isBlocking: me.isBlocking, facingDir: me.facingDir } });
+                } else if (gameMode === 'coop') {
+                    socket.emit('coopPlayerAction', { x: me.x, y: me.y, isBlocking: me.isBlocking, facingDir: me.facingDir, isDead: me.isDead });
                 }
             }
             animationId = requestAnimationFrame(gameLoop);
