@@ -125,10 +125,11 @@
         .boss_melee { position: absolute; width: 70px; height: 100px; background: transparent; z-index: 20;}
 
         /* HIỆU ỨNG ĐẠN & VŨ KHÍ MỚI CAO CẤP */
+        .heavy_bullet { position: absolute; width: 25px; height: 8px; background: #e17055; border-radius: 4px; box-shadow: 0 0 10px #e17055;}
         .plasma_bullet { position: absolute; width: 30px; height: 8px; background: #00cec9; border-radius: 4px; box-shadow: 0 0 15px #00cec9; }
         .holy_light { position: absolute; width: 45px; height: 45px; background: radial-gradient(circle, #ffeaa7, #fdcb6e); border-radius: 50%; box-shadow: 0 0 25px #ffeaa7; mix-blend-mode: screen; }
         .storm_arrow { position: absolute; width: 4px; height: 35px; background: #fff; box-shadow: 0 0 10px #00cec9; border-radius: 2px;}
-        .bullet { position: absolute; width: 20px; height: 6px; background: var(--neon-gold); border-radius: 3px; box-shadow: 0 0 8px var(--neon-gold);}
+        .bullet { position: absolute; width: 15px; height: 5px; background: var(--neon-gold); border-radius: 2px; box-shadow: 0 0 8px var(--neon-gold);}
         .rock { position: absolute; width: 25px; height: 25px; background: #7f8fa6; border-radius: 5px; box-shadow: 0 0 10px #2d3436; }
         .boulder { position: absolute; width: 60px; height: 60px; background: #636e72; border-radius: 10px; box-shadow: 0 0 20px #2d3436; }
         .tornado { position: absolute; width: 80px; height: 150px; background: rgba(0, 184, 148, 0.6); border-radius: 50%; filter: blur(5px); box-shadow: 0 0 20px #00b894; }
@@ -332,49 +333,54 @@
         const maps = [ { name: "Hỏa Diện", bg: "linear-gradient(to bottom, #4a0e0e 0%, #1a0505 100%)", buff: "energy" }, { name: "Lõi Tương Lai", bg: "linear-gradient(to bottom, #001f3f 0%, #000 100%)", buff: "piercing" }, { name: "Cấm Địa", bg: "linear-gradient(to bottom, #2b3a2a 0%, #1a1a1a 100%)", buff: "ballistic" }, { name: "Phế Tích Thép", bg: "linear-gradient(to bottom, #3b3b3b 0%, #111 100%)", buff: "melee" }, { name: "Không Gian Ảo", bg: "linear-gradient(to bottom, #190033 0%, #000 100%)", buff: "explosive" } ];
         let currentMapBuff = '';
 
+        /* =========================================
+           CÂN BẰNG VŨ KHÍ & HỆ THỐNG NẠP ĐẠN
+           clipSize: Sức chứa băng đạn
+           reloadTime: Thời gian nạp (ms)
+        ========================================= */
         const weapons = {
-            energy_shield: { name: 'Khiên Năng Lượng', price: 100, type: 'defense', stm: 5, ammo: 0, firerate: 30 },
-            heavy_pistol: { name: 'Súng Phá Giáp', price: 150, type: 'piercing', stm: 5, ammo: 1, firerate: 15 },
-            katana: { name: 'Kiếm Katana', price: 200, type: 'melee', stm: 8, ammo: 0, firerate: 15 },
-            bomb: { name: 'Mìn Hẹn Giờ', price: 250, type: 'explosive', stm: 15, ammo: 0, firerate: 30 }, 
-            shuriken: { name: 'Phi Tiêu', price: 300, type: 'ballistic', stm: 4, ammo: 0, firerate: 8 },
-            spear: { name: 'Thương Xuyên Phá', price: 350, type: 'piercing', stm: 12, ammo: 0, firerate: 25 }, 
-            vine_spell: { name: 'Phép Dây Leo', price: 400, type: 'magic', stm: 60, ammo: 0, firerate: 50 }, 
-            shotgun: { name: 'Hoa Cải', price: 450, type: 'ballistic', stm: 12, ammo: 2, firerate: 30 }, 
-            grenade: { name: 'Phóng Lựu', price: 500, type: 'explosive', stm: 15, ammo: 1, firerate: 35 },
-            smg: { name: 'Tiểu Liên SMG', price: 600, type: 'ballistic', stm: 3, ammo: 1, firerate: 8 }, 
-            holy_light: { name: 'Ánh Sáng Thần', price: 700, type: 'magic', stm: 20, ammo: 0, firerate: 40 }, 
-            sniper: { name: 'Súng Ngắm', price: 750, type: 'piercing', stm: 20, ammo: 1, firerate: 45 }, 
-            heal_single: { name: 'Trượng Sinh Mệnh', price: 800, type: 'magic', stm: 35, ammo: 0, firerate: 80 },
-            plasma: { name: 'Súng Plasma', price: 850, type: 'energy', stm: 15, ammo: 1, firerate: 30 }, 
-            heal_aoe: { name: 'Trượng Hồi Phục', price: 850, type: 'magic', stm: 25, ammo: 0, firerate: 50 },
-            fireball: { name: 'Cầu Lửa', price: 950, type: 'energy', stm: 15, ammo: 0, firerate: 35 },
-            cluster: { name: 'Lựu Đạn Chùm', price: 1000, type: 'explosive', stm: 25, ammo: 2, firerate: 50 }, 
-            rocket: { name: 'Bazooka', price: 1100, type: 'explosive', stm: 25, ammo: 1, firerate: 50 }, 
-            horse: { name: 'Ngựa Chiến', price: 1200, type: 'melee', stm: 35, ammo: 0, firerate: 70 },
-            laser: { name: 'Súng Laser', price: 1500, type: 'energy', stm: 20, ammo: 2, firerate: 40 },
-            giant_shield: { name: 'Khiên Khổng Lồ', price: 1500, type: 'defense_aoe', stm: 25, ammo: 0, firerate: 50 } 
+            energy_shield: { name: 'Khiên Năng Lượng', price: 100, type: 'defense', stm: 5, clipSize: 0, firerate: 30 },
+            heavy_pistol: { name: 'Súng Phá Giáp', price: 150, type: 'piercing', stm: 5, clipSize: 7, reloadTime: 1200, firerate: 25 },
+            katana: { name: 'Kiếm Katana', price: 200, type: 'melee', stm: 8, clipSize: 0, firerate: 15 },
+            bomb: { name: 'Mìn Hẹn Giờ', price: 250, type: 'explosive', stm: 15, clipSize: 4, reloadTime: 2000, firerate: 30 }, 
+            shuriken: { name: 'Phi Tiêu', price: 300, type: 'ballistic', stm: 4, clipSize: 0, firerate: 8 },
+            spear: { name: 'Thương Xuyên Phá', price: 350, type: 'piercing', stm: 12, clipSize: 0, firerate: 25 }, 
+            vine_spell: { name: 'Phép Dây Leo', price: 400, type: 'magic', stm: 25, clipSize: 0, firerate: 50 }, 
+            shotgun: { name: 'Hoa Cải', price: 450, type: 'ballistic', stm: 12, clipSize: 5, reloadTime: 1800, firerate: 35 }, 
+            grenade: { name: 'Phóng Lựu', price: 500, type: 'explosive', stm: 15, clipSize: 4, reloadTime: 2000, firerate: 35 },
+            smg: { name: 'Tiểu Liên SMG', price: 600, type: 'ballistic', stm: 3, clipSize: 30, reloadTime: 1000, firerate: 6 }, 
+            holy_light: { name: 'Ánh Sáng Thần', price: 700, type: 'magic', stm: 20, clipSize: 0, firerate: 40 }, 
+            sniper: { name: 'Súng Ngắm', price: 750, type: 'piercing', stm: 20, clipSize: 3, reloadTime: 2500, firerate: 50 }, 
+            heal_single: { name: 'Trượng Sinh Mệnh', price: 800, type: 'magic', stm: 30, clipSize: 0, firerate: 80 },
+            plasma: { name: 'Súng Plasma', price: 850, type: 'energy', stm: 15, clipSize: 10, reloadTime: 1500, firerate: 25 }, 
+            heal_aoe: { name: 'Trượng Hồi Phục', price: 850, type: 'magic', stm: 25, clipSize: 0, firerate: 50 },
+            fireball: { name: 'Cầu Lửa', price: 950, type: 'energy', stm: 15, clipSize: 5, reloadTime: 1500, firerate: 35 },
+            cluster: { name: 'Lựu Đạn Chùm', price: 1000, type: 'explosive', stm: 25, clipSize: 2, reloadTime: 2500, firerate: 50 }, 
+            rocket: { name: 'Bazooka', price: 1100, type: 'explosive', stm: 25, clipSize: 3, reloadTime: 2500, firerate: 50 }, 
+            horse: { name: 'Ngựa Chiến', price: 1200, type: 'melee', stm: 35, clipSize: 0, firerate: 70 },
+            laser: { name: 'Súng Laser', price: 1500, type: 'energy', stm: 20, clipSize: 5, reloadTime: 2000, firerate: 40 },
+            giant_shield: { name: 'Khiên Khổng Lồ', price: 1500, type: 'defense_aoe', stm: 25, clipSize: 0, firerate: 50 } 
         };
 
         const ultimates = {
-            dragon_blade: { name: '[VIP] Kiếm Rồng', type: 'energy', stm: 20, ammo: 0, firerate: 45, dmg: 75 },
-            gravity_hammer: { name: '[VIP] Búa Trọng Lực', type: 'explosive', stm: 10, ammo: 0, firerate: 25, dmg: 65 },
-            storm_bow: { name: '[VIP] Cung Bão Tố', type: 'ballistic', stm: 5, ammo: 0, firerate: 10 },
-            void_scythe: { name: '[VIP] Lưỡi Hái Hư Không', type: 'piercing', stm: 10, ammo: 0, firerate: 20 },
-            omega_beam: { name: '[MAX] TIA OMEGA', type: 'energy', stm: 30, ammo: 0, firerate: 60, dmg: 110 }
+            dragon_blade: { name: '[VIP] Kiếm Rồng', type: 'energy', stm: 20, clipSize: 0, firerate: 45, dmg: 75 },
+            gravity_hammer: { name: '[VIP] Búa Trọng Lực', type: 'explosive', stm: 10, clipSize: 0, firerate: 25, dmg: 65 },
+            storm_bow: { name: '[VIP] Cung Bão Tố', type: 'ballistic', stm: 5, clipSize: 0, firerate: 10 },
+            void_scythe: { name: '[VIP] Lưỡi Hái Hư Không', type: 'piercing', stm: 10, clipSize: 0, firerate: 20 },
+            omega_beam: { name: '[MAX] TIA OMEGA', type: 'energy', stm: 30, clipSize: 0, firerate: 60, dmg: 110 }
         };
 
         const unique_weapons = {
-            bubble_spell: { name: '[ĐỘC NHẤT] Phép Bong Bóng', type: 'magic', stm: 10, ammo: 0, firerate: 25, ult_type: 'bubble_prison', dmg: 60 },
-            earth_spike: { name: '[ĐỘC NHẤT] Chông Đất', type: 'piercing', stm: 12, ammo: 0, firerate: 25, ult_type: 'earth_shatter', dmg: 75 },
-            wind_blade: { name: '[ĐỘC NHẤT] Đao Gió', type: 'energy', stm: 8, ammo: 0, firerate: 15, ult_type: 'hurricane', dmg: 55 },
-            emp_missile: { name: '[ĐỘC NHẤT] Tên Lửa Điện', type: 'explosive', stm: 20, ammo: 1, firerate: 40, ult_type: 'orbital_strike', dmg: 90 },
-            toxic_bomb: { name: '[ĐỘC NHẤT] Bom Dịch Độc', type: 'explosive', stm: 15, ammo: 0, firerate: 30, ult_type: 'plague_cloud', dmg: 60 },
-            crystal_shield: { name: '[ĐỘC NHẤT] Khiên Pha Lê', type: 'defense', stm: 2, ammo: 0, firerate: 20, ult_type: 'crystal_prison', dmg: 0 },
-            flamethrower: { name: '[ĐỘC NHẤT] Súng Phun Lửa', type: 'energy', stm: 2, ammo: 1, firerate: 7, ult_type: 'inferno', dmg: 40 },
-            lightning_shuriken: { name: '[ĐỘC NHẤT] Phi Tiêu Điện', type: 'ballistic', stm: 5, ammo: 0, firerate: 10, ult_type: 'shadow_strike', dmg: 35 },
-            lightning_spear: { name: '[ĐỘC NHẤT] Giáo Sét', type: 'piercing', stm: 10, ammo: 0, firerate: 20, ult_type: 'thunder_wrath', dmg: 90 },
-            vampiric_sword: { name: '[ĐỘC NHẤT] Kiếm Hút Máu', type: 'melee', stm: 5, ammo: 0, firerate: 15, ult_type: 'blood_drain', dmg: 45 }
+            bubble_spell: { name: '[ĐỘC NHẤT] Phép Bong Bóng', type: 'magic', stm: 10, clipSize: 0, firerate: 25, ult_type: 'bubble_prison', dmg: 60 },
+            earth_spike: { name: '[ĐỘC NHẤT] Chông Đất', type: 'piercing', stm: 12, clipSize: 0, firerate: 25, ult_type: 'earth_shatter', dmg: 75 },
+            wind_blade: { name: '[ĐỘC NHẤT] Đao Gió', type: 'energy', stm: 8, clipSize: 0, firerate: 15, ult_type: 'hurricane', dmg: 55 },
+            emp_missile: { name: '[ĐỘC NHẤT] Tên Lửa Điện', type: 'explosive', stm: 20, clipSize: 3, reloadTime: 2200, firerate: 40, ult_type: 'orbital_strike', dmg: 90 },
+            toxic_bomb: { name: '[ĐỘC NHẤT] Bom Dịch Độc', type: 'explosive', stm: 15, clipSize: 5, reloadTime: 2000, firerate: 30, ult_type: 'plague_cloud', dmg: 60 },
+            crystal_shield: { name: '[ĐỘC NHẤT] Khiên Pha Lê', type: 'defense', stm: 2, clipSize: 0, firerate: 20, ult_type: 'crystal_prison', dmg: 0 },
+            flamethrower: { name: '[ĐỘC NHẤT] Súng Phun Lửa', type: 'energy', stm: 2, clipSize: 50, reloadTime: 2500, firerate: 5, ult_type: 'inferno', dmg: 40 },
+            lightning_shuriken: { name: '[ĐỘC NHẤT] Phi Tiêu Điện', type: 'ballistic', stm: 5, clipSize: 0, firerate: 10, ult_type: 'shadow_strike', dmg: 35 },
+            lightning_spear: { name: '[ĐỘC NHẤT] Giáo Sét', type: 'piercing', stm: 10, clipSize: 0, firerate: 20, ult_type: 'thunder_wrath', dmg: 90 },
+            vampiric_sword: { name: '[ĐỘC NHẤT] Kiếm Hút Máu', type: 'melee', stm: 5, clipSize: 0, firerate: 15, ult_type: 'blood_drain', dmg: 45 }
         };
 
         const dailyBosses = [
@@ -504,9 +510,16 @@
         function equipItem(item) {
             currentEquip = item; localStorage.setItem('currentEquip', item);
             document.querySelectorAll('.btn-equip').forEach(btn => btn.classList.remove('active')); document.querySelectorAll(`#eq-${item}`).forEach(btn => btn.classList.add('active')); 
-            let wData = weapons[item] || ultimates[item] || unique_weapons[item]; let hasAmmo = (wData && wData.ammo > 0);
+            
+            let wData = weapons[item] || ultimates[item] || unique_weapons[item]; 
+            let hasAmmo = wData && (wData.clipSize > 0);
+            
+            getMe().ammo = hasAmmo ? wData.clipSize : 0; 
+            getMe().isReloading = false; 
+            
             let ammoUi1 = document.getElementById('ammo-ui'); let ammoUi2 = document.getElementById('ammo-ui2');
-            if(ammoUi1) ammoUi1.style.display = hasAmmo ? 'block' : 'none'; if(ammoUi2) ammoUi2.style.display = hasAmmo ? 'block' : 'none';
+            if(ammoUi1) ammoUi1.style.display = hasAmmo ? 'block' : 'none'; 
+            if(ammoUi2) ammoUi2.style.display = hasAmmo ? 'block' : 'none';
             document.querySelectorAll('button').forEach(b => b.blur());
         }
         
@@ -610,8 +623,8 @@
 
         socket.on('coopGameInit', (data) => { currentBoss = data.type === 'world' ? 'omega' : data.type; currentRoom = data.roomId; setMap(4); currentMapBuff = ''; isGameHost = data.isHost; let title = data.type === 'world' ? "BOSS THẾ GIỚI" : "LÃNH ĐỊA " + data.type.toUpperCase(); document.getElementById('map-name-display').innerText = `SỰ KIỆN: ${title}`; initGame('coop', document.getElementById('playerNameInput').value || "Dũng Sĩ", title); document.getElementById('hp2-container').classList.add('boss-hp'); p2.maxHp = data.bossHp; p2.hp = data.bossHp; p2.x = 400; p2.lockedTargetId = null; p2.phase = 1; document.getElementById('player2').className = 'player boss-' + currentBoss; teammates = data.teammates; updateTeammatesUI(); updateBossHpUI(); });
         
-        socket.on('updateTeammate', (data) => { teammates[data.id] = data.data; updateTeammatesUI(); checkCoopGameOver(); }); 
-        socket.on('teammateLeft', (id) => { if(teammates[id]) { delete teammates[id]; updateTeammatesUI(); checkCoopGameOver(); } });
+        socket.on('updateTeammate', (data) => { teammates[data.id] = data.data; updateTeammatesUI(); }); 
+        socket.on('teammateLeft', (id) => { if(teammates[id]) { delete teammates[id]; updateTeammatesUI(); } });
         socket.on('teammateShoot', (d) => spawnEntity(d.type, d.x, d.y, d.vx, d.vy, false, true)); 
         
         socket.on('coopBossHpUpdate', (hp) => { 
@@ -622,40 +635,26 @@
                 document.getElementById('player2').classList.add('dead');
             }
         }); 
+
+        // SERVER CHỊU TRÁCH NHIỆM BÁO TỬ COOP
+        socket.on('coopTeamWiped', () => {
+            let gameOverScreen = document.getElementById('game-over-screen-inner');
+            gameOverScreen.style.display = 'flex';
+            let winTxt = document.getElementById('winner-text');
+            winTxt.innerText = "TOÀN ĐỘI BỊ TIÊU DIỆT";
+            winTxt.style.color = "var(--neon-red)";
+            document.getElementById('btn-spectate').style.display = 'none';
+            document.getElementById('btn-rematch-boss').style.display = 'inline-block';
+            document.getElementById('btn-rematch-boss').disabled = false;
+            document.getElementById('reward-text').style.display = 'none'; 
+            document.getElementById('btn-leave-coop').style.display = 'inline-block';
+            if (animationId) cancelAnimationFrame(animationId);
+        });
         
         socket.on('bossStunned', (dur) => handleStun(getOpp(), dur));
         socket.on('coopBossDefeated', () => { p2.isDead = true; document.getElementById('player2').classList.add('dead'); hearts += 1; localStorage.setItem('hearts', hearts); let gotShard = false; if (Math.random() < 0.3) { shards++; localStorage.setItem('shards', shards); gotShard = true; } renderShopAndInventory(); document.getElementById('game-over-screen-inner').style.display = 'flex'; document.getElementById('winner-text').innerText = "CHIẾN THẮNG!"; document.getElementById('winner-text').style.color = "var(--neon-gold)"; document.getElementById('btn-rematch-boss').style.display = 'inline-block'; document.getElementById('btn-rematch-boss').disabled = false; document.getElementById('btn-spectate').style.display = 'none'; document.getElementById('reward-text').innerText = "+ TRÁI TIM QUẢ CẢM!" + (gotShard ? " & 1 MẢNH CỔ ĐẠI!" : ""); document.getElementById('reward-text').style.display = 'block'; if(animationId) cancelAnimationFrame(animationId); });
         
         function updateTeammatesUI() { let container = document.getElementById('teammates-container'); container.innerHTML = ''; for(let id in teammates) { if(id === socket.id) continue; let t = teammates[id]; let el = document.createElement('div'); el.className = 'player teammate'; el.style.left = t.x + 'px'; el.style.top = t.y + 'px'; el.style.transform = `scaleX(${t.facingDir})`; if(t.isBlocking) el.classList.add('blocking'); if(t.isDead) el.classList.add('dead'); container.appendChild(el); } }
-        
-        function checkCoopGameOver() {
-            if (gameMode !== 'coop') return;
-            
-            let aliveCount = 0;
-            if (!getMe().isDead) aliveCount++;
-            
-            for (let id in teammates) {
-                if (!teammates[id].isDead) {
-                    aliveCount++;
-                }
-            }
-
-            if (aliveCount === 0) {
-                let gameOverScreen = document.getElementById('game-over-screen-inner');
-                gameOverScreen.style.display = 'flex';
-                let winTxt = document.getElementById('winner-text');
-                winTxt.innerText = "TOÀN ĐỘI BỊ TIÊU DIỆT";
-                winTxt.style.color = "var(--neon-red)";
-                
-                document.getElementById('btn-spectate').style.display = 'none';
-                document.getElementById('btn-rematch-boss').style.display = 'inline-block';
-                document.getElementById('btn-rematch-boss').disabled = false;
-                document.getElementById('reward-text').style.display = 'none'; 
-                document.getElementById('btn-leave-coop').style.display = 'inline-block';
-                
-                if (animationId) cancelAnimationFrame(animationId);
-            }
-        }
         
         socket.on('updateBoss', (data) => { if (gameMode === 'coop' && !isGameHost) { p2.x = data.x; p2.y = data.y; p2.facingDir = data.facingDir; if(data.isAttacking) { document.getElementById('player2').classList.add('attacking'); setTimeout(() => document.getElementById('player2').classList.remove('attacking'), 150); } if(data.telegraph) document.getElementById('player2').classList.add('boss-telegraph'); else document.getElementById('player2').classList.remove('boss-telegraph'); if(data.phase2 && p2.phase === 1) { p2.phase = 2; document.getElementById('player2').classList.add('phase2-aura'); } } });
         socket.on('bossFires', (d) => spawnEntity(d.type, d.x, d.y, d.vx, d.vy, false, false));
@@ -663,7 +662,6 @@
         function startSpectating() { 
             document.getElementById('game-over-screen-inner').style.display = 'none'; 
             myElement().style.display = 'none'; 
-            setTimeout(checkCoopGameOver, 500); 
         }
 
         function startBotMode(bossType) {
@@ -679,26 +677,30 @@
         socket.on('takeStun', (dur) => handleStun(getMe(), dur));
         socket.on('opponentShoot', (d) => {
             spawnEntity(d.type || 'bullet', d.x, d.y, d.vx, d.vy || 0, false, false);
-            // Kích hoạt animation khi địch bắn (Online 1v1)
             let oEl = oppElement(); oEl.classList.add('attacking'); setTimeout(()=>oEl.classList.remove('attacking'), 150);
         });
         socket.on('receiveHeal', (amt) => { let me = getMe(); me.hp = Math.min(me.maxHp, me.hp + amt); let hpId = myRole === 'p1' ? 'hp1' : 'hp2'; document.getElementById(hpId).style.width = (me.hp/me.maxHp)*100 + '%'; });
 
         function doParry() { let me = getMe(); if(me.stamina < 15 || me.parryTimer > 0 || me.isDead) return; me.stamina -= 15; me.isParrying = true; me.parryTimer = 30; myElement().classList.add('parrying'); }
 
-        // HÀM NẠP ĐẠN
+        // HÀM NẠP ĐẠN TỰ ĐỘNG VÀ CÓ THỜI GIAN THEO VŨ KHÍ
         function doReload() {
             let me = getMe();
-            if (me.isDead || me.isReloading || me.ammo >= 30) return;
+            let wData = weapons[currentEquip] || ultimates[currentEquip] || unique_weapons[currentEquip];
+            if (!wData || wData.clipSize === 0) return; 
+            if (me.isDead || me.isReloading || me.ammo >= wData.clipSize) return;
+            
             me.isReloading = true;
+            let reloadMs = wData.reloadTime || 1500;
+            
             showFloatingText(me.x, me.y, "NẠP ĐẠN...", 'status-text');
             setTimeout(() => {
-                if (!me.isDead) {
-                    me.ammo = 30; 
+                if (!me.isDead && me.isReloading) { 
+                    me.ammo = wData.clipSize; 
                     me.isReloading = false;
                     showFloatingText(me.x, me.y, "ĐÃ NẠP!", 'parry-text');
                 }
-            }, 1500); 
+            }, reloadMs); 
         }
 
         function showFloatingText(x, y, text, cssClass) {
@@ -772,9 +774,9 @@
             if (attackCooldown > 0) return; 
             let me = getMe(); if(me.isDead || me.stunTimer > 0 || me.isReloading) return;
             
-            let wData = weapons[currentEquip] || ultimates[currentEquip] || unique_weapons[currentEquip] || { stm: 10, ammo: 0, firerate: 20, type: 'melee' }; 
+            let wData = weapons[currentEquip] || ultimates[currentEquip] || unique_weapons[currentEquip] || { stm: 10, clipSize: 0, firerate: 20, type: 'melee' }; 
             let costStm = currentEquip === 'none' ? 5 : wData.stm; 
-            let costAmmo = currentEquip === 'none' ? 0 : wData.ammo;
+            let costAmmo = (wData.clipSize > 0) ? 1 : 0; 
 
             if (me.stamina < costStm) return;
             
@@ -783,7 +785,9 @@
                 return;
             }
             
-            me.stamina -= costStm; me.ammo -= costAmmo; 
+            me.stamina -= costStm; 
+            if (costAmmo > 0) me.ammo -= costAmmo; 
+            
             attackCooldown = currentEquip === 'none' ? 8 : Math.max(6, Math.floor(wData.firerate * 0.35)); 
             
             myElement().classList.add('attacking'); 
@@ -844,15 +848,15 @@
                     if (currentEquip === 'vampiric_sword') { me.hp = Math.min(me.maxHp, me.hp + 20); let hpId = myRole === 'p1' ? 'hp1' : 'hp2'; document.getElementById(hpId).style.width = (me.hp/me.maxHp)*100+'%'; }
                 }
             } 
-            else if (currentEquip === 'heavy_pistol') spawnAndSend('bullet', px, py, dir*18, 0);
+            else if (currentEquip === 'heavy_pistol') spawnAndSend('heavy_bullet', px, py, dir*18, 0);
             else if (currentEquip === 'smg') spawnAndSend('bullet', px, py, dir*22, 0); 
             else if (currentEquip === 'shuriken' || currentEquip === 'storm_bow') { spawnAndSend('shuriken', px, py, dir*25, 0); if(currentEquip === 'storm_bow'){ spawnAndSend('shuriken', px, py, dir*25, -2); spawnAndSend('shuriken', px, py, dir*25, 2); } }
             else if (currentEquip === 'sniper') spawnAndSend('sniper_bullet', px, py, dir*40, 0); 
             else if (currentEquip === 'laser' || currentEquip === 'omega_beam') { spawnAndSend(currentEquip === 'omega_beam'?'omega_beam':'laser', dir===1 ? px : px-800, py-10, 0, 0); }
             else if (currentEquip === 'plasma') spawnAndSend('plasma_bullet', px, py, dir*30, 0); 
             else if (currentEquip === 'holy_light') spawnAndSend('holy_light', px, py, dir*12, 0); 
-            else if (currentEquip === 'fireball') spawnAndSend('fireball', px, py-10, dir*10, 0); 
-            else if (currentEquip === 'rocket') spawnAndSend('rocket', px, py, dir*15, 0);
+            else if (currentEquip === 'fireball' || currentEquip === 'flamethrower') spawnAndSend('fireball', px, py-10, dir*10, 0); 
+            else if (currentEquip === 'rocket' || currentEquip === 'emp_missile') spawnAndSend('rocket', px, py, dir*15, 0);
             else if (currentEquip === 'shotgun') { spawnAndSend('shotgun_bullet', px, py, dir*18, -3); spawnAndSend('shotgun_bullet', px, py, dir*18, 0); spawnAndSend('shotgun_bullet', px, py, dir*18, 3); }
             else if (currentEquip === 'bomb') { let bombCount = entities.filter(e => e.type === 'bomb' && e.isMine).length; if (bombCount >= 4) return; spawnAndSend('bomb', px-10, groundY+70, 0, 0); }
             else if (currentEquip === 'grenade') spawnAndSend('grenade', px, me.y, dir*12, -12); 
@@ -863,18 +867,15 @@
             else if (currentEquip === 'earth_spike') {
                 document.getElementById('arena').classList.add('screen-shake');
                 setTimeout(()=>document.getElementById('arena').classList.remove('screen-shake'), 200);
-                
                 spawnAndSend('earth_spike', px + dir*60, groundY+10, 0, 0);
                 setTimeout(() => spawnAndSend('earth_spike', px + dir*140, groundY+10, 0, 0), 100);
                 setTimeout(() => spawnAndSend('earth_spike', px + dir*220, groundY+10, 0, 0), 200);
             }
             else if (currentEquip === 'wind_blade') spawnAndSend('wind_blade', px, py, dir*25, 0);
-            else if (currentEquip === 'emp_missile') spawnAndSend('rocket', px, py, dir*20, 0);
             else if (currentEquip === 'toxic_bomb') {
                 spawnAndSend('acid_bomb', px, py, dir*10, -8);
                 spawnAndSend('acid_bomb', px, py, dir*14, -10);
             }
-            else if (currentEquip === 'flamethrower') spawnAndSend('fireball', px, py, dir*8, 0);
             else if (currentEquip === 'lightning_shuriken') { spawnAndSend('shuriken', px, py, dir*35, -1); spawnAndSend('shuriken', px, py, dir*35, 1); }
             else if (currentEquip === 'lightning_spear') spawnAndSend('sniper_bullet', px, py, dir*45, 0);
         }
@@ -928,14 +929,13 @@
             hpFill.style.width = (clampedHp / target.maxHp) * 100 + '%'; 
             if(target === p2 && target.hp <= target.maxHp * 0.3) hpFill.style.background = 'linear-gradient(90deg, #c23616, var(--neon-red))'; 
 
-            // XỬ LÝ CHẾT TRONG COOP CHUẨN XÁC
             if(target.hp <= 0 && target === getMe()) {
                 target.isDead = true; myElement().classList.add('dead');
                 if(gameMode === 'online') { 
                     socket.emit('playerDied', { roomId: currentRoom, loserRole: myRole }); 
                 } 
                 else if(gameMode === 'coop') { 
-                    // Báo tử cho cả đội lập tức để hệ thống nhận diện TOÀN DIỆT
+                    // Liên tục báo trạng thái đã chết
                     socket.emit('coopPlayerAction', { x: target.x, y: target.y, isBlocking: false, facingDir: target.facingDir, isDead: true });
 
                     document.getElementById('game-over-screen-inner').style.display = 'flex'; 
@@ -945,8 +945,6 @@
                     document.getElementById('btn-spectate').style.display = 'inline-block';
                     document.getElementById('btn-rematch-pvp').style.display = 'none';
                     document.getElementById('reward-text').style.display = 'none';
-                    
-                    checkCoopGameOver(); 
                 } 
                 else {
                     setTimeout(() => {
@@ -1151,6 +1149,7 @@
                     case 'shuriken': dmg = 12; break; 
                     case 'storm_arrow': dmg = 20; w = 4; h = 35; break;
                     case 'shotgun_bullet': dmg = 18; w = 10; break; 
+                    case 'heavy_bullet': dmg = 40; w = 25; h = 8; break; 
                     case 'sniper_bullet': dmg = 60; w = 40; dmgType='piercing'; break;
                     case 'fireball': dmg = 45; w = 35; h = 35; dmgType='energy'; break; 
                     case 'fire_wave': dmg = 40; w = 50; h = 120; dmgType='energy'; break; 
@@ -1164,7 +1163,7 @@
                     case 'tornado': dmg = 35; w=80; h=150; break;
                     case 'plasma_bullet': dmg = 25; w=30; h=8; dmgType='energy'; break;
                     case 'holy_light': dmg = 35; w=35; h=35; dmgType='magic'; break;
-                    case 'bullet': dmg = 20; break;
+                    case 'bullet': dmg = 8; break; // Giảm damage SMG do bắn siêu nhanh
                     case 'bubble': dmg = 30; w=40; h=40; dmgType='magic'; break;
                     case 'wind_blade': dmg = 30; w=60; h=60; dmgType='energy'; break;
                     case 'acid_bomb': dmg = 30; w=26; h=26; dmgType='explosive'; break;
@@ -1179,7 +1178,7 @@
                     if(e.type === 'heal-beam') { if(e.isMine && (gameMode==='online'||gameMode==='coop'||gameMode==='daily_boss')) socket.emit('healTeammate', {roomId: currentRoom, amount: 50}); let me = getMe(); me.hp = Math.min(me.maxHp, me.hp + 50); let hpId = myRole === 'p1' ? 'hp1' : 'hp2'; document.getElementById(hpId).style.width = (me.hp/me.maxHp)*100+'%'; e.el.remove(); entities.splice(i, 1); continue; }
                     
                     let isHeadshot = false;
-                    if (['bullet', 'sniper_bullet', 'shotgun_bullet', 'plasma_bullet', 'shuriken', 'storm_arrow'].includes(e.type)) {
+                    if (['bullet', 'heavy_bullet', 'sniper_bullet', 'shotgun_bullet', 'plasma_bullet', 'shuriken', 'storm_arrow'].includes(e.type)) {
                         if (Math.random() < 0.2) isHeadshot = true;
                     }
 
@@ -1228,7 +1227,6 @@
 
             let dist = bot.x - targetPlayer.x; botWait--;
             let spd = currentBoss === 'zephyr' ? (isPhase2?14:10) : (currentBoss === 'titan' ? (isPhase2?4:2) : (isPhase2?7:5));
-            // NERF COOP BOSS: Tốc độ di chuyển chậm lại một chút
             if (isCoop) spd = Math.floor(spd * 1.1); 
             if (gameMode === 'daily_boss') spd = 4;
 
@@ -1348,7 +1346,6 @@
                 }
             }
             
-            // NERF COOP BOSS: Tăng thêm thời gian nghỉ (delay)
             if (botWait <= 0) { 
                 if (gameMode === 'daily_boss') botWait = 80; 
                 else botWait = isCoop ? (isPhase2 ? 70 : 90) : (isPhase2 ? 35 : 45); 
@@ -1452,8 +1449,6 @@
 
                 updateEntities();
 
-                // LỖI ĐỒNG BỘ 1v1 NẰM Ở ĐÂY: Cần gọi 'playerAction' thay vì 'playerUpdate' để đúng với thiết lập của Server.
-                // Đồng thời, với Co-op phải gửi lệnh 'coopPlayerAction' liên tục kể cả khi chết để cập nhật trạng thái 'isDead'.
                 if (gameMode === 'online') {
                     socket.emit('playerAction', { roomId: currentRoom, playerData: { x: me.x, y: me.y, isBlocking: me.isBlocking, facingDir: me.facingDir } });
                 } else if (gameMode === 'coop') {
