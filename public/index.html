@@ -311,7 +311,7 @@
             </div>
 
             <div style="background: rgba(0,0,0,0.6); padding: 10px 20px; border-radius: 8px; margin-top: 15px; font-size: 14px; text-align: center; border: 1px solid #333; color: #ccc; width: 100%; box-sizing: border-box;">
-                <span style="color:var(--neon-cyan)">[A] [D]: Đi</span> &nbsp;|&nbsp; <span style="color:var(--neon-gold)">[W]: Nhảy Cao & Double Jump</span> &nbsp;|&nbsp; <span style="color:#00b894">[Shift]: Đỡ</span> &nbsp;|&nbsp; <span style="color:#f39c12">[E]: PARRY</span> &nbsp;|&nbsp; <span style="color:var(--neon-red)">[Space]: Xả Kỹ Năng</span> &nbsp;|&nbsp; <span style="color:#fff">[R]: Nạp Đạn</span> &nbsp;|&nbsp; <span style="color:#8e44ad">[S]: Tối Thượng</span>
+                <span style="color:var(--neon-cyan)">[A] [D]: Đi</span> &nbsp;|&nbsp; <span style="color:var(--neon-gold)">[W]: Nhảy Cao & Double Jump</span> &nbsp;|&nbsp; <span style="color:#00b894">[Shift]: Đỡ</span> &nbsp;|&nbsp; <span style="color:#f39c12">[E]: PARRY</span> &nbsp;|&nbsp; <span style="color:var(--neon-red)">[Space]: Xả Kỹ Năng</span> &nbsp;|&nbsp; <span style="color:#8e44ad">[S]: Tối Thượng</span>
             </div>
         </div>
     </div>
@@ -329,53 +329,54 @@
         let currentMapBuff = '';
 
         /* =========================================
-           CÂN BẰNG VŨ KHÍ & HỆ THỐNG NẠP ĐẠN
-           clipSize: Sức chứa băng đạn
-           reloadTime: Thời gian nạp (ms)
+           HỆ THỐNG VŨ KHÍ CÂN BẰNG MỚI TÀN BẠO 
+           maxAmmo: Lượng đạn tối đa (0 = ko cần đạn)
+           ammoRegen: Tốc độ hồi đạn (nhiều = hồi nhanh)
+           effect: Hiệu ứng đặc trưng (cho kẻ địch hoặc bản thân)
         ========================================= */
         const weapons = {
-            energy_shield: { name: 'Khiên Năng Lượng', price: 100, type: 'defense', stm: 5, clipSize: 0, firerate: 30 },
-            heavy_pistol: { name: 'Súng Phá Giáp', price: 150, type: 'piercing', stm: 5, clipSize: 7, reloadTime: 1200, firerate: 25 },
-            katana: { name: 'Kiếm Katana', price: 200, type: 'melee', stm: 8, clipSize: 0, firerate: 15 },
-            bomb: { name: 'Mìn Hẹn Giờ', price: 250, type: 'explosive', stm: 15, clipSize: 4, reloadTime: 2000, firerate: 30 }, 
-            shuriken: { name: 'Phi Tiêu', price: 300, type: 'ballistic', stm: 4, clipSize: 0, firerate: 8 },
-            spear: { name: 'Thương Xuyên Phá', price: 350, type: 'piercing', stm: 12, clipSize: 0, firerate: 25 }, 
-            vine_spell: { name: 'Phép Dây Leo', price: 400, type: 'magic', stm: 25, clipSize: 0, firerate: 50 }, 
-            shotgun: { name: 'Hoa Cải', price: 450, type: 'ballistic', stm: 12, clipSize: 5, reloadTime: 1800, firerate: 35 }, 
-            grenade: { name: 'Phóng Lựu', price: 500, type: 'explosive', stm: 15, clipSize: 4, reloadTime: 2000, firerate: 35 },
-            smg: { name: 'Tiểu Liên SMG', price: 600, type: 'ballistic', stm: 3, clipSize: 30, reloadTime: 1000, firerate: 6 }, 
-            holy_light: { name: 'Ánh Sáng Thần', price: 700, type: 'magic', stm: 20, clipSize: 0, firerate: 40 }, 
-            sniper: { name: 'Súng Ngắm', price: 750, type: 'piercing', stm: 20, clipSize: 3, reloadTime: 2500, firerate: 50 }, 
-            heal_single: { name: 'Trượng Sinh Mệnh', price: 800, type: 'magic', stm: 30, clipSize: 0, firerate: 80 },
-            plasma: { name: 'Súng Plasma', price: 850, type: 'energy', stm: 15, clipSize: 10, reloadTime: 1500, firerate: 25 }, 
-            heal_aoe: { name: 'Trượng Hồi Phục', price: 850, type: 'magic', stm: 25, clipSize: 0, firerate: 50 },
-            fireball: { name: 'Cầu Lửa', price: 950, type: 'energy', stm: 15, clipSize: 5, reloadTime: 1500, firerate: 35 },
-            cluster: { name: 'Lựu Đạn Chùm', price: 1000, type: 'explosive', stm: 25, clipSize: 2, reloadTime: 2500, firerate: 50 }, 
-            rocket: { name: 'Bazooka', price: 1100, type: 'explosive', stm: 25, clipSize: 3, reloadTime: 2500, firerate: 50 }, 
-            horse: { name: 'Ngựa Chiến', price: 1200, type: 'melee', stm: 35, clipSize: 0, firerate: 70 },
-            laser: { name: 'Súng Laser', price: 1500, type: 'energy', stm: 20, clipSize: 5, reloadTime: 2000, firerate: 40 },
-            giant_shield: { name: 'Khiên Khổng Lồ', price: 1500, type: 'defense_aoe', stm: 25, clipSize: 0, firerate: 50 } 
+            energy_shield: { name: 'Khiên Năng Lượng', price: 100, type: 'defense', stm: 5, maxAmmo: 0, firerate: 30 },
+            heavy_pistol: { name: 'Súng Phá Giáp', price: 150, type: 'piercing', stm: 5, maxAmmo: 7, ammoRegen: 0.05, firerate: 25, effect: 'bleed' },
+            katana: { name: 'Kiếm Katana', price: 200, type: 'melee', stm: 8, maxAmmo: 0, firerate: 15, effect: 'bleed' },
+            bomb: { name: 'Mìn Hẹn Giờ', price: 250, type: 'explosive', stm: 15, maxAmmo: 4, ammoRegen: 0.03, firerate: 30, effect: 'burn' }, 
+            shuriken: { name: 'Phi Tiêu', price: 300, type: 'ballistic', stm: 4, maxAmmo: 0, firerate: 8, effect: 'bleed' },
+            spear: { name: 'Thương Xuyên Phá', price: 350, type: 'piercing', stm: 12, maxAmmo: 0, firerate: 25, effect: 'bleed' }, 
+            vine_spell: { name: 'Phép Dây Leo', price: 400, type: 'magic', stm: 25, maxAmmo: 0, firerate: 50, effect: 'slow' }, 
+            shotgun: { name: 'Hoa Cải', price: 450, type: 'ballistic', stm: 12, maxAmmo: 5, ammoRegen: 0.04, firerate: 35, effect: 'slow' }, 
+            grenade: { name: 'Phóng Lựu', price: 500, type: 'explosive', stm: 15, maxAmmo: 4, ammoRegen: 0.03, firerate: 35, effect: 'burn' },
+            smg: { name: 'Tiểu Liên SMG', price: 600, type: 'ballistic', stm: 2, maxAmmo: 40, ammoRegen: 0.2, firerate: 6 }, 
+            holy_light: { name: 'Ánh Sáng Thần', price: 700, type: 'magic', stm: 30, maxAmmo: 0, firerate: 40, effect: 'burn' }, 
+            sniper: { name: 'Súng Ngắm', price: 750, type: 'piercing', stm: 25, maxAmmo: 3, ammoRegen: 0.015, firerate: 50, effect: 'bleed' }, 
+            heal_single: { name: 'Trượng Sinh Mệnh', price: 800, type: 'magic', stm: 40, maxAmmo: 0, firerate: 80 },
+            plasma: { name: 'Súng Plasma', price: 850, type: 'energy', stm: 15, maxAmmo: 12, ammoRegen: 0.08, firerate: 25, effect: 'burn' }, 
+            heal_aoe: { name: 'Trượng Hồi Phục', price: 850, type: 'magic', stm: 35, maxAmmo: 0, firerate: 50 },
+            fireball: { name: 'Cầu Lửa', price: 950, type: 'energy', stm: 15, maxAmmo: 6, ammoRegen: 0.06, firerate: 35, effect: 'burn' },
+            cluster: { name: 'Lựu Đạn Chùm', price: 1000, type: 'explosive', stm: 25, maxAmmo: 2, ammoRegen: 0.01, firerate: 50, effect: 'burn' }, 
+            rocket: { name: 'Bazooka', price: 1100, type: 'explosive', stm: 25, maxAmmo: 3, ammoRegen: 0.02, firerate: 50, effect: 'burn' }, 
+            horse: { name: 'Ngựa Chiến', price: 1200, type: 'melee', stm: 35, maxAmmo: 0, firerate: 70, effect: 'slow' },
+            laser: { name: 'Súng Laser', price: 1500, type: 'energy', stm: 20, maxAmmo: 5, ammoRegen: 0.03, firerate: 40, effect: 'burn' },
+            giant_shield: { name: 'Khiên Khổng Lồ', price: 1500, type: 'defense_aoe', stm: 25, maxAmmo: 0, firerate: 50 } 
         };
 
         const ultimates = {
-            dragon_blade: { name: '[VIP] Kiếm Rồng', type: 'energy', stm: 20, clipSize: 0, firerate: 45, dmg: 75 },
-            gravity_hammer: { name: '[VIP] Búa Trọng Lực', type: 'explosive', stm: 10, clipSize: 0, firerate: 25, dmg: 65 },
-            storm_bow: { name: '[VIP] Cung Bão Tố', type: 'ballistic', stm: 5, clipSize: 0, firerate: 10 },
-            void_scythe: { name: '[VIP] Lưỡi Hái Hư Không', type: 'piercing', stm: 10, clipSize: 0, firerate: 20 },
-            omega_beam: { name: '[MAX] TIA OMEGA', type: 'energy', stm: 30, clipSize: 0, firerate: 60, dmg: 110 }
+            dragon_blade: { name: '[VIP] Kiếm Rồng', type: 'energy', stm: 20, maxAmmo: 0, firerate: 45, dmg: 75, effect: 'burn' },
+            gravity_hammer: { name: '[VIP] Búa Trọng Lực', type: 'explosive', stm: 10, maxAmmo: 0, firerate: 25, dmg: 65, effect: 'slow' },
+            storm_bow: { name: '[VIP] Cung Bão Tố', type: 'ballistic', stm: 5, maxAmmo: 0, firerate: 10, effect: 'bleed' },
+            void_scythe: { name: '[VIP] Lưỡi Hái Hư Không', type: 'piercing', stm: 10, maxAmmo: 0, firerate: 20, effect: 'bleed' },
+            omega_beam: { name: '[MAX] TIA OMEGA', type: 'energy', stm: 30, maxAmmo: 0, firerate: 60, dmg: 110, effect: 'burn' }
         };
 
         const unique_weapons = {
-            bubble_spell: { name: '[ĐỘC NHẤT] Phép Bong Bóng', type: 'magic', stm: 10, clipSize: 0, firerate: 25, ult_type: 'bubble_prison', dmg: 60 },
-            earth_spike: { name: '[ĐỘC NHẤT] Chông Đất', type: 'piercing', stm: 12, clipSize: 0, firerate: 25, ult_type: 'earth_shatter', dmg: 75 },
-            wind_blade: { name: '[ĐỘC NHẤT] Đao Gió', type: 'energy', stm: 8, clipSize: 0, firerate: 15, ult_type: 'hurricane', dmg: 55 },
-            emp_missile: { name: '[ĐỘC NHẤT] Tên Lửa Điện', type: 'explosive', stm: 20, clipSize: 3, reloadTime: 2200, firerate: 40, ult_type: 'orbital_strike', dmg: 90 },
-            toxic_bomb: { name: '[ĐỘC NHẤT] Bom Dịch Độc', type: 'explosive', stm: 15, clipSize: 5, reloadTime: 2000, firerate: 30, ult_type: 'plague_cloud', dmg: 60 },
-            crystal_shield: { name: '[ĐỘC NHẤT] Khiên Pha Lê', type: 'defense', stm: 2, clipSize: 0, firerate: 20, ult_type: 'crystal_prison', dmg: 0 },
-            flamethrower: { name: '[ĐỘC NHẤT] Súng Phun Lửa', type: 'energy', stm: 2, clipSize: 50, reloadTime: 2500, firerate: 5, ult_type: 'inferno', dmg: 40 },
-            lightning_shuriken: { name: '[ĐỘC NHẤT] Phi Tiêu Điện', type: 'ballistic', stm: 5, clipSize: 0, firerate: 10, ult_type: 'shadow_strike', dmg: 35 },
-            lightning_spear: { name: '[ĐỘC NHẤT] Giáo Sét', type: 'piercing', stm: 10, clipSize: 0, firerate: 20, ult_type: 'thunder_wrath', dmg: 90 },
-            vampiric_sword: { name: '[ĐỘC NHẤT] Kiếm Hút Máu', type: 'melee', stm: 5, clipSize: 0, firerate: 15, ult_type: 'blood_drain', dmg: 45 }
+            bubble_spell: { name: '[ĐỘC NHẤT] Phép Bong Bóng', type: 'magic', stm: 10, maxAmmo: 0, firerate: 25, ult_type: 'bubble_prison', dmg: 60, effect: 'slow' },
+            earth_spike: { name: '[ĐỘC NHẤT] Chông Đất', type: 'piercing', stm: 12, maxAmmo: 0, firerate: 25, ult_type: 'earth_shatter', dmg: 75, effect: 'bleed' },
+            wind_blade: { name: '[ĐỘC NHẤT] Đao Gió', type: 'energy', stm: 8, maxAmmo: 0, firerate: 15, ult_type: 'hurricane', dmg: 55, effect: 'bleed' },
+            emp_missile: { name: '[ĐỘC NHẤT] Tên Lửa Điện', type: 'explosive', stm: 20, maxAmmo: 3, ammoRegen: 0.02, firerate: 40, ult_type: 'orbital_strike', dmg: 90, effect: 'slow' },
+            toxic_bomb: { name: '[ĐỘC NHẤT] Bom Dịch Độc', type: 'explosive', stm: 15, maxAmmo: 5, ammoRegen: 0.03, firerate: 30, ult_type: 'plague_cloud', dmg: 60, effect: 'bleed' },
+            crystal_shield: { name: '[ĐỘC NHẤT] Khiên Pha Lê', type: 'defense', stm: 2, maxAmmo: 0, firerate: 20, ult_type: 'crystal_prison', dmg: 0 },
+            flamethrower: { name: '[ĐỘC NHẤT] Súng Phun Lửa', type: 'energy', stm: 2, maxAmmo: 50, ammoRegen: 0.1, firerate: 5, ult_type: 'inferno', dmg: 40, effect: 'burn' },
+            lightning_shuriken: { name: '[ĐỘC NHẤT] Phi Tiêu Điện', type: 'ballistic', stm: 5, maxAmmo: 0, firerate: 10, ult_type: 'shadow_strike', dmg: 35, effect: 'bleed' },
+            lightning_spear: { name: '[ĐỘC NHẤT] Giáo Sét', type: 'piercing', stm: 10, maxAmmo: 0, firerate: 20, ult_type: 'thunder_wrath', dmg: 90, effect: 'bleed' },
+            vampiric_sword: { name: '[ĐỘC NHẤT] Kiếm Hút Máu', type: 'melee', stm: 5, maxAmmo: 0, firerate: 15, ult_type: 'blood_drain', dmg: 45, effect: 'bleed' }
         };
 
         const dailyBosses = [
@@ -406,18 +407,20 @@
                 renderShopAndInventory();
             }
         }
-        checkVipName(document.getElementById('playerNameInput').value); 
 
         const groundY = 290; let entities = []; 
         const getP1StartX = () => 50; const getP2StartX = () => 650; const getP1StartDir = () => 1; const getP2StartDir = () => -1;
         
-        let p1 = { x: 50, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isReloading: false, isDead: false, isBlocking: false, jumpCount: 0, facingDir: 1, stunTimer: 0, isParrying: false, parryTimer: 0, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
-        let p2 = { x: 650, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isReloading: false, isDead: false, isBlocking: false, jumpCount: 0, facingDir: -1, stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1, isBurrowed: false, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
-        let keys = { a: false, d: false, space: false, w: false, w_pressed: false, r: false }; 
+        let p1 = { x: 50, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: 1, stunTimer: 0, isParrying: false, parryTimer: 0, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
+        let p2 = { x: 650, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: -1, stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1, isBurrowed: false, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
+        let keys = { a: false, d: false, space: false, w: false, w_pressed: false }; 
 
         const myElement = () => document.getElementById(myRole === 'p1' ? 'player1' : 'player2'); const oppElement = () => document.getElementById(myRole === 'p1' ? 'player2' : 'player1');
         const getMe = () => myRole === 'p1' ? p1 : p2; const getOpp = () => myRole === 'p1' ? p2 : p1;
 
+        // Khởi động
+        checkVipName(document.getElementById('playerNameInput').value); 
+        
         let vipBossOffset = parseInt(localStorage.getItem('vipBossOffset')) || 0;
         let todayDateStr = new Date().toDateString();
         let bossIndex = (new Date().getDate() + vipBossOffset) % 10;
@@ -518,10 +521,9 @@
             document.querySelectorAll('.btn-equip').forEach(btn => btn.classList.remove('active')); document.querySelectorAll(`#eq-${item}`).forEach(btn => btn.classList.add('active')); 
             
             let wData = weapons[item] || ultimates[item] || unique_weapons[item]; 
-            let hasAmmo = wData && (wData.clipSize > 0);
+            let hasAmmo = wData && (wData.maxAmmo > 0);
             
-            getMe().ammo = hasAmmo ? wData.clipSize : 0; 
-            getMe().isReloading = false; 
+            getMe().ammo = hasAmmo ? wData.maxAmmo : 0; 
             
             let ammoUi1 = document.getElementById('ammo-ui'); let ammoUi2 = document.getElementById('ammo-ui2');
             if(ammoUi1) ammoUi1.style.display = hasAmmo ? 'block' : 'none'; 
@@ -558,10 +560,10 @@
             
             // XỬ LÝ BUFF MÁU 2000 TRONG PVP
             let p1Max = (gameMode === 'online') ? 2000 : 200;
-            p1 = { x: getP1StartX(), y: groundY, vy: 0, hp: p1Max, maxHp: p1Max, stamina: 100, ammo: 30, isReloading: false, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP1StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
+            p1 = { x: getP1StartX(), y: groundY, vy: 0, hp: p1Max, maxHp: p1Max, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP1StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
             
             let p2Max = (gameMode === 'online') ? 2000 : (p2.maxHp || 200);
-            p2 = { x: getP2StartX(), y: groundY, vy: 0, hp: p2Max, maxHp: p2Max, stamina: 100, ammo: 30, isReloading: false, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP2StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1, isBurrowed: false, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
+            p2 = { x: getP2StartX(), y: groundY, vy: 0, hp: p2Max, maxHp: p2Max, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP2StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1, isBurrowed: false, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
             
             entities.forEach(e => {if(e.el) e.el.remove()}); entities = []; ultimateReady = true; keys.space = false;
             
@@ -630,7 +632,7 @@
         
         socket.on('updateTeammate', (data) => { teammates[data.id] = data.data; updateTeammatesUI(); }); 
         socket.on('teammateLeft', (id) => { if(teammates[id]) { delete teammates[id]; updateTeammatesUI(); } });
-        socket.on('teammateShoot', (d) => spawnEntity(d.type, d.x, d.y, d.vx, d.vy, false, true)); 
+        socket.on('teammateShoot', (d) => spawnEntity(d.type, d.x, d.y, d.vx, d.vy, false, true, d.effect)); 
         
         socket.on('coopBossHpUpdate', (hp) => { 
             p2.hp = hp; 
@@ -661,7 +663,7 @@
         function updateTeammatesUI() { let container = document.getElementById('teammates-container'); container.innerHTML = ''; for(let id in teammates) { if(id === socket.id) continue; let t = teammates[id]; let el = document.createElement('div'); el.className = 'player teammate'; el.style.left = t.x + 'px'; el.style.top = t.y + 'px'; el.style.transform = `scaleX(${t.facingDir})`; if(t.isBlocking) el.classList.add('blocking'); if(t.isDead) el.classList.add('dead'); container.appendChild(el); } }
         
         socket.on('updateBoss', (data) => { if (gameMode === 'coop' && !isGameHost) { p2.x = data.x; p2.y = data.y; p2.facingDir = data.facingDir; if(data.isAttacking) { document.getElementById('player2').classList.add('attacking'); setTimeout(() => document.getElementById('player2').classList.remove('attacking'), 150); } if(data.telegraph) document.getElementById('player2').classList.add('boss-telegraph'); else document.getElementById('player2').classList.remove('boss-telegraph'); if(data.phase2 && p2.phase === 1) { p2.phase = 2; document.getElementById('player2').classList.add('phase2-aura'); } } });
-        socket.on('bossFires', (d) => spawnEntity(d.type, d.x, d.y, d.vx, d.vy, false, false));
+        socket.on('bossFires', (d) => spawnEntity(d.type, d.x, d.y, d.vx, d.vy, false, false, null));
         
         function startSpectating() { 
             document.getElementById('game-over-screen-inner').style.display = 'none'; 
@@ -680,31 +682,12 @@
         socket.on('takeDamage', (data) => handleDamage(getMe(), data.damage, data.type || 'unknown', false, data.effect || null, data.isCrit || false));
         socket.on('takeStun', (dur) => handleStun(getMe(), dur));
         socket.on('opponentShoot', (d) => {
-            spawnEntity(d.type || 'bullet', d.x, d.y, d.vx, d.vy || 0, false, false);
+            spawnEntity(d.type || 'bullet', d.x, d.y, d.vx, d.vy || 0, false, false, d.effect);
             let oEl = oppElement(); oEl.classList.add('attacking'); setTimeout(()=>oEl.classList.remove('attacking'), 150);
         });
         socket.on('receiveHeal', (amt) => { let me = getMe(); me.hp = Math.min(me.maxHp, me.hp + amt); let hpId = myRole === 'p1' ? 'hp1' : 'hp2'; document.getElementById(hpId).style.width = (me.hp/me.maxHp)*100 + '%'; });
 
         function doParry() { let me = getMe(); if(me.stamina < 15 || me.parryTimer > 0 || me.isDead) return; me.stamina -= 15; me.isParrying = true; me.parryTimer = 30; myElement().classList.add('parrying'); }
-
-        function doReload() {
-            let me = getMe();
-            let wData = weapons[currentEquip] || ultimates[currentEquip] || unique_weapons[currentEquip];
-            if (!wData || wData.clipSize === 0) return; 
-            if (me.isDead || me.isReloading || me.ammo >= wData.clipSize) return;
-            
-            me.isReloading = true;
-            let reloadMs = wData.reloadTime || 1500;
-            
-            showFloatingText(me.x, me.y, "NẠP ĐẠN...", 'status-text');
-            setTimeout(() => {
-                if (!me.isDead && me.isReloading) { 
-                    me.ammo = wData.clipSize; 
-                    me.isReloading = false;
-                    showFloatingText(me.x, me.y, "ĐÃ NẠP!", 'parry-text');
-                }
-            }, reloadMs); 
-        }
 
         function showFloatingText(x, y, text, cssClass) {
             let pTxt = document.createElement('div'); pTxt.className = `effect-text ${cssClass}`; pTxt.innerText = text; pTxt.style.left = x+'px'; pTxt.style.top = (y-20)+'px'; document.getElementById('arena').appendChild(pTxt); setTimeout(()=>pTxt.remove(), 1000);
@@ -736,61 +719,58 @@
             let dir = me.facingDir; let px = me.x + 30; let py = me.y + 40;
             let wData = unique_weapons[currentEquip] || ultimates[currentEquip] || weapons[currentEquip];
             let ultType = wData ? (wData.ult_type || wData.type) : 'melee';
+            let wEffect = wData ? wData.effect : null;
             
-            if (ultType === 'bubble_prison') { spawnAndSend('bubble', px, py, dir*2, -10); spawnAndSend('bubble', px, py, dir*5, -8); spawnAndSend('bubble', px, py, dir*8, -6); spawnAndSend('bubble', px, py, dir*11, -4); }
-            else if (ultType === 'earth_shatter') { spawnAndSend('boulder', me.x+dir*100, groundY+20, 0, -5); spawnAndSend('boulder', me.x+dir*200, groundY+20, 0, -8); spawnAndSend('boulder', me.x+dir*300, groundY+20, 0, -11); }
-            else if (ultType === 'hurricane') { spawnAndSend('tornado', px, groundY-60, dir*3, 0); spawnAndSend('tornado', px+dir*100, groundY-60, dir*3, 0); }
-            else if (ultType === 'orbital_strike') { for(let i=0; i<5; i++) spawnAndSend('rocket', getOpp().x + (Math.random()*200-100), -50, 0, 10); }
-            else if (ultType === 'plague_cloud') { spawnAndSend('plague_cloud', px-100, groundY-50, 0, 0); }
+            if (ultType === 'bubble_prison') { spawnAndSend('bubble', px, py, dir*2, -10, wEffect); spawnAndSend('bubble', px, py, dir*5, -8, wEffect); spawnAndSend('bubble', px, py, dir*8, -6, wEffect); spawnAndSend('bubble', px, py, dir*11, -4, wEffect); }
+            else if (ultType === 'earth_shatter') { spawnAndSend('boulder', me.x+dir*100, groundY+20, 0, -5, wEffect); spawnAndSend('boulder', me.x+dir*200, groundY+20, 0, -8, wEffect); spawnAndSend('boulder', me.x+dir*300, groundY+20, 0, -11, wEffect); }
+            else if (ultType === 'hurricane') { spawnAndSend('tornado', px, groundY-60, dir*3, 0, wEffect); spawnAndSend('tornado', px+dir*100, groundY-60, dir*3, 0, wEffect); }
+            else if (ultType === 'orbital_strike') { for(let i=0; i<5; i++) spawnAndSend('rocket', getOpp().x + (Math.random()*200-100), -50, 0, 10, wEffect); }
+            else if (ultType === 'plague_cloud') { spawnAndSend('plague_cloud', px-100, groundY-50, 0, 0, wEffect); }
             else if (ultType === 'crystal_prison') { me.isBlocking = true; myElement().classList.add('reflecting'); setTimeout(()=>{ me.isBlocking = false; myElement().classList.remove('reflecting'); }, 3000); }
-            else if (ultType === 'inferno') { spawnAndSend('fire_wave', px, me.y, dir*15, 0); spawnAndSend('fire_wave', px+dir*100, me.y, dir*15, 0); }
-            else if (ultType === 'shadow_strike') { me.x = getOpp().x - (getOpp().facingDir*60); me.y = getOpp().y; me.facingDir = getOpp().facingDir; spawnAndSend('void_slash', me.x-90, me.y-80, 0, 0); if(gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: 150, type: 'melee', effect: 'bleed'}); else handleDamage(getOpp(), 150, 'melee', true, 'bleed'); }
-            else if (ultType === 'thunder_wrath') { spawnAndSend('lightning_strike', getOpp().x+10, -200, 0, 0); if(gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: 120, type: 'magic', effect: 'slow'}); else handleDamage(getOpp(), 120, 'magic', true, 'slow'); }
-            else if (ultType === 'blood_drain') { spawnAndSend('blood_drain_beam', dir===1?me.x:me.x-800, me.y+20, 0, 0); if(gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: 100, type: 'magic', effect: 'slow'}); else handleDamage(getOpp(), 100, 'magic', true, 'slow'); me.hp = Math.min(me.maxHp, me.hp+100); document.getElementById('hp1').style.width = (me.hp/me.maxHp)*100+'%'; }
+            else if (ultType === 'inferno') { spawnAndSend('fire_wave', px, me.y, dir*15, 0, wEffect); spawnAndSend('fire_wave', px+dir*100, me.y, dir*15, 0, wEffect); }
+            else if (ultType === 'shadow_strike') { me.x = getOpp().x - (getOpp().facingDir*60); me.y = getOpp().y; me.facingDir = getOpp().facingDir; spawnAndSend('void_slash', me.x-90, me.y-80, 0, 0, wEffect); if(gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: 150, type: 'melee', effect: 'bleed'}); else handleDamage(getOpp(), 150, 'melee', true, 'bleed'); }
+            else if (ultType === 'thunder_wrath') { spawnAndSend('lightning_strike', getOpp().x+10, -200, 0, 0, wEffect); if(gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: 120, type: 'magic', effect: 'slow'}); else handleDamage(getOpp(), 120, 'magic', true, 'slow'); }
+            else if (ultType === 'blood_drain') { spawnAndSend('blood_drain_beam', dir===1?me.x:me.x-800, me.y+20, 0, 0, wEffect); if(gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: 100, type: 'magic', effect: 'slow'}); else handleDamage(getOpp(), 100, 'magic', true, 'slow'); me.hp = Math.min(me.maxHp, me.hp+100); document.getElementById('hp1').style.width = (me.hp/me.maxHp)*100+'%'; }
             
-            else if (currentEquip === 'dragon_blade') { let dWaveDmg = 150; spawnAndSend('dragon_wave', px, me.y - 50, dir * 20, 0); if(gameMode === 'coop' || gameMode === 'daily_boss') socket.emit('hitCoopBoss', dWaveDmg * 8); }
-            else if (currentEquip === 'gravity_hammer') { let bhDmg = 200; spawnAndSend('black_hole', getOpp().x - 30, groundY - 20, 0, 0); if(gameMode === 'coop' || gameMode === 'daily_boss') socket.emit('hitCoopBoss', bhDmg * 8); }
-            else if (currentEquip === 'storm_bow') for(let i = 0; i < 15; i++) spawnAndSend('storm_arrow', me.x + (dir * 50) + (Math.random() * 600 * dir), -100 - Math.random()*200, 0, 10 + Math.random()*5);
-            else if (currentEquip === 'void_scythe') { let opp = getOpp(); if(!opp.isDead) { me.x = opp.x + (opp.facingDir * -60); me.y = opp.y; me.facingDir = opp.facingDir; spawnAndSend('void_slash', me.x - 90, me.y - 80, 0, 0); spawnAndSend('void_scythe', me.x, me.y, me.facingDir*25, 0); spawnAndSend('void_scythe', me.x, me.y-40, me.facingDir*25, 0); } }
-            else if (currentEquip === 'omega_beam') spawnAndSend('omega_beam', dir===1 ? px : px-800, py-20, 0, 0);
+            else if (currentEquip === 'dragon_blade') { spawnAndSend('dragon_wave', px, me.y - 50, dir * 20, 0, wEffect); }
+            else if (currentEquip === 'gravity_hammer') { spawnAndSend('black_hole', getOpp().x - 30, groundY - 20, 0, 0, wEffect); }
+            else if (currentEquip === 'storm_bow') for(let i = 0; i < 15; i++) spawnAndSend('storm_arrow', me.x + (dir * 50) + (Math.random() * 600 * dir), -100 - Math.random()*200, 0, 10 + Math.random()*5, wEffect);
+            else if (currentEquip === 'void_scythe') { let opp = getOpp(); if(!opp.isDead) { me.x = opp.x + (opp.facingDir * -60); me.y = opp.y; me.facingDir = opp.facingDir; spawnAndSend('void_slash', me.x - 90, me.y - 80, 0, 0, wEffect); spawnAndSend('void_scythe', me.x, me.y, me.facingDir*25, 0, wEffect); spawnAndSend('void_scythe', me.x, me.y-40, me.facingDir*25, 0, wEffect); } }
+            else if (currentEquip === 'omega_beam') spawnAndSend('omega_beam', dir===1 ? px : px-800, py-20, 0, 0, wEffect);
             else {
                 let d1 = 120, d2 = 150; if(gameMode === 'online') { d1 = Math.max(1, Math.floor(d1/2)); d2 = Math.max(1, Math.floor(d2/2)); }
                 
                 if (ultType === 'melee' || ultType === 'piercing') { 
-                    spawnAndSend('ult_slash', px - 60, py - 60, 0, 0); 
+                    spawnAndSend('ult_slash', px - 60, py - 60, 0, 0, wEffect); 
                     if(gameMode === 'online') socket.emit('playerHit', { roomId: currentRoom, damage: d1, type: 'piercing', effect: 'bleed' }); 
-                    else if(gameMode === 'coop' || gameMode === 'daily_boss') socket.emit('hitCoopBoss', 120 * 8); 
+                    else if(gameMode === 'coop' || gameMode === 'daily_boss') socket.emit('hitCoopBoss', 120); 
                     handleDamage(getOpp(), d1, 'piercing', true, 'bleed'); 
                 } 
                 else if (ultType === 'explosive' || ultType === 'ballistic') { 
-                    spawnAndSend('ult_nuke', getOpp().x - 200, groundY - 150, 0, 0); 
+                    spawnAndSend('ult_nuke', getOpp().x - 200, groundY - 150, 0, 0, wEffect); 
                     if(gameMode === 'online') socket.emit('playerHit', { roomId: currentRoom, damage: d2, type: 'explosive', effect: 'burn' }); 
-                    else if(gameMode === 'coop' || gameMode === 'daily_boss') socket.emit('hitCoopBoss', 150 * 8); 
+                    else if(gameMode === 'coop' || gameMode === 'daily_boss') socket.emit('hitCoopBoss', 150); 
                     handleDamage(getOpp(), d2, 'explosive', true, 'burn'); 
                 } 
                 else if (ultType === 'magic' || ultType === 'defense' || ultType === 'defense_aoe') { 
-                    spawnAndSend('ult_divine', 0, 0, 0, 0); 
+                    spawnAndSend('ult_divine', 0, 0, 0, 0, wEffect); 
                     me.hp = me.maxHp; let hpId = myRole === 'p1' ? 'hp1' : 'hp2'; document.getElementById(hpId).style.width = '100%'; 
                     if(gameMode === 'online' || gameMode === 'coop') socket.emit('healTeammate', { roomId: currentRoom, amount: 200 }); 
                 } 
-                else { spawnAndSend('omega_beam', dir===1 ? px : px-800, py-20, 0, 0); }
+                else { spawnAndSend('omega_beam', dir===1 ? px : px-800, py-20, 0, 0, wEffect); }
             }
         }
 
         function doAttack() {
             if (attackCooldown > 0) return; 
-            let me = getMe(); if(me.isDead || me.stunTimer > 0 || me.isReloading) return;
+            let me = getMe(); if(me.isDead || me.stunTimer > 0) return;
             
-            let wData = weapons[currentEquip] || ultimates[currentEquip] || unique_weapons[currentEquip] || { stm: 10, clipSize: 0, firerate: 20, type: 'melee' }; 
+            let wData = weapons[currentEquip] || ultimates[currentEquip] || unique_weapons[currentEquip] || { stm: 10, maxAmmo: 0, firerate: 20, type: 'melee' }; 
             let costStm = currentEquip === 'none' ? 5 : wData.stm; 
-            let costAmmo = (wData.clipSize > 0) ? 1 : 0; 
+            let costAmmo = (wData.maxAmmo > 0) ? 1 : 0; 
 
             if (me.stamina < costStm) return;
-            
-            if (costAmmo > 0 && me.ammo < costAmmo) {
-                doReload();
-                return;
-            }
+            if (costAmmo > 0 && me.ammo < costAmmo) return; // Không đủ đạn
             
             me.stamina -= costStm; 
             if (costAmmo > 0) me.ammo -= costAmmo; 
@@ -801,6 +781,22 @@
             setTimeout(() => myElement().classList.remove('attacking'), 100);
 
             let dir = me.facingDir; let px = me.x + 30; let py = me.y + 40;
+            let wEffect = wData.effect || null;
+
+            // HIỆU ỨNG VŨ KHÍ LÊN BẢN THÂN
+            if (['shotgun', 'sniper', 'rocket', 'emp_missile', 'cluster', 'grenade', 'bomb'].includes(currentEquip)) {
+                me.x -= dir * 15; // Giật lùi súng nặng
+            }
+            if (['smg', 'flamethrower'].includes(currentEquip)) {
+                me.x -= dir * 2; // Gì chân khi xả đạn
+            }
+            if (['katana', 'spear', 'dragon_blade', 'vampiric_sword', 'horse'].includes(currentEquip)) {
+                me.x += dir * 12; // Lướt lên khi chém
+            }
+            if (['holy_light', 'heal_single'].includes(currentEquip)) {
+                me.hp = Math.min(me.maxHp, me.hp + 2); // Tự hồi máu nhẹ
+                document.getElementById(myRole === 'p1' ? 'hp1' : 'hp2').style.width = (me.hp/me.maxHp)*100+'%';
+            }
 
             let castColor = '#fff';
             if (currentEquip.includes('earth')) castColor = '#e67e22';
@@ -819,11 +815,11 @@
             document.getElementById('arena').appendChild(castObj);
             setTimeout(() => { if(castObj) castObj.remove(); }, 250);
 
-            if (currentEquip === 'heal_single') { spawnAndSend('heal-beam', px, py, dir*25, 0); } 
-            else if (currentEquip === 'heal_aoe') { spawnAndSend('heal-aura', me.x+30, groundY+90, 0, 0); } 
-            else if (currentEquip === 'vine_spell') spawnAndSend('vine', px, py, dir*18, 0);
-            else if (currentEquip === 'horse') spawnAndSend('horse_charge', px, me.y+30, dir*25, 0);
-            else if (currentEquip === 'giant_shield' || currentEquip === 'energy_shield' || currentEquip === 'crystal_shield') { spawnAndSend('giant_shield_aura', me.x, me.y, 0, 0); } 
+            if (currentEquip === 'heal_single') { spawnAndSend('heal-beam', px, py, dir*25, 0, wEffect); } 
+            else if (currentEquip === 'heal_aoe') { spawnAndSend('heal-aura', me.x+30, groundY+90, 0, 0, wEffect); } 
+            else if (currentEquip === 'vine_spell') { me.stunTimer = 10; spawnAndSend('vine', px, py, dir*18, 0, wEffect); }
+            else if (currentEquip === 'horse') spawnAndSend('horse_charge', px, me.y+30, dir*25, 0, wEffect);
+            else if (currentEquip === 'giant_shield' || currentEquip === 'energy_shield' || currentEquip === 'crystal_shield') { spawnAndSend('giant_shield_aura', me.x, me.y, 0, 0, wEffect); } 
             else if (currentEquip === 'none' || currentEquip === 'katana' || currentEquip === 'dragon_blade' || currentEquip === 'gravity_hammer' || currentEquip === 'spear' || currentEquip === 'vampiric_sword') {
                 let slash = document.createElement('div'); slash.className = 'slash-arc'; 
                 let arcW = (currentEquip === 'spear' || currentEquip === 'dragon_blade') ? 180 : 120;
@@ -837,64 +833,62 @@
 
                 document.getElementById('arena').appendChild(slash); setTimeout(() => { slash.style.opacity = 1; slash.style.transform = `scaleX(${dir}) scale(1.5)`; }, 10); setTimeout(() => slash.remove(), 150);
                 
-                if(currentEquip === 'gravity_hammer') spawnAndSend('shockwave', 0, groundY+70, 0, 0);
+                if(currentEquip === 'gravity_hammer') spawnAndSend('shockwave', 0, groundY+70, 0, 0, wEffect);
 
                 let dmg = currentEquip === 'dragon_blade' ? 75 : (currentEquip === 'gravity_hammer' ? 65 : (currentEquip === 'vampiric_sword' ? 45 : (currentEquip === 'katana' ? 35 : (currentEquip === 'spear' ? 30 : 15)))); 
                 let range = (currentEquip === 'spear' || currentEquip === 'dragon_blade') ? 180 : (currentEquip === 'katana' ? 120 : 70);
                 
-                let wEffect = 'bleed'; 
-                if (currentEquip === 'gravity_hammer') wEffect = 'slow';
-                if (currentEquip === 'dragon_blade') wEffect = 'burn';
-                
                 let opp = getOpp(); let isFacing = (dir === 1 && opp.x > me.x) || (dir === -1 && opp.x < me.x);
                 if(Math.abs(me.x - opp.x) < range && Math.abs(me.y - opp.y) < 60 && !opp.isDead && isFacing) {
                     if(gameMode === 'online') socket.emit('playerHit', { roomId: currentRoom, damage: dmg, type: 'melee', effect: wEffect }); 
-                    else if(gameMode === 'coop' || gameMode === 'daily_boss') socket.emit('hitCoopBoss', dmg * 8); 
+                    else if(gameMode === 'coop' || gameMode === 'daily_boss') socket.emit('hitCoopBoss', dmg); 
                     handleDamage(opp, dmg, 'melee', true, wEffect);
                     
                     if (currentEquip === 'vampiric_sword') { me.hp = Math.min(me.maxHp, me.hp + 20); let hpId = myRole === 'p1' ? 'hp1' : 'hp2'; document.getElementById(hpId).style.width = (me.hp/me.maxHp)*100+'%'; }
                 }
             } 
-            else if (currentEquip === 'heavy_pistol') spawnAndSend('heavy_bullet', px, py, dir*18, 0);
-            else if (currentEquip === 'smg') spawnAndSend('bullet', px, py, dir*22, 0); 
-            else if (currentEquip === 'shuriken' || currentEquip === 'storm_bow') { spawnAndSend('shuriken', px, py, dir*25, 0); if(currentEquip === 'storm_bow'){ spawnAndSend('shuriken', px, py, dir*25, -2); spawnAndSend('shuriken', px, py, dir*25, 2); } }
-            else if (currentEquip === 'sniper') spawnAndSend('sniper_bullet', px, py, dir*40, 0); 
-            else if (currentEquip === 'laser' || currentEquip === 'omega_beam') { spawnAndSend(currentEquip === 'omega_beam'?'omega_beam':'laser', dir===1 ? px : px-800, py-10, 0, 0); }
-            else if (currentEquip === 'plasma') spawnAndSend('plasma_bullet', px, py, dir*30, 0); 
-            else if (currentEquip === 'holy_light') spawnAndSend('holy_light', px, py, dir*12, 0); 
-            else if (currentEquip === 'fireball' || currentEquip === 'flamethrower') spawnAndSend('fireball', px, py-10, dir*10, 0); 
-            else if (currentEquip === 'rocket' || currentEquip === 'emp_missile') spawnAndSend('rocket', px, py, dir*15, 0);
-            else if (currentEquip === 'shotgun') { spawnAndSend('shotgun_bullet', px, py, dir*18, -3); spawnAndSend('shotgun_bullet', px, py, dir*18, 0); spawnAndSend('shotgun_bullet', px, py, dir*18, 3); }
-            else if (currentEquip === 'bomb') { let bombCount = entities.filter(e => e.type === 'bomb' && e.isMine).length; if (bombCount >= 4) return; spawnAndSend('bomb', px-10, groundY+70, 0, 0); }
-            else if (currentEquip === 'grenade') spawnAndSend('grenade', px, me.y, dir*12, -12); 
-            else if (currentEquip === 'cluster') { spawnAndSend('grenade', px, me.y, dir*8, -15); spawnAndSend('grenade', px, me.y, dir*12, -12); spawnAndSend('grenade', px, me.y, dir*16, -10); }
-            else if (currentEquip === 'void_scythe') spawnAndSend('void_scythe', px, py, dir*15, 0);
+            else if (currentEquip === 'heavy_pistol') spawnAndSend('heavy_bullet', px, py, dir*18, 0, wEffect);
+            else if (currentEquip === 'smg') spawnAndSend('bullet', px, py, dir*22, 0, wEffect); 
+            else if (currentEquip === 'shuriken' || currentEquip === 'storm_bow') { spawnAndSend('shuriken', px, py, dir*25, 0, wEffect); if(currentEquip === 'storm_bow'){ spawnAndSend('shuriken', px, py, dir*25, -2, wEffect); spawnAndSend('shuriken', px, py, dir*25, 2, wEffect); } }
+            else if (currentEquip === 'sniper') spawnAndSend('sniper_bullet', px, py, dir*40, 0, wEffect); 
+            else if (currentEquip === 'laser' || currentEquip === 'omega_beam') { spawnAndSend(currentEquip === 'omega_beam'?'omega_beam':'laser', dir===1 ? px : px-800, py-10, 0, 0, wEffect); }
+            else if (currentEquip === 'plasma') spawnAndSend('plasma_bullet', px, py, dir*30, 0, wEffect); 
+            else if (currentEquip === 'holy_light') spawnAndSend('holy_light', px, py, dir*12, 0, wEffect); 
+            else if (currentEquip === 'fireball' || currentEquip === 'flamethrower') spawnAndSend('fireball', px, py-10, dir*10, 0, wEffect); 
+            else if (currentEquip === 'rocket' || currentEquip === 'emp_missile') spawnAndSend('rocket', px, py, dir*15, 0, wEffect);
+            else if (currentEquip === 'shotgun') { spawnAndSend('shotgun_bullet', px, py, dir*18, -3, wEffect); spawnAndSend('shotgun_bullet', px, py, dir*18, 0, wEffect); spawnAndSend('shotgun_bullet', px, py, dir*18, 3, wEffect); }
+            else if (currentEquip === 'bomb') { let bombCount = entities.filter(e => e.type === 'bomb' && e.isMine).length; if (bombCount >= 4) return; spawnAndSend('bomb', px-10, groundY+70, 0, 0, wEffect); }
+            else if (currentEquip === 'grenade') spawnAndSend('grenade', px, me.y, dir*12, -12, wEffect); 
+            else if (currentEquip === 'cluster') { spawnAndSend('grenade', px, me.y, dir*8, -15, wEffect); spawnAndSend('grenade', px, me.y, dir*12, -12, wEffect); spawnAndSend('grenade', px, me.y, dir*16, -10, wEffect); }
+            else if (currentEquip === 'void_scythe') spawnAndSend('void_scythe', px, py, dir*15, 0, wEffect);
             
-            else if (currentEquip === 'bubble_spell') spawnAndSend('bubble', px, py, dir*10, -5);
+            else if (currentEquip === 'bubble_spell') spawnAndSend('bubble', px, py, dir*10, -5, wEffect);
             else if (currentEquip === 'earth_spike') {
                 document.getElementById('arena').classList.add('screen-shake');
                 setTimeout(()=>document.getElementById('arena').classList.remove('screen-shake'), 200);
-                spawnAndSend('earth_spike', px + dir*60, groundY+10, 0, 0);
-                setTimeout(() => spawnAndSend('earth_spike', px + dir*140, groundY+10, 0, 0), 100);
-                setTimeout(() => spawnAndSend('earth_spike', px + dir*220, groundY+10, 0, 0), 200);
+                spawnAndSend('earth_spike', px + dir*60, groundY+10, 0, 0, wEffect);
+                setTimeout(() => spawnAndSend('earth_spike', px + dir*140, groundY+10, 0, 0, wEffect), 100);
+                setTimeout(() => spawnAndSend('earth_spike', px + dir*220, groundY+10, 0, 0, wEffect), 200);
             }
-            else if (currentEquip === 'wind_blade') spawnAndSend('wind_blade', px, py, dir*25, 0);
+            else if (currentEquip === 'wind_blade') spawnAndSend('wind_blade', px, py, dir*25, 0, wEffect);
             else if (currentEquip === 'toxic_bomb') {
-                spawnAndSend('acid_bomb', px, py, dir*10, -8);
-                spawnAndSend('acid_bomb', px, py, dir*14, -10);
+                spawnAndSend('acid_bomb', px, py, dir*10, -8, wEffect);
+                spawnAndSend('acid_bomb', px, py, dir*14, -10, wEffect);
             }
-            else if (currentEquip === 'lightning_shuriken') { spawnAndSend('shuriken', px, py, dir*35, -1); spawnAndSend('shuriken', px, py, dir*35, 1); }
-            else if (currentEquip === 'lightning_spear') spawnAndSend('sniper_bullet', px, py, dir*45, 0);
+            else if (currentEquip === 'lightning_shuriken') { spawnAndSend('shuriken', px, py, dir*35, -1, wEffect); spawnAndSend('shuriken', px, py, dir*35, 1, wEffect); }
+            else if (currentEquip === 'lightning_spear') spawnAndSend('sniper_bullet', px, py, dir*45, 0, wEffect);
         }
 
-        function spawnAndSend(type, x, y, vx, vy) { 
-            let effect = null;
-            if (['fireball', 'rocket', 'grenade', 'bomb', 'laser', 'omega_beam', 'dragon_wave', 'fire_wave'].includes(type)) effect = 'burn';
-            if (['bubble', 'boulder', 'vine', 'shockwave', 'black_hole'].includes(type)) effect = 'slow';
-            if (['shuriken', 'sniper_bullet', 'wind_blade', 'void_scythe', 'void_slash', 'earth_spike'].includes(type)) effect = 'bleed';
+        function spawnAndSend(type, x, y, vx, vy, customEffect = null) { 
+            let effect = customEffect;
+            if (!effect) {
+                if (['fireball', 'rocket', 'grenade', 'bomb', 'laser', 'omega_beam', 'dragon_wave', 'fire_wave'].includes(type)) effect = 'burn';
+                if (['bubble', 'boulder', 'vine', 'shockwave', 'black_hole'].includes(type)) effect = 'slow';
+                if (['shuriken', 'sniper_bullet', 'wind_blade', 'void_scythe', 'void_slash', 'earth_spike'].includes(type)) effect = 'bleed';
+            }
             
             spawnEntity(type, x, y, vx, vy, true, true, effect); 
-            if (gameMode === 'online') socket.emit('shoot', { roomId: currentRoom, type: type, x: x, y: y, vx: vx, vy: vy }); else if (gameMode === 'coop') socket.emit('coopShoot', { type: type, x: x, y: y, vx: vx, vy: vy }); 
+            if (gameMode === 'online') socket.emit('shoot', { roomId: currentRoom, type: type, x: x, y: y, vx: vx, vy: vy, effect: effect }); else if (gameMode === 'coop') socket.emit('coopShoot', { type: type, x: x, y: y, vx: vx, vy: vy, effect: effect }); 
         }
 
         function handleStun(target, frames) { if(target.isDead) return; target.stunTimer = frames; let el = target === p1 ? document.getElementById('player1') : document.getElementById('player2'); el.classList.add('stunned'); setTimeout(() => { if(target.stunTimer <= 0) el.classList.remove('stunned'); }, (frames/60)*1000); }
@@ -1091,7 +1085,7 @@
                     if (Math.abs(e.x - target.x) < 100 && Math.abs(e.y - target.y) < 150 && !target.isDead && !e.hasHit) {
                         e.hasHit = true; let dWaveDmg = 150;
                         if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: dWaveDmg, type: 'energy', effect: 'burn'}); 
-                        if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', dWaveDmg * 8); 
+                        if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', dWaveDmg); 
                         if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, dWaveDmg, 'energy', e.isMine, 'burn'); 
                     } continue;
                 }
@@ -1101,7 +1095,7 @@
                         if (Math.abs(e.x - target.x) < 120 && Math.abs(e.y - target.y) < 120 && !target.isDead && !e.hasHit) { 
                             e.hasHit = true; let bhDmg = 200;
                             if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: bhDmg, type: 'explosive', effect: 'slow'}); 
-                            if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', bhDmg * 8); 
+                            if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', bhDmg); 
                             if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, bhDmg, 'explosive', e.isMine, 'slow'); 
                         }
                         setTimeout(() => { if(e.el) e.el.remove(); }, 300); entities.splice(i, 1);
@@ -1116,14 +1110,14 @@
                             let sDmg = 45; 
                             if (!e.isMine && !e.isAlly && (gameMode==='bot'||gameMode==='coop'||gameMode==='daily_boss')) sDmg = Math.floor(sDmg * 0.5); 
                             if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: sDmg, type: 'explosive', effect: 'slow'}); 
-                            if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', sDmg * 8); 
+                            if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', sDmg); 
                             if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, sDmg, 'explosive', e.isMine, 'slow'); 
                         }
                         if(e.type === 'omega_beam' && target.x > e.x && target.x < e.x+800 && target.y > e.y-40 && target.y < e.y+60) { 
                             let oDmg = 110; 
                             if (!e.isMine && !e.isAlly && (gameMode==='bot'||gameMode==='coop'||gameMode==='daily_boss')) oDmg = Math.floor(oDmg * 0.5); 
                             if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: oDmg, type: 'energy', effect: 'burn'}); 
-                            if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', oDmg * 8); 
+                            if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', oDmg); 
                             if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, oDmg, 'energy', e.isMine, 'burn'); 
                         }
                     } continue;
@@ -1136,7 +1130,7 @@
                             e.hasHit = true; let bombDmg = 120;
                             if (!e.isMine && !e.isAlly && (gameMode==='bot'||gameMode==='coop'||gameMode==='daily_boss')) bombDmg = Math.floor(bombDmg * 0.5); 
                             if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: bombDmg, type: 'explosive', effect: 'burn'}); 
-                            if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', bombDmg * 8); 
+                            if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', bombDmg); 
                             if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, bombDmg, 'explosive', e.isMine, 'burn'); 
                         }
                         setTimeout(() => { if(e.el) e.el.remove(); }, 300); entities.splice(i, 1);
@@ -1190,12 +1184,12 @@
                     if (e.type === 'rocket' && e.vx !== 0) {
                         e.el.className = 'bomb-explode'; e.vx = 0; e.vy = 0; 
                         if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: dmg, type: dmgType, effect: e.effect, isCrit: isHeadshot}); 
-                        if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', dmg * (isHeadshot ? 2 : 1) * 8); 
+                        if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', dmg * (isHeadshot ? 2 : 1)); 
                         if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, dmg, dmgType, e.isMine, e.effect, isHeadshot); 
                         setTimeout(() => { if(e.el) e.el.remove(); }, 300);
                     } else if (e.vx !== 0 || e.type === 'meteor' || e.type === 'storm_arrow') {
                         if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: dmg, type: dmgType, effect: e.effect, isCrit: isHeadshot}); 
-                        if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', dmg * (isHeadshot ? 2 : 1) * 8); 
+                        if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', dmg * (isHeadshot ? 2 : 1)); 
                         if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, dmg, dmgType, e.isMine, e.effect, isHeadshot); 
                         
                         let isPiercing = ['sniper_bullet', 'tornado', 'storm_arrow', 'horse_charge', 'boss_melee', 'wind_blade'].includes(e.type) || e.type.includes('wave') || e.type.includes('scythe');
@@ -1232,7 +1226,7 @@
 
             let dist = bot.x - targetPlayer.x; botWait--;
             let spd = currentBoss === 'zephyr' ? (isPhase2?14:10) : (currentBoss === 'titan' ? (isPhase2?4:2) : (isPhase2?7:5));
-            if (isCoop) spd = Math.floor(spd * 1.1); 
+            if (isCoop) spd = Math.floor(spd * 1.5); 
             if (gameMode === 'daily_boss') spd = 4;
 
             if (bot.statusEffects.slow > 0) spd = Math.max(1, Math.floor(spd / 2));
@@ -1368,19 +1362,18 @@
             
             if (botWait <= 0) { 
                 if (gameMode === 'daily_boss') botWait = 45; 
-                else botWait = isCoop ? (isPhase2 ? 70 : 90) : (isPhase2 ? 35 : 45); 
+                else botWait = isCoop ? (isPhase2 ? 25 : 35) : (isPhase2 ? 35 : 45); 
             }
             if (isCoop && isGameHost && botWait > 0) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir });
         }
         
         document.addEventListener('keydown', (e) => {
             if (document.getElementById('playerNameInput') === document.activeElement) return;
-            if (['w', 'a', 's', 'd', ' ', 'shift', 'e', 'r'].includes(e.key.toLowerCase())) e.preventDefault();
+            if (['w', 'a', 's', 'd', ' ', 'shift', 'e'].includes(e.key.toLowerCase())) e.preventDefault();
             let k = e.key.toLowerCase(); 
             if (k === ' ') k = 'space'; 
             if (keys.hasOwnProperty(k)) keys[k] = true;
             
-            if (k === 'r') doReload();
             if (k === 'e') doParry();
             if (k === 's') doUltimate();
             if (k === 'shift') { getMe().isBlocking = true; myElement().classList.add('blocking'); }
@@ -1433,6 +1426,17 @@
                     }
                     
                     if (me.stamina < 100 && !me.isBlocking && !me.isParrying && attackCooldown <= 0) me.stamina += 0.3;
+                    
+                    // --- HỒI ĐẠN TỰ ĐỘNG NHƯ STAMINA ---
+                    let wData = weapons[currentEquip] || ultimates[currentEquip] || unique_weapons[currentEquip];
+                    if (wData && wData.maxAmmo > 0) {
+                        if (me.ammo < wData.maxAmmo) {
+                            me.ammo = Math.min(wData.maxAmmo, me.ammo + (wData.ammoRegen || 0.05));
+                        }
+                        let ammoUi = document.getElementById(myRole === 'p1' ? 'ammo-text' : 'ammo-text2');
+                        if (ammoUi) ammoUi.innerText = Math.floor(me.ammo) + ' / ' + wData.maxAmmo;
+                    }
+
                     if (attackCooldown > 0) attackCooldown--;
                     if (me.parryTimer > 0) { me.parryTimer--; if (me.parryTimer <= 0) { me.isParrying = false; myElement().classList.remove('parrying'); } }
 
@@ -1443,9 +1447,6 @@
                     myElement().style.left = me.x + 'px'; myElement().style.top = me.y + 'px'; myElement().style.transform = `scaleX(${me.facingDir})`;
                     let stmId = myRole === 'p1' ? 'stm1' : 'stm2';
                     let stmEl = document.getElementById(stmId); if(stmEl) stmEl.style.width = Math.max(0, me.stamina) + '%';
-                    
-                    let ammoUi = document.getElementById(myRole === 'p1' ? 'ammo-text' : 'ammo-text2');
-                    if (ammoUi) ammoUi.innerText = me.ammo;
                 }
 
                 if (gameMode === 'bot' || (gameMode === 'coop' && isGameHost) || gameMode === 'daily_boss') {
