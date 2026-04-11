@@ -318,7 +318,6 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // SẮP XẾP LẠI TRÌNH TỰ KHỞI TẠO ĐỂ FIX LỖI CRASH BUTTON
         const socket = io();
         let gameMode = ''; let currentBoss = 'normal'; let myRole = 'p1'; let currentRoom = null; let currentCoopType = '';
         let teammates = {}; let animationId; let attackCooldown = 0; let ultimateReady = true; let matchUltimateUsed = false;
@@ -407,10 +406,8 @@
                 renderShopAndInventory();
             }
         }
+        checkVipName(document.getElementById('playerNameInput').value); 
 
-        // ==========================================
-        // KHỞI TẠO BIẾN CHO NGƯỜI CHƠI (TRƯỚC KHI RENDER SHOP)
-        // ==========================================
         const groundY = 290; let entities = []; 
         const getP1StartX = () => 50; const getP2StartX = () => 650; const getP1StartDir = () => 1; const getP2StartDir = () => -1;
         
@@ -421,9 +418,6 @@
         const myElement = () => document.getElementById(myRole === 'p1' ? 'player1' : 'player2'); const oppElement = () => document.getElementById(myRole === 'p1' ? 'player2' : 'player1');
         const getMe = () => myRole === 'p1' ? p1 : p2; const getOpp = () => myRole === 'p1' ? p2 : p1;
 
-        // Khởi động
-        checkVipName(document.getElementById('playerNameInput').value); 
-        
         let vipBossOffset = parseInt(localStorage.getItem('vipBossOffset')) || 0;
         let todayDateStr = new Date().toDateString();
         let bossIndex = (new Date().getDate() + vipBossOffset) % 10;
@@ -466,7 +460,8 @@
             setMap(3); 
             initGame('daily_boss', myN, currentDailyBoss.name);
             
-            let opp = getOpp(); opp.maxHp = 1500; opp.hp = opp.maxHp; 
+            // BUFF BOSS NGÀY LÊN 6000 MÁU
+            let opp = getOpp(); opp.maxHp = 6000; opp.hp = opp.maxHp; 
             document.getElementById('hp2-container').classList.add('boss-hp');
             let p2El = document.getElementById('player2');
             
@@ -561,8 +556,12 @@
             document.getElementById('game-over-screen-inner').style.display = 'none'; document.getElementById('btn-spectate').style.display = 'none';
             document.getElementById('btn-leave-coop').style.display = 'none';
             
-            p1 = { x: getP1StartX(), y: groundY, vy: 0, hp: p1.maxHp || 200, maxHp: p1.maxHp || 200, stamina: 100, ammo: 30, isReloading: false, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP1StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
-            p2 = { x: getP2StartX(), y: groundY, vy: 0, hp: p2.maxHp || 200, maxHp: p2.maxHp || 200, stamina: 100, ammo: 30, isReloading: false, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP2StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1, isBurrowed: false, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
+            // XỬ LÝ BUFF MÁU 2000 TRONG PVP
+            let p1Max = (gameMode === 'online') ? 2000 : 200;
+            p1 = { x: getP1StartX(), y: groundY, vy: 0, hp: p1Max, maxHp: p1Max, stamina: 100, ammo: 30, isReloading: false, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP1StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
+            
+            let p2Max = (gameMode === 'online') ? 2000 : (p2.maxHp || 200);
+            p2 = { x: getP2StartX(), y: groundY, vy: 0, hp: p2Max, maxHp: p2Max, stamina: 100, ammo: 30, isReloading: false, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP2StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1, isBurrowed: false, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
             
             entities.forEach(e => {if(e.el) e.el.remove()}); entities = []; ultimateReady = true; keys.space = false;
             
@@ -642,7 +641,6 @@
             }
         }); 
 
-        // SERVER CHỊU TRÁCH NHIỆM BÁO TỬ COOP
         socket.on('coopTeamWiped', () => {
             let gameOverScreen = document.getElementById('game-over-screen-inner');
             gameOverScreen.style.display = 'flex';
@@ -689,7 +687,6 @@
 
         function doParry() { let me = getMe(); if(me.stamina < 15 || me.parryTimer > 0 || me.isDead) return; me.stamina -= 15; me.isParrying = true; me.parryTimer = 30; myElement().classList.add('parrying'); }
 
-        // HÀM NẠP ĐẠN TỰ ĐỘNG VÀ CÓ THỜI GIAN THEO VŨ KHÍ
         function doReload() {
             let me = getMe();
             let wData = weapons[currentEquip] || ultimates[currentEquip] || unique_weapons[currentEquip];
@@ -751,8 +748,8 @@
             else if (ultType === 'thunder_wrath') { spawnAndSend('lightning_strike', getOpp().x+10, -200, 0, 0); if(gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: 120, type: 'magic', effect: 'slow'}); else handleDamage(getOpp(), 120, 'magic', true, 'slow'); }
             else if (ultType === 'blood_drain') { spawnAndSend('blood_drain_beam', dir===1?me.x:me.x-800, me.y+20, 0, 0); if(gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: 100, type: 'magic', effect: 'slow'}); else handleDamage(getOpp(), 100, 'magic', true, 'slow'); me.hp = Math.min(me.maxHp, me.hp+100); document.getElementById('hp1').style.width = (me.hp/me.maxHp)*100+'%'; }
             
-            else if (currentEquip === 'dragon_blade') spawnAndSend('dragon_wave', px, me.y - 50, dir * 20, 0); 
-            else if (currentEquip === 'gravity_hammer') spawnAndSend('black_hole', getOpp().x - 30, groundY - 20, 0, 0); 
+            else if (currentEquip === 'dragon_blade') { let dWaveDmg = 150; spawnAndSend('dragon_wave', px, me.y - 50, dir * 20, 0); if(gameMode === 'coop' || gameMode === 'daily_boss') socket.emit('hitCoopBoss', dWaveDmg * 8); }
+            else if (currentEquip === 'gravity_hammer') { let bhDmg = 200; spawnAndSend('black_hole', getOpp().x - 30, groundY - 20, 0, 0); if(gameMode === 'coop' || gameMode === 'daily_boss') socket.emit('hitCoopBoss', bhDmg * 8); }
             else if (currentEquip === 'storm_bow') for(let i = 0; i < 15; i++) spawnAndSend('storm_arrow', me.x + (dir * 50) + (Math.random() * 600 * dir), -100 - Math.random()*200, 0, 10 + Math.random()*5);
             else if (currentEquip === 'void_scythe') { let opp = getOpp(); if(!opp.isDead) { me.x = opp.x + (opp.facingDir * -60); me.y = opp.y; me.facingDir = opp.facingDir; spawnAndSend('void_slash', me.x - 90, me.y - 80, 0, 0); spawnAndSend('void_scythe', me.x, me.y, me.facingDir*25, 0); spawnAndSend('void_scythe', me.x, me.y-40, me.facingDir*25, 0); } }
             else if (currentEquip === 'omega_beam') spawnAndSend('omega_beam', dir===1 ? px : px-800, py-20, 0, 0);
@@ -761,11 +758,15 @@
                 
                 if (ultType === 'melee' || ultType === 'piercing') { 
                     spawnAndSend('ult_slash', px - 60, py - 60, 0, 0); 
-                    if(gameMode === 'online') socket.emit('playerHit', { roomId: currentRoom, damage: d1, type: 'piercing', effect: 'bleed' }); else if(gameMode === 'coop') socket.emit('hitCoopBoss', 120); handleDamage(getOpp(), d1, 'piercing', true, 'bleed'); 
+                    if(gameMode === 'online') socket.emit('playerHit', { roomId: currentRoom, damage: d1, type: 'piercing', effect: 'bleed' }); 
+                    else if(gameMode === 'coop' || gameMode === 'daily_boss') socket.emit('hitCoopBoss', 120 * 8); 
+                    handleDamage(getOpp(), d1, 'piercing', true, 'bleed'); 
                 } 
                 else if (ultType === 'explosive' || ultType === 'ballistic') { 
                     spawnAndSend('ult_nuke', getOpp().x - 200, groundY - 150, 0, 0); 
-                    if(gameMode === 'online') socket.emit('playerHit', { roomId: currentRoom, damage: d2, type: 'explosive', effect: 'burn' }); else if(gameMode === 'coop') socket.emit('hitCoopBoss', 150); handleDamage(getOpp(), d2, 'explosive', true, 'burn'); 
+                    if(gameMode === 'online') socket.emit('playerHit', { roomId: currentRoom, damage: d2, type: 'explosive', effect: 'burn' }); 
+                    else if(gameMode === 'coop' || gameMode === 'daily_boss') socket.emit('hitCoopBoss', 150 * 8); 
+                    handleDamage(getOpp(), d2, 'explosive', true, 'burn'); 
                 } 
                 else if (ultType === 'magic' || ultType === 'defense' || ultType === 'defense_aoe') { 
                     spawnAndSend('ult_divine', 0, 0, 0, 0); 
@@ -848,7 +849,7 @@
                 let opp = getOpp(); let isFacing = (dir === 1 && opp.x > me.x) || (dir === -1 && opp.x < me.x);
                 if(Math.abs(me.x - opp.x) < range && Math.abs(me.y - opp.y) < 60 && !opp.isDead && isFacing) {
                     if(gameMode === 'online') socket.emit('playerHit', { roomId: currentRoom, damage: dmg, type: 'melee', effect: wEffect }); 
-                    else if(gameMode === 'coop' || gameMode === 'daily_boss') socket.emit('hitCoopBoss', dmg); 
+                    else if(gameMode === 'coop' || gameMode === 'daily_boss') socket.emit('hitCoopBoss', dmg * 8); 
                     handleDamage(opp, dmg, 'melee', true, wEffect);
                     
                     if (currentEquip === 'vampiric_sword') { me.hp = Math.min(me.maxHp, me.hp + 20); let hpId = myRole === 'p1' ? 'hp1' : 'hp2'; document.getElementById(hpId).style.width = (me.hp/me.maxHp)*100+'%'; }
@@ -941,9 +942,7 @@
                     socket.emit('playerDied', { roomId: currentRoom, loserRole: myRole }); 
                 } 
                 else if(gameMode === 'coop') { 
-                    // Liên tục báo trạng thái đã chết
                     socket.emit('coopPlayerAction', { x: target.x, y: target.y, isBlocking: false, facingDir: target.facingDir, isDead: true });
-
                     document.getElementById('game-over-screen-inner').style.display = 'flex'; 
                     document.getElementById('winner-text').innerText = "BẠN ĐÃ CHẾT"; 
                     document.getElementById('winner-text').style.color = "var(--neon-red)"; 
@@ -1092,7 +1091,7 @@
                     if (Math.abs(e.x - target.x) < 100 && Math.abs(e.y - target.y) < 150 && !target.isDead && !e.hasHit) {
                         e.hasHit = true; let dWaveDmg = 150;
                         if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: dWaveDmg, type: 'energy', effect: 'burn'}); 
-                        if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', dWaveDmg); 
+                        if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', dWaveDmg * 8); 
                         if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, dWaveDmg, 'energy', e.isMine, 'burn'); 
                     } continue;
                 }
@@ -1102,7 +1101,7 @@
                         if (Math.abs(e.x - target.x) < 120 && Math.abs(e.y - target.y) < 120 && !target.isDead && !e.hasHit) { 
                             e.hasHit = true; let bhDmg = 200;
                             if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: bhDmg, type: 'explosive', effect: 'slow'}); 
-                            if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', bhDmg); 
+                            if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', bhDmg * 8); 
                             if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, bhDmg, 'explosive', e.isMine, 'slow'); 
                         }
                         setTimeout(() => { if(e.el) e.el.remove(); }, 300); entities.splice(i, 1);
@@ -1117,14 +1116,14 @@
                             let sDmg = 45; 
                             if (!e.isMine && !e.isAlly && (gameMode==='bot'||gameMode==='coop'||gameMode==='daily_boss')) sDmg = Math.floor(sDmg * 0.5); 
                             if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: sDmg, type: 'explosive', effect: 'slow'}); 
-                            if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', sDmg); 
+                            if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', sDmg * 8); 
                             if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, sDmg, 'explosive', e.isMine, 'slow'); 
                         }
                         if(e.type === 'omega_beam' && target.x > e.x && target.x < e.x+800 && target.y > e.y-40 && target.y < e.y+60) { 
                             let oDmg = 110; 
                             if (!e.isMine && !e.isAlly && (gameMode==='bot'||gameMode==='coop'||gameMode==='daily_boss')) oDmg = Math.floor(oDmg * 0.5); 
                             if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: oDmg, type: 'energy', effect: 'burn'}); 
-                            if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', oDmg); 
+                            if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', oDmg * 8); 
                             if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, oDmg, 'energy', e.isMine, 'burn'); 
                         }
                     } continue;
@@ -1137,7 +1136,7 @@
                             e.hasHit = true; let bombDmg = 120;
                             if (!e.isMine && !e.isAlly && (gameMode==='bot'||gameMode==='coop'||gameMode==='daily_boss')) bombDmg = Math.floor(bombDmg * 0.5); 
                             if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: bombDmg, type: 'explosive', effect: 'burn'}); 
-                            if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', bombDmg); 
+                            if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', bombDmg * 8); 
                             if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, bombDmg, 'explosive', e.isMine, 'burn'); 
                         }
                         setTimeout(() => { if(e.el) e.el.remove(); }, 300); entities.splice(i, 1);
@@ -1169,7 +1168,7 @@
                     case 'tornado': dmg = 35; w=80; h=150; break;
                     case 'plasma_bullet': dmg = 25; w=30; h=8; dmgType='energy'; break;
                     case 'holy_light': dmg = 35; w=35; h=35; dmgType='magic'; break;
-                    case 'bullet': dmg = 8; break; // Giảm damage SMG do bắn siêu nhanh
+                    case 'bullet': dmg = 8; break;
                     case 'bubble': dmg = 30; w=40; h=40; dmgType='magic'; break;
                     case 'wind_blade': dmg = 30; w=60; h=60; dmgType='energy'; break;
                     case 'acid_bomb': dmg = 30; w=26; h=26; dmgType='explosive'; break;
@@ -1191,12 +1190,12 @@
                     if (e.type === 'rocket' && e.vx !== 0) {
                         e.el.className = 'bomb-explode'; e.vx = 0; e.vy = 0; 
                         if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: dmg, type: dmgType, effect: e.effect, isCrit: isHeadshot}); 
-                        if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', dmg * (isHeadshot ? 2 : 1)); 
+                        if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', dmg * (isHeadshot ? 2 : 1) * 8); 
                         if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, dmg, dmgType, e.isMine, e.effect, isHeadshot); 
                         setTimeout(() => { if(e.el) e.el.remove(); }, 300);
                     } else if (e.vx !== 0 || e.type === 'meteor' || e.type === 'storm_arrow') {
                         if(e.isMine && gameMode==='online') socket.emit('playerHit', {roomId: currentRoom, damage: dmg, type: dmgType, effect: e.effect, isCrit: isHeadshot}); 
-                        if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', dmg * (isHeadshot ? 2 : 1)); 
+                        if(e.isMine && (gameMode==='coop' || gameMode==='daily_boss')) socket.emit('hitCoopBoss', dmg * (isHeadshot ? 2 : 1) * 8); 
                         if(e.isMine || (!e.isMine && gameMode!=='online')) handleDamage(target, dmg, dmgType, e.isMine, e.effect, isHeadshot); 
                         
                         let isPiercing = ['sniper_bullet', 'tornado', 'storm_arrow', 'horse_charge', 'boss_melee', 'wind_blade'].includes(e.type) || e.type.includes('wave') || e.type.includes('scythe');
@@ -1238,6 +1237,7 @@
 
             if (bot.statusEffects.slow > 0) spd = Math.max(1, Math.floor(spd / 2));
 
+            // CÁC KỸ NĂNG BOSS NGÀY ĐƯỢC BUFF CỰC MẠNH
             if (gameMode === 'daily_boss') {
                 let dId = currentDailyBoss.id;
                 let botEl = document.getElementById('player2');
@@ -1267,6 +1267,8 @@
                 if (dId === 'spider' && botWait === 60) {
                     showFloatingText(targetPlayer.x, groundY, "MƯA TÊN LỬA!", 'boss-warning');
                     bossSpawnAndSend('target-ring', targetPlayer.x, groundY, 0, 0);
+                    setTimeout(() => bossSpawnAndSend('target-ring', targetPlayer.x + 80, groundY, 0, 0), 200);
+                    setTimeout(() => bossSpawnAndSend('target-ring', targetPlayer.x - 80, groundY, 0, 0), 400);
                 }
                 
                 if (dId === 'ninja' && botWait === 30) {
@@ -1287,21 +1289,24 @@
                 if (gameMode === 'daily_boss') {
                     let dId = currentDailyBoss.id;
                     if(dId === 'fish') { 
-                        bossSpawnAndSend('bubble', bot.x, bot.y, bot.facingDir*12, -4); 
-                        bossSpawnAndSend('bubble', bot.x, bot.y-20, bot.facingDir*8, -6); 
-                        bossSpawnAndSend('bubble', bot.x, bot.y-40, bot.facingDir*10, -8);
+                        bossSpawnAndSend('bubble', bot.x, bot.y, bot.facingDir*12, -2); 
+                        bossSpawnAndSend('bubble', bot.x, bot.y-20, bot.facingDir*8, -4); 
+                        bossSpawnAndSend('bubble', bot.x, bot.y-40, bot.facingDir*10, -6);
+                        bossSpawnAndSend('bubble', bot.x, bot.y-60, bot.facingDir*14, -8);
+                        bossSpawnAndSend('bubble', bot.x, bot.y-80, bot.facingDir*16, -10);
                     }
                     else if (dId === 'worm') {
-                        bossSpawnAndSend('earth_spike', targetPlayer.x, groundY+10, 0, 0);
-                        setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x + 80, groundY+10, 0, 0), 150);
-                        setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x - 80, groundY+10, 0, 0), 300);
-                        setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x + 160, groundY+10, 0, 0), 450);
-                        setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x - 160, groundY+10, 0, 0), 600);
+                        for(let i=0; i<=4; i++) {
+                            setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x + (i*80), groundY+10, 0, 0), i*100);
+                            setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x - (i*80), groundY+10, 0, 0), i*100);
+                        }
                     }
                     else if (dId === 'wind') {
+                        bossSpawnAndSend('wind_blade', bot.x, bot.y, bot.facingDir*25, -4);
                         bossSpawnAndSend('wind_blade', bot.x, bot.y, bot.facingDir*25, -2);
                         bossSpawnAndSend('wind_blade', bot.x, bot.y+20, bot.facingDir*25, 0);
                         bossSpawnAndSend('wind_blade', bot.x, bot.y+40, bot.facingDir*25, 2);
+                        bossSpawnAndSend('wind_blade', bot.x, bot.y+40, bot.facingDir*25, 4);
                     }
                     else if (dId === 'spider') { 
                         bossSpawnAndSend('rocket', targetPlayer.x + (Math.random()*200-100), -50, 0, 8); 
@@ -1309,36 +1314,45 @@
                     }
                     else if (dId === 'toad') { 
                         bossSpawnAndSend('acid_bomb', bot.x, bot.y, bot.facingDir*8, -12); 
-                        bossSpawnAndSend('acid_bomb', bot.x, bot.y, bot.facingDir*11, -10);
-                        bossSpawnAndSend('acid_bomb', bot.x, bot.y, bot.facingDir*14, -8); 
+                        bossSpawnAndSend('acid_bomb', bot.x, bot.y, bot.facingDir*10, -11);
+                        bossSpawnAndSend('acid_bomb', bot.x, bot.y, bot.facingDir*12, -10);
+                        bossSpawnAndSend('acid_bomb', bot.x, bot.y, bot.facingDir*14, -9); 
+                        bossSpawnAndSend('acid_bomb', bot.x, bot.y, bot.facingDir*16, -8); 
                     } 
                     else if (dId === 'golem') { 
-                        bossSpawnAndSend('boulder', bot.x, bot.y-20, bot.facingDir*12, -5); 
-                        bossSpawnAndSend('boulder', bot.x, bot.y-40, bot.facingDir*15, -8); 
+                        bossSpawnAndSend('boulder', bot.x, bot.y-10, bot.facingDir*12, -4); 
+                        bossSpawnAndSend('boulder', bot.x, bot.y-20, bot.facingDir*14, -6); 
+                        bossSpawnAndSend('boulder', bot.x, bot.y-40, bot.facingDir*16, -8); 
+                        bossSpawnAndSend('boulder', bot.x, bot.y-60, bot.facingDir*18, -10); 
                         bossSpawnAndSend('boss_melee', bot.x+(bot.facingDir*40), bot.y, bot.facingDir, 0); 
                     }
                     else if (dId === 'bat') { 
                         bot.y = groundY - 200; 
                         bossSpawnAndSend('fireball', bot.x, bot.y, bot.facingDir*5, 10);
-                        setTimeout(() => bossSpawnAndSend('fireball', bot.x, bot.y, bot.facingDir*10, 10), 200);
+                        bossSpawnAndSend('fireball', bot.x, bot.y, bot.facingDir*10, 10);
+                        setTimeout(() => { bossSpawnAndSend('fireball', bot.x, bot.y, bot.facingDir*8, 10); bossSpawnAndSend('fireball', bot.x, bot.y, bot.facingDir*12, 10); }, 200);
                         setTimeout(() => bossSpawnAndSend('fireball', bot.x, bot.y, bot.facingDir*15, 10), 400);
                     }
                     else if (dId === 'ninja') { 
+                        bossSpawnAndSend('shuriken', bot.x, bot.y, bot.facingDir*30, -6); 
                         bossSpawnAndSend('shuriken', bot.x, bot.y, bot.facingDir*30, -4); 
                         bossSpawnAndSend('shuriken', bot.x, bot.y, bot.facingDir*30, -2); 
                         bossSpawnAndSend('shuriken', bot.x, bot.y, bot.facingDir*30, 0); 
                         bossSpawnAndSend('shuriken', bot.x, bot.y, bot.facingDir*30, 2); 
                         bossSpawnAndSend('shuriken', bot.x, bot.y, bot.facingDir*30, 4); 
+                        bossSpawnAndSend('shuriken', bot.x, bot.y, bot.facingDir*30, 6); 
+                        bossSpawnAndSend('bomb', bot.x, bot.y, bot.facingDir*10, -5);
                     } 
                     else if (dId === 'bird') { 
-                        bossSpawnAndSend('lightning_strike', targetPlayer.x, -200, 0, 0); 
-                        setTimeout(() => bossSpawnAndSend('lightning_strike', targetPlayer.x, -200, 0, 0), 200);
-                        setTimeout(() => bossSpawnAndSend('lightning_strike', targetPlayer.x, -200, 0, 0), 400);
+                        for(let i=0; i<5; i++) {
+                            setTimeout(() => bossSpawnAndSend('lightning_strike', targetPlayer.x + (Math.random()*100 - 50), -200, 0, 0), i*150);
+                        }
                     }
                     else if (dId === 'knight') { 
                         bot.x = targetPlayer.x + (targetPlayer.facingDir * 60);
                         bossSpawnAndSend('boss_melee', bot.x+(bot.facingDir*40), bot.y, bot.facingDir, 0); 
-                        bot.hp = Math.min(bot.maxHp, bot.hp + 50); 
+                        bossSpawnAndSend('void_slash', bot.x-90, bot.y-80, 0, 0);
+                        bot.hp = Math.min(bot.maxHp, bot.hp + 150); 
                     }
                 }
                 else { 
@@ -1353,13 +1367,12 @@
             }
             
             if (botWait <= 0) { 
-                if (gameMode === 'daily_boss') botWait = 80; 
+                if (gameMode === 'daily_boss') botWait = 45; 
                 else botWait = isCoop ? (isPhase2 ? 70 : 90) : (isPhase2 ? 35 : 45); 
             }
             if (isCoop && isGameHost && botWait > 0) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir });
         }
         
-        // --- CÁC HÀM UPDATE VÀ INPUT TRONG GAME ---
         document.addEventListener('keydown', (e) => {
             if (document.getElementById('playerNameInput') === document.activeElement) return;
             if (['w', 'a', 's', 'd', ' ', 'shift', 'e', 'r'].includes(e.key.toLowerCase())) e.preventDefault();
