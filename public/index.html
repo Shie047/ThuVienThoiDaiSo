@@ -318,11 +318,7 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        function updateScale() { let w = window.innerWidth; let h = window.innerHeight; let scaleW = w < 840 ? (w - 20) / 800 : 1; let scaleH = h < 600 ? (h - 20) / 550 : 1; document.documentElement.style.setProperty('--scale', Math.min(scaleW, scaleH)); }
-        window.addEventListener('resize', updateScale); updateScale();
-
-        function switchScreen(screenId) { document.querySelectorAll('.fullscreen-overlay').forEach(p => p.style.display = 'none'); document.getElementById('game-container').style.display = 'none'; if(screenId) document.getElementById(screenId).style.display = 'flex'; window.focus(); document.querySelectorAll('button').forEach(b => b.blur()); }
-
+        // SẮP XẾP LẠI TRÌNH TỰ KHỞI TẠO ĐỂ FIX LỖI CRASH BUTTON
         const socket = io();
         let gameMode = ''; let currentBoss = 'normal'; let myRole = 'p1'; let currentRoom = null; let currentCoopType = '';
         let teammates = {}; let animationId; let attackCooldown = 0; let ultimateReady = true; let matchUltimateUsed = false;
@@ -411,8 +407,23 @@
                 renderShopAndInventory();
             }
         }
-        checkVipName(document.getElementById('playerNameInput').value); 
 
+        // ==========================================
+        // KHỞI TẠO BIẾN CHO NGƯỜI CHƠI (TRƯỚC KHI RENDER SHOP)
+        // ==========================================
+        const groundY = 290; let entities = []; 
+        const getP1StartX = () => 50; const getP2StartX = () => 650; const getP1StartDir = () => 1; const getP2StartDir = () => -1;
+        
+        let p1 = { x: 50, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isReloading: false, isDead: false, isBlocking: false, jumpCount: 0, facingDir: 1, stunTimer: 0, isParrying: false, parryTimer: 0, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
+        let p2 = { x: 650, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isReloading: false, isDead: false, isBlocking: false, jumpCount: 0, facingDir: -1, stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1, isBurrowed: false, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
+        let keys = { a: false, d: false, space: false, w: false, w_pressed: false, r: false }; 
+
+        const myElement = () => document.getElementById(myRole === 'p1' ? 'player1' : 'player2'); const oppElement = () => document.getElementById(myRole === 'p1' ? 'player2' : 'player1');
+        const getMe = () => myRole === 'p1' ? p1 : p2; const getOpp = () => myRole === 'p1' ? p2 : p1;
+
+        // Khởi động
+        checkVipName(document.getElementById('playerNameInput').value); 
+        
         let vipBossOffset = parseInt(localStorage.getItem('vipBossOffset')) || 0;
         let todayDateStr = new Date().toDateString();
         let bossIndex = (new Date().getDate() + vipBossOffset) % 10;
@@ -530,15 +541,10 @@
         
         renderShopAndInventory(); 
 
-        const groundY = 290; let entities = []; 
-        const getP1StartX = () => 50; const getP2StartX = () => 650; const getP1StartDir = () => 1; const getP2StartDir = () => -1;
-        
-        let p1 = { x: 50, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isReloading: false, isDead: false, isBlocking: false, jumpCount: 0, facingDir: 1, stunTimer: 0, isParrying: false, parryTimer: 0, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
-        let p2 = { x: 650, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isReloading: false, isDead: false, isBlocking: false, jumpCount: 0, facingDir: -1, stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1, isBurrowed: false, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
-        let keys = { a: false, d: false, space: false, w: false, w_pressed: false, r: false }; 
+        function updateScale() { let w = window.innerWidth; let h = window.innerHeight; let scaleW = w < 840 ? (w - 20) / 800 : 1; let scaleH = h < 600 ? (h - 20) / 550 : 1; document.documentElement.style.setProperty('--scale', Math.min(scaleW, scaleH)); }
+        window.addEventListener('resize', updateScale); updateScale();
 
-        const myElement = () => document.getElementById(myRole === 'p1' ? 'player1' : 'player2'); const oppElement = () => document.getElementById(myRole === 'p1' ? 'player2' : 'player1');
-        const getMe = () => myRole === 'p1' ? p1 : p2; const getOpp = () => myRole === 'p1' ? p2 : p1;
+        function switchScreen(screenId) { document.querySelectorAll('.fullscreen-overlay').forEach(p => p.style.display = 'none'); document.getElementById('game-container').style.display = 'none'; if(screenId) document.getElementById(screenId).style.display = 'flex'; window.focus(); document.querySelectorAll('button').forEach(b => b.blur()); }
 
         function setMap(mapIndex) { let map = maps[mapIndex]; currentMapBuff = map.buff; document.getElementById('map-name-display').innerText = `MAP: ${map.name} (BUFF: ${map.buff})`; document.getElementById('arena').style.background = map.bg; }
 
