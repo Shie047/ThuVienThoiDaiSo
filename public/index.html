@@ -304,12 +304,13 @@
                     <button class="btn" id="btn-spectate" style="background:#0984e3; border-color:#0984e3; display:none; color:#fff;" onclick="startSpectating()">XEM ĐỒNG ĐỘI ĐÁNH</button>
                     <button class="btn btn-boss" id="btn-rematch-boss" style="display:inline-block;" onclick="rematchBoss()">ĐÁNH LẠI BOSS</button>
                     <button class="btn" id="btn-rematch-pvp" style="background:#00b894; border-color:#00b894; display:none; color:#fff;" onclick="requestRematchPvP()">SẴN SÀNG ĐẤU LẠI 1VS1</button>
+                    <button class="btn" id="btn-leave-coop" style="background:#e17055; border-color:#e17055; display:none; color:#fff;" onclick="leaveCoop()">RỜI KHỎI PHÒNG COOP</button>
                     <button class="btn" style="background:#2d3436; border-color:#636e72; color:#fff;" onclick="location.reload()">TRỞ VỀ MENU</button>
                 </div>
             </div>
 
             <div style="background: rgba(0,0,0,0.6); padding: 10px 20px; border-radius: 8px; margin-top: 15px; font-size: 14px; text-align: center; border: 1px solid #333; color: #ccc; width: 100%; box-sizing: border-box;">
-                <span style="color:var(--neon-cyan)">[A] [D]: Đi</span> &nbsp;|&nbsp; <span style="color:var(--neon-gold)">[Nhấn/Giữ W]: Nhảy Cao & Double Jump</span> &nbsp;|&nbsp; <span style="color:#00b894">[Shift]: Đỡ</span> &nbsp;|&nbsp; <span style="color:#f39c12">[E]: PARRY</span> &nbsp;|&nbsp; <span style="color:var(--neon-red)">[Đè Space]: Xả Đạn Liên Tục</span> &nbsp;|&nbsp; <span style="color:#8e44ad">[S]: Tối Thượng</span>
+                <span style="color:var(--neon-cyan)">[A] [D]: Đi</span> &nbsp;|&nbsp; <span style="color:var(--neon-gold)">[W]: Nhảy Cao & Double Jump</span> &nbsp;|&nbsp; <span style="color:#00b894">[Shift]: Đỡ</span> &nbsp;|&nbsp; <span style="color:#f39c12">[E]: PARRY</span> &nbsp;|&nbsp; <span style="color:var(--neon-red)">[Space]: Xả Kỹ Năng</span> &nbsp;|&nbsp; <span style="color:#fff">[R]: Nạp Đạn</span> &nbsp;|&nbsp; <span style="color:#8e44ad">[S]: Tối Thượng</span>
             </div>
         </div>
     </div>
@@ -392,6 +393,19 @@
         let coins = parseInt(localStorage.getItem('coins')) || 0; let hearts = parseInt(localStorage.getItem('hearts')) || 0; let shards = parseInt(localStorage.getItem('shards')) || 0;
         let unlocked = JSON.parse(localStorage.getItem('unlocked')) || {}; let currentEquip = localStorage.getItem('currentEquip') || 'none';
         document.getElementById('playerNameInput').value = localStorage.getItem('playerName') || '';
+
+        // TÍNH NĂNG VIP TÊN THÀNH
+        function checkVipName(name) {
+            let n = name.trim().toLowerCase();
+            if ((n === 'thành' || n === 'thanh') && !localStorage.getItem('vipBonusClaimed')) {
+                coins += 5000;
+                localStorage.setItem('coins', coins);
+                localStorage.setItem('vipBonusClaimed', 'true');
+                alert("Hệ thống nhận diện VIP Thành! Bạn nhận được +5000 Vàng!");
+                renderShopAndInventory();
+            }
+        }
+        checkVipName(document.getElementById('playerNameInput').value); // Kiểm tra lúc khởi động
 
         let vipBossOffset = parseInt(localStorage.getItem('vipBossOffset')) || 0;
         let todayDateStr = new Date().toDateString();
@@ -498,6 +512,7 @@
         
         document.getElementById('playerNameInput').addEventListener('input', function() { 
             localStorage.setItem('playerName', this.value.trim()); 
+            checkVipName(this.value);
         });
         
         renderShopAndInventory(); 
@@ -505,9 +520,9 @@
         const groundY = 290; let entities = []; 
         const getP1StartX = () => 50; const getP2StartX = () => 650; const getP1StartDir = () => 1; const getP2StartDir = () => -1;
         
-        let p1 = { x: 50, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: 1, stunTimer: 0, isParrying: false, parryTimer: 0, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
-        let p2 = { x: 650, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: -1, stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1, isBurrowed: false, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
-        let keys = { a: false, d: false, space: false, w: false, w_pressed: false }; 
+        let p1 = { x: 50, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isReloading: false, isDead: false, isBlocking: false, jumpCount: 0, facingDir: 1, stunTimer: 0, isParrying: false, parryTimer: 0, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
+        let p2 = { x: 650, y: groundY, vy: 0, hp: 200, maxHp: 200, stamina: 100, ammo: 30, isReloading: false, isDead: false, isBlocking: false, jumpCount: 0, facingDir: -1, stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1, isBurrowed: false, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
+        let keys = { a: false, d: false, space: false, w: false, w_pressed: false, r: false }; 
 
         const myElement = () => document.getElementById(myRole === 'p1' ? 'player1' : 'player2'); const oppElement = () => document.getElementById(myRole === 'p1' ? 'player2' : 'player1');
         const getMe = () => myRole === 'p1' ? p1 : p2; const getOpp = () => myRole === 'p1' ? p2 : p1;
@@ -525,9 +540,10 @@
         function resetGameUI() {
             if (bossTimerInterval) { clearInterval(bossTimerInterval); bossTimerInterval = null; }
             document.getElementById('game-over-screen-inner').style.display = 'none'; document.getElementById('btn-spectate').style.display = 'none';
+            document.getElementById('btn-leave-coop').style.display = 'none';
             
-            p1 = { x: getP1StartX(), y: groundY, vy: 0, hp: p1.maxHp || 200, maxHp: p1.maxHp || 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP1StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
-            p2 = { x: getP2StartX(), y: groundY, vy: 0, hp: p2.maxHp || 200, maxHp: p2.maxHp || 200, stamina: 100, ammo: 30, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP2StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1, isBurrowed: false, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
+            p1 = { x: getP1StartX(), y: groundY, vy: 0, hp: p1.maxHp || 200, maxHp: p1.maxHp || 200, stamina: 100, ammo: 30, isReloading: false, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP1StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
+            p2 = { x: getP2StartX(), y: groundY, vy: 0, hp: p2.maxHp || 200, maxHp: p2.maxHp || 200, stamina: 100, ammo: 30, isReloading: false, isDead: false, isBlocking: false, jumpCount: 0, facingDir: getP2StartDir(), stunTimer: 0, isParrying: false, parryTimer: 0, lockedTargetId: null, phase: 1, isBurrowed: false, statusEffects: { burn: 0, slow: 0, bleed: 0 } };
             
             entities.forEach(e => {if(e.el) e.el.remove()}); entities = []; ultimateReady = true; keys.space = false;
             
@@ -552,7 +568,7 @@
             equipItem(currentEquip); 
         }
 
-        // HÀM REMATCH
+        // HÀM REMATCH / RỜI KHỎI
         function rematchBoss() {
             if (gameMode === 'bot') {
                 startBotMode(currentBoss);
@@ -564,6 +580,11 @@
         }
         function requestRematchPvP() {
             startOnlineMode();
+        }
+        function leaveCoop() {
+            // Hàm rời khỏi dành riêng cho Coop
+            if(gameMode==='coop' && socket) socket.emit('leaveCoop');
+            location.reload(); 
         }
 
         function showWaitingScreen(msg, showStartBtn = false) { switchScreen('screen-waiting'); document.getElementById('wait-msg').innerText = msg; document.getElementById('btn-start-early').style.display = (showStartBtn && isLobbyHost) ? 'block' : 'none'; document.getElementById('btn-urge-host').style.display = (showStartBtn && !isLobbyHost) ? 'block' : 'none'; }
@@ -629,6 +650,7 @@
                 document.getElementById('btn-rematch-boss').style.display = 'inline-block';
                 document.getElementById('btn-rematch-boss').disabled = false;
                 document.getElementById('reward-text').style.display = 'none'; 
+                document.getElementById('btn-leave-coop').style.display = 'inline-block'; // Hiển thị nút rời khỏi
                 
                 if (animationId) cancelAnimationFrame(animationId);
             }
@@ -659,21 +681,35 @@
 
         function doParry() { let me = getMe(); if(me.stamina < 15 || me.parryTimer > 0 || me.isDead) return; me.stamina -= 15; me.isParrying = true; me.parryTimer = 30; myElement().classList.add('parrying'); }
 
+        // HÀM NẠP ĐẠN
+        function doReload() {
+            let me = getMe();
+            if (me.isDead || me.isReloading || me.ammo >= 30) return;
+            me.isReloading = true;
+            showFloatingText(me.x, me.y, "NẠP ĐẠN...", 'status-text');
+            setTimeout(() => {
+                if (!me.isDead) {
+                    me.ammo = 30; // Nạp lại max băng đạn
+                    me.isReloading = false;
+                    showFloatingText(me.x, me.y, "ĐÃ NẠP!", 'parry-text');
+                }
+            }, 1500); // Mất 1.5 giây để nạp
+        }
+
         function showFloatingText(x, y, text, cssClass) {
             let pTxt = document.createElement('div'); pTxt.className = `effect-text ${cssClass}`; pTxt.innerText = text; pTxt.style.left = x+'px'; pTxt.style.top = (y-20)+'px'; document.getElementById('arena').appendChild(pTxt); setTimeout(()=>pTxt.remove(), 1000);
         }
 
-        // HÀM NHẢY KÉP (Double Jump) ĐƯỢC LÀM LẠI
         function doJump() {
             let me = getMe();
             if (me.isDead || me.stunTimer > 0 || me.isBlocking) return;
             
             if (me.y >= groundY) {
-                me.vy = -18; // Nhảy rất cao (gấp rưỡi lực ban đầu, lên độ cao gần gấp đôi)
+                me.vy = -18; 
                 me.y -= 1;
                 me.jumpCount = 1;
             } else if (me.jumpCount < 2) {
-                me.vy = -15; // Double jump
+                me.vy = -15; 
                 me.jumpCount = 2;
                 showFloatingText(me.x, me.y, "DOUBLE JUMP!", "status-text");
             }
@@ -727,20 +763,24 @@
             }
         }
 
-        // TÍNH NĂNG ĐÁNH LIÊN TỤC VÀ HOẠT ẢNH XẢ SKILL
         function doAttack() {
             if (attackCooldown > 0) return; 
-            let me = getMe(); if(me.isDead || me.stunTimer > 0) return;
+            let me = getMe(); if(me.isDead || me.stunTimer > 0 || me.isReloading) return;
             
             let wData = weapons[currentEquip] || ultimates[currentEquip] || unique_weapons[currentEquip] || { stm: 10, ammo: 0, firerate: 20, type: 'melee' }; 
             let costStm = currentEquip === 'none' ? 5 : wData.stm; 
             let costAmmo = currentEquip === 'none' ? 0 : wData.ammo;
 
-            if (me.stamina < costStm || (costAmmo > 0 && me.ammo < costAmmo)) return; 
+            if (me.stamina < costStm) return;
+            
+            // Nếu dùng súng mà hết đạn -> tự động nạp
+            if (costAmmo > 0 && me.ammo < costAmmo) {
+                doReload();
+                return;
+            }
             
             me.stamina -= costStm; me.ammo -= costAmmo; 
             
-            // XẢ SKILL TỐC ĐỘ BÀN THỜ (Spam liên tục)
             attackCooldown = currentEquip === 'none' ? 8 : Math.max(6, Math.floor(wData.firerate * 0.35)); 
             
             myElement().classList.add('attacking'); 
@@ -748,7 +788,6 @@
 
             let dir = me.facingDir; let px = me.x + 30; let py = me.y + 40;
 
-            // HOẠT ẢNH VÒNG NĂNG LƯỢNG MỖI LẦN XẢ SKILL
             let castColor = '#fff';
             if (currentEquip.includes('earth')) castColor = '#e67e22';
             else if (currentEquip.includes('toxic') || currentEquip.includes('vine')) castColor = '#2ecc71';
@@ -819,7 +858,6 @@
             
             else if (currentEquip === 'bubble_spell') spawnAndSend('bubble', px, py, dir*10, -5);
             else if (currentEquip === 'earth_spike') {
-                // Giật rung màn hình khi gọi chông đất liên tục
                 document.getElementById('arena').classList.add('screen-shake');
                 setTimeout(()=>document.getElementById('arena').classList.remove('screen-shake'), 200);
                 
@@ -830,7 +868,6 @@
             else if (currentEquip === 'wind_blade') spawnAndSend('wind_blade', px, py, dir*25, 0);
             else if (currentEquip === 'emp_missile') spawnAndSend('rocket', px, py, dir*20, 0);
             else if (currentEquip === 'toxic_bomb') {
-                // Xả độc khủng
                 spawnAndSend('acid_bomb', px, py, dir*10, -8);
                 spawnAndSend('acid_bomb', px, py, dir*14, -10);
             }
@@ -983,20 +1020,19 @@
                     continue;
                 }
 
-                // Cập nhật Cóc nôn Axit
                 if (e.type === 'acid_bomb') {
                     e.x += e.vx; e.y += e.vy; e.vy += 0.4;
                     if (e.y > groundY + 70) {
                         e.type = 'acid_pool';
                         e.el.className = 'acid-pool';
                         e.vx = 0; e.vy = 0;
-                        e.y = groundY + 75; // Đọng trên mặt đất
-                        e.x -= 30; // Chỉnh tâm hố bùn
+                        e.y = groundY + 75; 
+                        e.x -= 30; 
                         e.age = 0;
                     }
                 } else if (e.type === 'acid_pool') {
                     if (e.age > 400) { e.el.remove(); entities.splice(i, 1); continue; }
-                    if (e.age % 30 === 0) { // Gây sát thương theo thời gian
+                    if (e.age % 30 === 0) { 
                         let target = e.isMine ? getOpp() : getMe();
                         if (target.x + 30 > e.x && target.x < e.x + 80 && Math.abs(target.y - groundY) < 30 && !target.isDead) {
                             handleDamage(target, 8, 'magic', e.isMine, 'bleed'); 
@@ -1004,7 +1040,6 @@
                     }
                 }
                 
-                // Cập nhật cọc đất mọc lên
                 else if (e.type === 'earth_spike') {
                     if (e.age > 45) { e.el.remove(); entities.splice(i, 1); continue; }
                     if (e.age === 10 && !e.hasHit) {
@@ -1025,9 +1060,9 @@
                 else if (e.type === 'storm_arrow') { e.y += e.vy; }
                 else if (e.type === 'bubble') { 
                     e.x += e.vx; e.y += e.vy; 
-                    e.vy += 0.2; e.vx *= 0.99; // Bay nảy
+                    e.vy += 0.2; e.vx *= 0.99; 
                     if (e.y >= groundY + 39) { 
-                        e.vy = -6 * (Math.random() * 0.5 + 0.5); // Nảy tưng tưng
+                        e.vy = -6 * (Math.random() * 0.5 + 0.5); 
                         e.y = groundY + 38; 
                     } 
                 } 
@@ -1035,14 +1070,13 @@
                     e.x += e.vx; e.y += e.vy; 
                 } 
 
-                if (e.type !== 'acid_pool') { // Acid pool tự chỉnh tọa độ
+                if (e.type !== 'acid_pool') { 
                     e.el.style.left = e.x + 'px'; e.el.style.top = e.y + 'px';
                 }
                 if(e.isDead) { entities.splice(i, 1); continue; }
                 
                 let target = (e.isMine || e.isAlly) ? getOpp() : getMe();
 
-                // CÁC KỸ NĂNG ULTIMATE CHẠM
                 if (e.type === 'dragon_wave') {
                     if(e.age > 60) { e.el.remove(); entities.splice(i, 1); continue; }
                     if (Math.abs(e.x - target.x) < 100 && Math.abs(e.y - target.y) < 150 && !target.isDead && !e.hasHit) {
@@ -1193,7 +1227,6 @@
 
             if (bot.statusEffects.slow > 0) spd = Math.max(1, Math.floor(spd / 2));
 
-            // NÂNG CẤP KỸ NĂNG ĐẶC TRƯNG CỦA BOSS NGÀY
             if (gameMode === 'daily_boss') {
                 let dId = currentDailyBoss.id;
                 let botEl = document.getElementById('player2');
@@ -1204,13 +1237,13 @@
                         showFloatingText(bot.x, bot.y, "ĐỘN THỔ!", 'boss-warning');
                     }
                     if (bot.isBurrowed) {
-                        bot.x = targetPlayer.x; // Áp sát dần người chơi khi đang tàng hình
+                        bot.x = targetPlayer.x; 
                         if (botWait === 5) { 
                             bot.isBurrowed = false; botEl.classList.remove('fade-out'); 
                             bossSpawnAndSend('boulder', bot.x, groundY+40, 0, -10); 
                             if (Math.abs(bot.x - targetPlayer.x) < 80) handleDamage(targetPlayer, 80, 'melee', false); 
                         }
-                        return; // Ngừng logic bình thường khi đang trốn
+                        return; 
                     }
                 }
                 
@@ -1222,12 +1255,12 @@
 
                 if (dId === 'spider' && botWait === 60) {
                     showFloatingText(targetPlayer.x, groundY, "MƯA TÊN LỬA!", 'boss-warning');
-                    bossSpawnAndSend('target-ring', targetPlayer.x, groundY, 0, 0); // Thả nhẫn mục tiêu xuống đất
+                    bossSpawnAndSend('target-ring', targetPlayer.x, groundY, 0, 0);
                 }
                 
                 if (dId === 'ninja' && botWait === 30) {
                     showFloatingText(bot.x, bot.y, "TẬP TRUNG!", 'boss-warning');
-                    bot.x += bot.facingDir * -150; // Giật lùi chuẩn bị phóng tiêu
+                    bot.x += bot.facingDir * -150; 
                 }
             }
 
@@ -1248,7 +1281,6 @@
                         bossSpawnAndSend('bubble', bot.x, bot.y-40, bot.facingDir*10, -8);
                     }
                     else if (dId === 'worm') {
-                        // SỬA ĐỔI: Giun giờ sẽ mọc chông đất xịn xò
                         bossSpawnAndSend('earth_spike', targetPlayer.x, groundY+10, 0, 0);
                         setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x + 80, groundY+10, 0, 0), 150);
                         setTimeout(() => bossSpawnAndSend('earth_spike', targetPlayer.x - 80, groundY+10, 0, 0), 300);
@@ -1265,7 +1297,6 @@
                         setTimeout(() => bossSpawnAndSend('rocket', targetPlayer.x + (Math.random()*200-100), -50, 0, 8), 200); 
                     }
                     else if (dId === 'toad') { 
-                        // SỬA ĐỔI: Cóc bắn bom axit rớt đọng hố
                         bossSpawnAndSend('acid_bomb', bot.x, bot.y, bot.facingDir*8, -12); 
                         bossSpawnAndSend('acid_bomb', bot.x, bot.y, bot.facingDir*11, -10);
                         bossSpawnAndSend('acid_bomb', bot.x, bot.y, bot.facingDir*14, -8); 
@@ -1296,7 +1327,7 @@
                     else if (dId === 'knight') { 
                         bot.x = targetPlayer.x + (targetPlayer.facingDir * 60);
                         bossSpawnAndSend('boss_melee', bot.x+(bot.facingDir*40), bot.y, bot.facingDir, 0); 
-                        bot.hp = Math.min(bot.maxHp, bot.hp + 50); // Hút máu mạnh
+                        bot.hp = Math.min(bot.maxHp, bot.hp + 50); 
                     }
                 }
                 else { 
@@ -1310,9 +1341,8 @@
                 }
             }
             
-            // THỜI GIAN HỒI CHIÊU CỦA BOSS
             if (botWait <= 0) { 
-                if (gameMode === 'daily_boss') botWait = 80; // Giãn nhịp độ đánh Boss ngày ra để dễ thở hơn
+                if (gameMode === 'daily_boss') botWait = 80; 
                 else botWait = isCoop ? (isPhase2 ? 25 : 35) : (isPhase2 ? 35 : 45); 
             }
             if (isCoop && isGameHost && botWait > 0) socket.emit('bossAction', { x: bot.x, y: bot.y, facingDir: bot.facingDir });
@@ -1321,16 +1351,17 @@
         // --- CÁC HÀM UPDATE VÀ INPUT TRONG GAME ---
         document.addEventListener('keydown', (e) => {
             if (document.getElementById('playerNameInput') === document.activeElement) return;
-            if (['w', 'a', 's', 'd', ' ', 'shift', 'e'].includes(e.key.toLowerCase())) e.preventDefault();
+            if (['w', 'a', 's', 'd', ' ', 'shift', 'e', 'r'].includes(e.key.toLowerCase())) e.preventDefault();
             let k = e.key.toLowerCase(); 
-            if (k === ' ') k = 'space'; // SỬA Ở ĐÂY: Ánh xạ chuẩn phím Space
+            if (k === ' ') k = 'space'; 
             if (keys.hasOwnProperty(k)) keys[k] = true;
             
+            if (k === 'r') doReload();
             if (k === 'e') doParry();
             if (k === 's') doUltimate();
             if (k === 'shift') { getMe().isBlocking = true; myElement().classList.add('blocking'); }
             if (k === 'w') {
-                if (!keys.w_pressed) { // Chống spam phím
+                if (!keys.w_pressed) { 
                     keys.w_pressed = true;
                     doJump();
                 }
@@ -1340,14 +1371,13 @@
         document.addEventListener('keyup', (e) => {
             if (document.getElementById('playerNameInput') === document.activeElement) return;
             let k = e.key.toLowerCase(); 
-            if (k === ' ') k = 'space'; // SỬA Ở ĐÂY: Ánh xạ chuẩn phím Space
+            if (k === ' ') k = 'space'; 
             if (keys.hasOwnProperty(k)) keys[k] = false;
             if (k === 'shift') { getMe().isBlocking = false; myElement().classList.remove('blocking'); }
             
             if (k === 'w') {
                 keys.w_pressed = false;
                 let me = getMe();
-                // Short Hop: Nhả W sớm rơi nhanh
                 if (me.vy < 0) me.vy *= 0.4; 
             }
         });
@@ -1356,8 +1386,7 @@
             if (document.getElementById('game-container').style.display !== 'none') {
                 let me = getMe(); let opp = getOpp();
                 
-                // KIỂM TRA ĐÈ SPACE ĐỂ SPAM SKILL LIÊN TỤC
-                if (keys.space) { // SỬA Ở ĐÂY: Gọi chính xác qua key.space
+                if (keys.space) { 
                     doAttack();
                 }
                 
@@ -1367,7 +1396,6 @@
                     } else {
                         if (keys.a && !me.isBlocking && me.x > 0) { me.x -= 6; me.facingDir = -1; }
                         if (keys.d && !me.isBlocking && me.x < 740) { me.x += 6; me.facingDir = 1; }
-                        // Nút W đã được chuyển sang sự kiện Keydown riêng để phục vụ nhảy đúp
                     }
 
                     if (me.y < groundY) { 
@@ -1376,7 +1404,7 @@
                         if (me.y >= groundY) { 
                             me.y = groundY; 
                             me.vy = 0; 
-                            me.jumpCount = 0; // Chạm đất thì Reset bộ đếm nhảy
+                            me.jumpCount = 0; 
                         } 
                     }
                     
@@ -1400,13 +1428,17 @@
                     if (!opp.isDead) runBotAI();
                 }
 
-                if (gameMode !== 'online' && !opp.isDead) {
-                    if (opp.y < groundY && !opp.isBurrowed) { opp.vy += 0.6; opp.y += opp.vy; if (opp.y >= groundY) { opp.y = groundY; opp.vy = 0; } }
+                if (!opp.isDead) {
+                    // Logic mô phỏng vật lý và hiệu ứng của Opponent nếu không phải chế độ Online
+                    if (gameMode !== 'online') {
+                        if (opp.y < groundY && !opp.isBurrowed) { opp.vy += 0.6; opp.y += opp.vy; if (opp.y >= groundY) { opp.y = groundY; opp.vy = 0; } }
+                        
+                        if (opp.statusEffects.burn > 0) { opp.statusEffects.burn--; if(opp.statusEffects.burn % 30 === 0) handleDamage(opp, 2, 'magic', false); if(opp.statusEffects.burn <= 0) oppElement().classList.remove('status-burn'); }
+                        if (opp.statusEffects.slow > 0) { opp.statusEffects.slow--; if(opp.statusEffects.slow <= 0) oppElement().classList.remove('status-slow'); }
+                        if (opp.statusEffects.bleed > 0) { opp.statusEffects.bleed--; if(opp.statusEffects.bleed % 60 === 0) handleDamage(opp, 10, 'magic', false); if(opp.statusEffects.bleed <= 0) oppElement().classList.remove('status-bleed'); }
+                    }
                     
-                    if (opp.statusEffects.burn > 0) { opp.statusEffects.burn--; if(opp.statusEffects.burn % 30 === 0) handleDamage(opp, 2, 'magic', false); if(opp.statusEffects.burn <= 0) oppElement().classList.remove('status-burn'); }
-                    if (opp.statusEffects.slow > 0) { opp.statusEffects.slow--; if(opp.statusEffects.slow <= 0) oppElement().classList.remove('status-slow'); }
-                    if (opp.statusEffects.bleed > 0) { opp.statusEffects.bleed--; if(opp.statusEffects.bleed % 60 === 0) handleDamage(opp, 10, 'magic', false); if(opp.statusEffects.bleed <= 0) oppElement().classList.remove('status-bleed'); }
-                    
+                    // CẬP NHẬT GIAO DIỆN CHUNG CHO TẤT CẢ CÁC MODE (Bao gồm Online)
                     if (!opp.isBurrowed) {
                         oppElement().style.left = opp.x + 'px'; oppElement().style.top = opp.y + 'px'; oppElement().style.transform = `scaleX(${opp.facingDir})`;
                     }
