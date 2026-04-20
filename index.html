@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloomRead</title>
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .header {
+            background-image: url('Img/background.png');
+            background-size: cover;  
+            background-position: center;
+            background-repeat: no-repeat;
+            color: white;
+            margin: 0 auto;
+            text-align: center;
+            width: 100%;               
+            height: 210px;               
+        }
+        .BloomRead {
+            font-size: 70px;
+            color: #2E7D32;
+            -webkit-text-stroke: 2px #356E37;
+            margin: 0 auto;
+            padding: auto;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            margin-top: -30px;
+        }
+        .ImgLogo {
+            width: 75px;
+            height: auto;
+            display:flex;
+        }
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            position: relative;
+            margin-top: 27px;    
+        }
+        .nav-links {
+            display: flex;
+            gap: 40px;
+        }
+        .nav-item {
+            color: #4CAF50;
+            text-decoration: none;
+            font-size: 22px;
+            font-weight: 600;
+            text-transform: uppercase;
+            transition: color 0.3s;
+            border-bottom: 2px solid transparent; 
+        }
+        .nav-item:hover {
+            color: #2E7D32;
+            border-bottom: 2px solid #2E7D32;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            position: absolute; 
+            right: 40px;  
+        }
+        .login-btn {
+            color: #4CAF50;            
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase; 
+            border: 2px solid white;   
+            border-radius: 50px;       
+            padding: 8px 24px;         
+            transition: all 0.3s ease; 
+        }
+        .login-btn:hover {
+            background-color: white;   
+            color: #2E7D32;            
+        }
+        .section1 {
+            background-image: url('Img/bannerBlommRead1.jpg');
+            background-size: cover; 
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 0 auto;
+            text-align: center;
+            width: 100%;               
+            aspect-ratio: 16 / 9;
+        }
+        .section2 {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .div1section2 {
+            width:100%;
+            height:96px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #16A34A;
+        }
+        .h1div1section2 {
+            color:#1F1F1F;
+            font-size: 40px;
+            text-align: center;
+            margin: 0;
+        }
+        .p1div2section2 {
+            background: linear-gradient(90deg, #16A34A 0%, #1BB253 33.02%, #1DB756 45.65%, #22C55E 75.96%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            font-size: 36px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* --- ĐÃ SỬA LẠI CSS PHẦN NÀY CHO GIỐNG ẢNH MẪU --- */
+        .h1div3section2 {
+            font-size: 48px;
+            font-weight: 800; /* Nét chữ dày hơn */
+            text-align: center;
+            color: #39B54A; /* Sử dụng màu xanh lá trơn (solid) thay vì gradient */
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        /* ------------------------------------------------ */
+
+        .div4section2 {
+            display: flex;
+            flex-direction: column;
+            align-items: center;     
+            width: 100%;
+            max-width: 1280px;       
+            margin: 20px auto 60px auto; /* Tinh chỉnh lại khoảng cách trên dưới */      
+        }
+        .slider-viewport {
+            width: 100%;
+            overflow: hidden;
+            padding: 40px 0;
+            margin-bottom: 30px;
+        }
+        .books-container {
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;  
+            gap: 40px;
+            width: max-content;
+            padding: 0 30px;
+            transition: transform 0.5s ease-in-out;
+            margin: 0 auto;
+        }
+        .book-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 177px;
+            transition: transform 0.5s ease;
+        }
+        .book-featured {
+            transform: scale(1.3);
+            transform-origin: top center;
+            z-index: 2;
+        }
+        .book-img {
+            width: 100%;
+            height: 266px; /* Ép cứng chiều cao để các sách luôn đều nhau */
+            object-fit: cover;
+            box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1); 
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .book-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 18px;         
+            text-align: center;
+            color: #000;
+            margin: 0;
+            line-height: 1.4;
+        }
+        .btn-xem-them {
+            color: #2E7D32;
+            background-color: white;
+            text-decoration: none;
+            font-size: 24px;
+            font-weight: 800;
+            border: 3px solid #2E7D32;
+            border-radius: 50px; 
+            padding: 12px 60px;
+            transition: all 0.3s ease;
+        }
+        .btn-xem-them:hover {
+            background-color: #2E7D32;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <img src="Img/logoALTF4.png" alt="BloomRead Logo" class="ImgLogo">
+        <h1 class="BloomRead">BLOOMREAD</h1>
+        <nav class="nav-container">
+            <div class="nav-links">
+                <a href="index.html" class="nav-item">Trang Chủ</a>
+                <a href="lib.html" class="nav-item">Thư Viện</a>
+                <a href="garden.html" class="nav-item">Vườn Hoa</a>
+                <a href="shop.html" class="nav-item">Cửa Hàng</a>
+            </div>
+            <div class="action-buttons">
+                <a href="#" class="login-btn">Đăng Nhập</a>
+                <a href="#" class="login-btn">Đăng Ký</a>
+            </div>
+        </nav>
+    </header>
+    <main>
+        <section class="section1"></section>
+        <section class="section2">
+            <div class="div1section2">
+                <h1 class="h1div1section2">HỆ THỐNG THƯ VIỆN SỐ HIỆN ĐẠI, ĐA DẠNG</h1>
+            </div>
+            <div>
+                <p class="p1div2section2">Thư viện luôn cập nhật sách mới mỗi tuần, đa dạng thể loại, giúp bạn <br> đọc nhanh – hiểu sâu</p>
+            </div>
+            <div class="div3section2">
+                <h1 class="h1div3section2">ĐỀ XUẤT CHO BẠN</h1>
+            </div>
+            <div class="div4section2">
+                <div class="slider-viewport">
+                    <div class="books-container">
+                        <div class="book-item">
+                            <img src="Img/book1.png" alt="Hãy nhớ tên anh ấy" class="book-img">
+                            <h3 class="book-title">Hãy nhớ tên anh ấy</h3>
+                        </div>
+                        <div class="book-item">
+                            <img src="Img/book2.png" alt="Ái tình nơi đầu lưỡi" class="book-img">
+                            <h3 class="book-title">Ái tình nơi đầu lưỡi</h3>
+                        </div>
+                        <div class="book-item">
+                            <img src="Img/book3.png" alt="Uma Musume" class="book-img">
+                            <h3 class="book-title">Uma Musume:<br>Pretty Derby<br>Story Season 1</h3>
+                        </div>
+                        <div class="book-item">
+                            <img src="Img/book4.png" alt="Sherlock Holmes" class="book-img">
+                            <h3 class="book-title">Sherlock Holmes</h3>
+                        </div>
+                        <div class="book-item">
+                            <img src="Img/book5.png" alt="Kiến trúc hiện đại" class="book-img">
+                            <h3 class="book-title">Kiến trúc hiện đại</h3>
+                        </div>
+                    </div>
+                </div>
+                <a href="#" class="btn-xem-them">XEM THÊM</a>
+            </div>
+        </section>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const track = document.querySelector('.books-container');
+            function highlightCenterBook() {
+                document.querySelectorAll('.book-item').forEach(book => {
+                    book.classList.remove('book-featured');
+                });
+                let currentBooks = document.querySelectorAll('.book-item');
+                if(currentBooks.length >= 3) {
+                    currentBooks[2].classList.add('book-featured');
+                }
+            }
+            highlightCenterBook();
+            function slideBooks() {
+                const firstBook = track.firstElementChild;
+                const slideDistance = firstBook.offsetWidth + 40;
+                track.style.transition = "transform 0.5s ease-in-out";
+                track.style.transform = `translateX(-${slideDistance}px)`;
+                setTimeout(() => {
+                    track.style.transition = "none";
+                    track.appendChild(firstBook);
+                    track.style.transform = "translateX(0)";
+                    highlightCenterBook();
+                }, 500);
+            }
+            setInterval(slideBooks, 3000);
+        });
+    </script>
+</body>
+</html>
